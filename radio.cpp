@@ -2112,17 +2112,17 @@ void RadioInterface::handle_myLine(void)
 #include <QCloseEvent>
 void RadioInterface::closeEvent(QCloseEvent *event)
 {
-  QMessageBox::StandardButton resultButton =
-    QMessageBox::question(this, "fmRadio",
-                          tr("Are you sure?\n"),
-                          QMessageBox::No | QMessageBox::Yes,
-                          QMessageBox::Yes);
+//  QMessageBox::StandardButton resultButton =
+//    QMessageBox::question(this, "fmRadio",
+//                          tr("Are you sure?\n"),
+//                          QMessageBox::No | QMessageBox::Yes,
+//                          QMessageBox::Yes);
 
-  if (resultButton != QMessageBox::Yes)
-  {
-    event->ignore();
-  }
-  else
+//  if (resultButton != QMessageBox::Yes)
+//  {
+//    event->ignore();
+//  }
+//  else
   {
     TerminateProcess();
     event->accept();

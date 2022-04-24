@@ -64,8 +64,8 @@ public:
 	                             RingBuffer<double> *, // LFScope
 	                             int16_t,	// filterDepth
 	                             int16_t);	// threshold scanning
-	        	~fmProcessor (void);
-	void		stop		(void);		// stop the processor
+            ~fmProcessor ();
+  void		stop		();		// stop the processor
 	void		setfmMode	(uint8_t);
 	void		setFMdecoder	(int8_t);
 	void		setSoundMode	(uint8_t);
@@ -74,26 +74,26 @@ public:
 	void		setVolume	(int16_t);
 	void		setLFcutoff	(int32_t);
 	void		startDumping	(SNDFILE *);
-	void		stopDumping	(void);
+  void		stopDumping	();
 	void		setBandwidth	(int32_t);
 	void		setBandfilterDegree	(int32_t);
 	void		setAttenuation	(int16_t, int16_t);
 	void		setfmRdsSelector (int8_t);
-	void		resetRds	(void);
+  void		resetRds	();
 	void		set_localOscillator	(int32_t);
 	void		setFreezer	(bool);
 	void		set_squelchMode	(bool);
 	void		setInputMode	(uint8_t);
 
 	int32_t		totalAmount;
-	bool		ok			(void);
-	DSPFLOAT	get_pilotStrength	(void);
-	DSPFLOAT	get_rdsStrength		(void);
-	DSPFLOAT	get_noiseStrength	(void);
-	DSPFLOAT	get_dcComponent		(void);
-	void		startScanning		(void);
-	void		stopScanning		(void);
-	const char *	nameofDecoder	(void);
+  bool		ok			();
+  DSPFLOAT	get_pilotStrength	();
+  DSPFLOAT	get_rdsStrength		();
+  DSPFLOAT	get_noiseStrength	();
+  DSPFLOAT	get_dcComponent		();
+  void		startScanning		();
+  void		stopScanning		();
+  const char *	nameofDecoder	();
 
 	enum Channels {
 	   S_STEREO		= 0,

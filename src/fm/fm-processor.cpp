@@ -752,12 +752,12 @@ void fmProcessor::stereo(float demod,
 void fmProcessor::setLFcutoff(int32_t Hz)
 {
   LowPassFIR * tempFmAudioFilter = fmAudioFilter;
-  fmAudioFilter = NULL; // set to null first due to other thread is using pointer while deletion
+  fmAudioFilter = nullptr; // set to null first due to other thread is using pointer while deletion
   delete tempFmAudioFilter;
 
   if (Hz > 0)
   {
-    fmAudioFilter = new LowPassFIR(11, Hz, fmRate);
+    fmAudioFilter = new LowPassFIR(55, Hz, fmRate); // 11 is too less (55 is also arbitrary) for this high sample rate fmRate = 256000S/s
   }
 }
 

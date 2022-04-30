@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2014
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -6,7 +5,7 @@
  *
  *    This file is part of SDR-J.
  *    Many of the ideas as implemented in SDR-J are derived from
- *    other work, made available through the GNU general Public License. 
+ *    other work, made available through the GNU general Public License.
  *    All copyrights of the original authors are recognized.
  *
  *    SDR-J is free software; you can redistribute it and/or modify
@@ -25,51 +24,50 @@
  *
  */
 
-#ifndef	__FM_DEMODULATOR
-#define	__FM_DEMODULATOR
+#ifndef __FM_DEMODULATOR
+#define __FM_DEMODULATOR
 
-#include	"fm-constants.h"
-#include	"sincos.h"
-#include	"pllC.h"
-#include	"Xtan2.h"
+#include "Xtan2.h"
+#include "fm-constants.h"
+#include "pllC.h"
+#include "sincos.h"
 
-#define	PLL_PILOT_GAIN	3000
+#define PLL_PILOT_GAIN 3000
 
-class	fm_Demodulator {
+class fm_Demodulator {
 public:
-	enum fm_demod {
-	   FM1DECODER	= 0001,
-	   FM2DECODER	= 0002,
-	   FM3DECODER	= 0003,
-	   FM4DECODER	= 0004,
-	   FM5DECODER	= 0005,
-	   FM6DECODER	= 0006
-	};
+  enum fm_demod {
+    FM1DECODER = 0001,
+    FM2DECODER = 0002,
+    FM3DECODER = 0003,
+    FM4DECODER = 0004,
+    FM5DECODER = 0005,
+    FM6DECODER = 0006
+  };
+
 private:
-	int8_t		selectedDecoder;
-	DSPFLOAT	max_freq_deviation;
-	int32_t		rateIn;
-	DSPFLOAT	fm_afc;
-	DSPFLOAT	fm_cvt;
-	DSPFLOAT	K_FM;
-	pllC		*myfm_pll;
-	SinCos		*mySinCos;
-	int32_t		ArcsineSize;
-	DSPFLOAT	*Arcsine;
-	compAtan	myAtan;
-	DSPFLOAT	Imin1;
-	DSPFLOAT	Qmin1;
-	DSPFLOAT	Imin2;
-	DSPFLOAT	Qmin2;
+  int8_t selectedDecoder;
+  DSPFLOAT max_freq_deviation;
+  int32_t rateIn;
+  DSPFLOAT fm_afc;
+  DSPFLOAT fm_cvt;
+  DSPFLOAT K_FM;
+  pllC *myfm_pll;
+  SinCos *mySinCos;
+  int32_t ArcsineSize;
+  DSPFLOAT *Arcsine;
+  compAtan myAtan;
+  DSPFLOAT Imin1;
+  DSPFLOAT Qmin1;
+  DSPFLOAT Imin2;
+  DSPFLOAT Qmin2;
+
 public:
-		fm_Demodulator	(int32_t	Rate_in,
-	                         SinCos		*mySinCos,
-	                         DSPFLOAT	K_FM);
-		~fm_Demodulator	(void);
-	void	setDecoder	(int8_t);
-const	char	*nameofDecoder	(void);
-	DSPFLOAT	demodulate	(DSPCOMPLEX);
-	DSPFLOAT	get_DcComponent	(void);
+  fm_Demodulator(int32_t Rate_in, SinCos *mySinCos, DSPFLOAT K_FM);
+  ~fm_Demodulator(void);
+  void setDecoder(int8_t);
+  const char *nameofDecoder(void);
+  DSPFLOAT demodulate(DSPCOMPLEX);
+  DSPFLOAT get_DcComponent(void);
 };
 #endif
-

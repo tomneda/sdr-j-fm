@@ -126,48 +126,34 @@ DSPFLOAT fm_Demodulator::demodulate(DSPCOMPLEX z)
     res   /= Imin1 * Imin1 + Qmin1 * Qmin1;
     Imin2  = Imin1;
     Qmin2  = Qmin1;
-    fm_afc = (1 - DCAlpha) * fm_afc + DCAlpha * res;
-    res    = (res - fm_afc) * fm_cvt;
-    res   /= K_FM;
     break;
 
   case FM2DECODER:
     res    = myAtan.argX(z * DSPCOMPLEX(Imin1, -Qmin1));
-    fm_afc = (1 - DCAlpha) * fm_afc + DCAlpha * res;
-    res    = (res - fm_afc) * fm_cvt;
-    res   /= K_FM;
     break;
 
   case FM3DECODER:
-    res = myAtan.atan2(Q * Imin1 - I * Qmin1,
-                       I * Imin1 + Q * Qmin1);
-    fm_afc = (1 - DCAlpha) * fm_afc + DCAlpha * res;
-    res    = (res - fm_afc) * fm_cvt;
-    res   /= K_FM;
+    res = myAtan.atan2(Q * Imin1 - I * Qmin1, I * Imin1 + Q * Qmin1);
     break;
 
-//
   case FM4DECODER:
     myfm_pll->do_pll(z);
-//	lowpass the NCO frequency term to get a DC offset
-    fm_afc = (1 - DCAlpha) * fm_afc +
-             DCAlpha * myfm_pll->getPhaseIncr();
-    res  = (myfm_pll->getPhaseIncr() - fm_afc) * fm_cvt;
-    res /= K_FM;
+    res = myfm_pll->getPhaseIncr();
     break;
 
   case FM5DECODER:
-    res    = (Imin1 * Q - Qmin1 * I + 1.0) / 2.0;
-    res    = Arcsine [(int)(res * ArcsineSize)];
-    fm_afc = (1 - DCAlpha) * fm_afc + DCAlpha * res;
-    res    = (res - fm_afc) * fm_cvt;
-    res   /= K_FM;
+    res = (Imin1 * Q - Qmin1 * I + 1.0) / 2.0;
+    res = Arcsine [(int)(res * ArcsineSize)];
     break;
   }
-//
-//	and shift ...
+
+  fm_afc = (1 - DCAlpha) * fm_afc + DCAlpha * res;
+  res = (res - fm_afc) * fm_cvt / K_FM;
+
+  // and shift ...
   Imin1 = I;
   Qmin1 = Q;
+
   return res;
 }
 

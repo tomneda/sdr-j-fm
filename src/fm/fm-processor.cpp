@@ -225,6 +225,7 @@ DSPFLOAT fmProcessor::get_pilotStrength()
 {
   if (running)
   {
+    // get_db(0, 128) == 42.14dB
     return get_db(pilotLevel, 128) - get_db(0, 128);
   }
   return 0.0;
@@ -644,7 +645,7 @@ void fmProcessor::run(void)
       if (++myCount > fmRate)
       {
         myCount = 0;
-        showStrength(get_pilotStrength(), get_dcComponent());
+        emit showStrength(get_pilotStrength(), get_dcComponent());
         ;
       }
     }
@@ -880,5 +881,5 @@ void fmProcessor::extractLevels(double *in, int32_t range)
   }
   noiseLevel = 0.95 * noiseLevel + 0.05 * temp1 / 7;
   pilotLevel = 0.95 * pilotLevel + 0.05 * temp2 / 3;
-  rdsLevel   = 0.95 * rdsLevel + 0.05 * temp3 / 7;
+  rdsLevel   = 0.95 * rdsLevel   + 0.05 * temp3 / 7;
 }

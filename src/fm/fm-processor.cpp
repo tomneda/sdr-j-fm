@@ -114,8 +114,8 @@ fmProcessor::fmProcessor (deviceHandler   *vi,
   this->fmModus        = FM_STEREO;
   this->selector       = S_STEREO;
   this->balance        = 0;
-  this->leftChannel    = -(balance - 50.0) / 100.0;
-  this->rightChannel   = (balance + 50.0) / 100.0;
+  this->leftChannel    = 1.0f; // -(balance - 50.0) / 100.0;
+  this->rightChannel   = 1.0f; // (balance + 50.0) / 100.0;
   this->Volume         = 80.0;
   this->inputMode      = IandQ;
   this->audioDecimator =
@@ -331,9 +331,12 @@ void fmProcessor::setSoundMode(uint8_t selector)
 
 void fmProcessor::setSoundBalance(int16_t balance)
 {
+  // range: -100 <= balance <= +100
   this->balance = balance;
-  leftChannel   = -(balance - 50.0) / 100.0;
-  rightChannel  = (balance + 50.0) / 100.0;
+//  leftChannel   = -(balance - 50.0) / 100.0;
+//  rightChannel  = (balance + 50.0) / 100.0;
+  leftChannel   = (balance > 0 ? (100 - balance) / 100.0 : 1.0f);
+  rightChannel  = (balance < 0 ? (100 + balance) / 100.0 : 1.0f);
 }
 
 //	Deemphasis	= 50 usec (3183 Hz, Europe)
@@ -615,11 +618,11 @@ void fmProcessor::run(void)
           break;
 
         case S_LEFT:
-          result = DSPCOMPLEX(left, 0);
+          result = DSPCOMPLEX(left, left);
           break;
 
         case S_RIGHT:
-          result = DSPCOMPLEX(0, right);
+          result = DSPCOMPLEX(right, right);
           break;
 
         case S_LEFTplusRIGHT:
@@ -635,14 +638,15 @@ void fmProcessor::run(void)
       {
         mono(demod, &result, &rdsData);
       }
-//
-//	"result" now contains the audio sample, either stereo
-//	or mono
+
+      //	"result" now contains the audio sample, either stereo or mono
       result = audioGainCorrection(result);
+
       if (fmAudioFilter != nullptr)
       {
         result = fmAudioFilter->Pass(result);
       }
+
       out = DSPCOMPLEX(leftChannel * real(result),
                        rightChannel * imag(result));
 
@@ -770,11 +774,10 @@ void fmProcessor::sendSampletoOutput(DSPCOMPLEX s)
   else
   {
     DSPCOMPLEX out[theConverter->getOutputsize()];
-    int32_t    amount;
+    int32_t amount;
     if (theConverter->convert(s, out, &amount))
     {
-      int16_t i;
-      for (i = 0; i < amount; i++)
+      for (int32_t i = 0; i < amount; i++)
       {
         theSink->putSample(out [i]);
       }
@@ -787,7 +790,7 @@ void fmProcessor::setfmRdsSelector(int8_t m)
   rdsModus = m;
 }
 
-void fmProcessor::resetRds(void)
+void fmProcessor::resetRds()
 {
   if (myRdsDecoder == NULL)
   {

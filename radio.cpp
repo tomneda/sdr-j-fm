@@ -75,12 +75,6 @@
 #include <iostream>
 #include <windows.h>
 #endif
-//
-//	Processing modes
-#define IDLE        0100
-#define PAUSED      0101
-#define RUNNING     0102
-#define STOPPING    0103
 
 static
 // int16_t	delayTable [] = {15, 13, 11, 10, 9, 8, 7, 5, 3, 2, 1};
@@ -110,7 +104,7 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
   setupUi(this);
   fmSettings = Si;
 
-  runMode     = IDLE;
+  runMode     = ERunStates::IDLE;
   squelchMode = false;
   //
   //	dummies, needed for a.o. LFScope
@@ -373,7 +367,7 @@ void RadioInterface::setStart(void)
 {
   bool r = 0;
 
-  if (runMode == RUNNING) // someone presses while running
+  if (runMode == ERunStates::RUNNING) // someone presses while running
   {
     return;
   }
@@ -395,13 +389,13 @@ void RadioInterface::setStart(void)
 
   //	and finally: recall that starting overrules pausing
   pauseButton->setText(QString("Pause"));
-  runMode = RUNNING;
+  runMode = ERunStates::RUNNING;
 }
 //
 //	always tricky to kill tasks
 void RadioInterface::TerminateProcess(void)
 {
-  runMode = STOPPING;
+  runMode = ERunStates::STOPPING;
 
   if (sourceDumping && myFMprocessor != nullptr)
   {
@@ -515,7 +509,7 @@ void RadioInterface::set_stopHW(void)
 
 void RadioInterface::set_startHW(void)
 {
-  if (runMode == RUNNING) // looks strange, but seems right
+  if (runMode == ERunStates::RUNNING) // looks strange, but seems right
   {
     myRig->restartReader();
   }
@@ -538,7 +532,7 @@ void RadioInterface::set_changeRate(int r)
     myFMprocessor = nullptr;
   }
 
-  runMode = IDLE;
+  runMode = ERunStates::IDLE;
   //
   //	Now we need to rebuild the prerequisites for the "new" processor
   inputRate = r;
@@ -585,7 +579,7 @@ void RadioInterface::setDevice(const QString &s)
     myFMprocessor = nullptr;
   }
 
-  runMode   = IDLE;
+  runMode   = ERunStates::IDLE;
   ExtioLock = false;
   delete myRig;
   success = true; // default for now
@@ -1644,12 +1638,12 @@ void RadioInterface::setLogsaving(void)
 //
 void RadioInterface::clickPause(void)
 {
-  if (runMode == IDLE)
+  if (runMode == ERunStates::IDLE)
   {
     return;
   }
 
-  if (runMode == RUNNING)
+  if (runMode == ERunStates::RUNNING)
   {
     if (autoIncrementTimer->isActive())
     {
@@ -1659,9 +1653,9 @@ void RadioInterface::clickPause(void)
     myRig->stopReader();
     our_audioSink->stop();
     pauseButton->setText(QString("Continue"));
-    runMode = PAUSED;
+    runMode = ERunStates::PAUSED;
   }
-  else if (runMode == PAUSED)
+  else if (runMode == ERunStates::PAUSED)
   {
     if (IncrementIndex != 0) // restart the incrementtimer if needed
     {
@@ -1670,7 +1664,7 @@ void RadioInterface::clickPause(void)
     myRig->restartReader();
     our_audioSink->restart();
     pauseButton->setText(QString("Pause"));
-    runMode = RUNNING;
+    runMode = ERunStates::RUNNING;
   }
 }
 //

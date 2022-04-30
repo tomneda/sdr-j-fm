@@ -64,6 +64,14 @@ public:
 
 private:
   enum Keyboard { NORMAL = 0, CONTROL = 1, ALT = 2, SHIFT = 3 };
+  //	Processing modes
+  enum class ERunStates
+  {
+   IDLE     = 0100,
+   PAUSED   = 0101,
+   RUNNING  = 0102,
+   STOPPING = 0103
+  };
 
   bool ExtioLock;
   int16_t outputDevice;
@@ -151,7 +159,7 @@ private:
   int32_t frequencyforPICode;
   int16_t logTime;
   FILE *logFile;
-  int8_t runMode;
+  ERunStates runMode;
 
   void setup_HFScope();
   void setup_LFScope();

@@ -189,7 +189,7 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
 #ifdef HAVE_ELAD_S1
   deviceSelector->addItem("elad-s1");
 #endif
-  myFMprocessor = NULL;
+  myFMprocessor = nullptr;
   our_audioSink = new audioSink(this->audioRate, 16384);
   outTable      = new int16_t[our_audioSink->numberofDevices() + 1];
   for (i = 0; i < our_audioSink->numberofDevices(); i++)
@@ -218,8 +218,8 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
   setup_LFScope();
   sourceDumping    = false;
   audioDumping     = false;
-  dumpfilePointer  = NULL;
-  audiofilePointer = NULL;
+  dumpfilePointer  = nullptr;
+  audiofilePointer = nullptr;
   //
   //	Set relevant sliders etc to the value they had last time
   restoreGUIsettings(fmSettings);
@@ -274,7 +274,7 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
   systemindicator->setText(v.toLatin1().data());
 
   ExtioLock = false;
-  logFile   = NULL;
+  logFile   = nullptr;
   pauseButton->setText(QString("Pause"));
   dumpButton->setText("inputDump");
   sourceDumping = false;
@@ -303,7 +303,7 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
   displayTimer->start(1000);
   myList = new programList(this, stationList);
   myList->show();
-  myLine = NULL;
+  myLine = nullptr;
   connect(freqSave, SIGNAL(clicked(void)), this, SLOT(set_freqSave(void)));
 }
 
@@ -325,7 +325,7 @@ RadioInterface::~RadioInterface()
 
 void RadioInterface::dumpControlState(QSettings *s)
 {
-  if (s == NULL) // should not happen
+  if (s == nullptr) // should not happen
   {
     return;
   }
@@ -386,7 +386,7 @@ void RadioInterface::setStart(void)
     return;
   }
 
-  if (myFMprocessor == NULL)
+  if (myFMprocessor == nullptr)
   {
     make_newProcessor();
   }
@@ -403,7 +403,7 @@ void RadioInterface::TerminateProcess(void)
 {
   runMode = STOPPING;
 
-  if (sourceDumping && myFMprocessor != NULL)
+  if (sourceDumping && myFMprocessor != nullptr)
   {
     myFMprocessor->stopDumping();
     sf_close(dumpfilePointer);
@@ -447,7 +447,7 @@ void RadioInterface::abortSystem(int d)
 
 void RadioInterface::stopDumping(void)
 {
-  if (myFMprocessor == NULL)
+  if (myFMprocessor == nullptr)
   {
     return;
   }
@@ -476,12 +476,13 @@ void RadioInterface::stopDumping(void)
 //	to adapt its (local) tuning settings to a new frequency
 void RadioInterface::set_ExtFrequency(int f)
 {
+  (void)f;
   int32_t vfo = myRig->getVFOFrequency();
 
   currentFreq = vfo + inputRate / 4;
   LOFrequency = inputRate / 4;
   Display(currentFreq);
-  if (myFMprocessor != NULL)
+  if (myFMprocessor != nullptr)
   {
     myFMprocessor->set_localOscillator(LOFrequency);
     myFMprocessor->resetRds();
@@ -530,11 +531,11 @@ void RadioInterface::set_changeRate(int r)
   }
   fprintf(stderr, "request for changerate\n");
   myRig->stopReader();
-  if (myFMprocessor != NULL)
+  if (myFMprocessor != nullptr)
   {
     myFMprocessor->stop();
     delete myFMprocessor;
-    myFMprocessor = NULL;
+    myFMprocessor = nullptr;
   }
 
   runMode = IDLE;
@@ -577,11 +578,11 @@ void RadioInterface::setDevice(const QString &s)
     myRig->stopReader();
   }
   myRig = nullptr;
-  if (myFMprocessor != NULL)
+  if (myFMprocessor != nullptr)
   {
     myFMprocessor->stop();
     delete myFMprocessor;
-    myFMprocessor = NULL;
+    myFMprocessor = nullptr;
   }
 
   runMode   = IDLE;
@@ -813,7 +814,7 @@ void RadioInterface::setInputMode(const QString &s)
     inputMode = IandQ;
   }
 
-  if (myFMprocessor != NULL)
+  if (myFMprocessor != nullptr)
   {
     myFMprocessor->setInputMode(inputMode);
   }
@@ -845,7 +846,7 @@ void RadioInterface::setfmChannelSelector(const QString &s)
   {
     channelSelector = fmProcessor::S_LEFT;
   }
-  if (myFMprocessor != NULL)
+  if (myFMprocessor != nullptr)
   {
     myFMprocessor->setSoundMode(channelSelector);
   }
@@ -861,7 +862,7 @@ void RadioInterface::setAttenuation(int n)
   currAttSliderValue = 2 * n;
   attValueL          = currAttSliderValue * (float)bl / 100;
   attValueR          = currAttSliderValue * (float)br / 100;
-  if (myFMprocessor != NULL)
+  if (myFMprocessor != nullptr)
   {
     myFMprocessor->setAttenuation(attValueL, attValueR);
   }
@@ -878,7 +879,7 @@ void RadioInterface::setIQBalance(int n)
   br        = 100 + 2 * n;
   attValueL = currAttSliderValue * (float)bl / 100;
   attValueR = currAttSliderValue * (float)br / 100;
-  if (myFMprocessor != NULL)
+  if (myFMprocessor != nullptr)
   {
     myFMprocessor->setAttenuation(attValueL, attValueR);
   }
@@ -960,7 +961,7 @@ int32_t RadioInterface::setTuner(int32_t n)
   {
     LOFrequency = -inputRate / 2;
   }
-  if (myFMprocessor != NULL)
+  if (myFMprocessor != nullptr)
   {
     myFMprocessor->set_localOscillator(LOFrequency);
     myFMprocessor->resetRds();
@@ -1046,7 +1047,7 @@ void RadioInterface::autoIncrement_timeout(void)
 
   currentFreq = setTuner(frequency);
   autoIncrementTimer->start(IncrementInterval(IncrementIndex));
-  if (myFMprocessor != NULL)
+  if (myFMprocessor != nullptr)
   {
     myFMprocessor->startScanning();
   }
@@ -1069,7 +1070,7 @@ void RadioInterface::stopIncrementing()
   }
 
   IncrementIndex = 0;
-  if (myFMprocessor != NULL)
+  if (myFMprocessor != nullptr)
   {
     myFMprocessor->stopScanning();
   }
@@ -1159,7 +1160,7 @@ void RadioInterface::set_dumping(void)
 {
   SF_INFO *sf_info = (SF_INFO *)alloca(sizeof(SF_INFO));
 
-  if (myFMprocessor == NULL)
+  if (myFMprocessor == nullptr)
   {
     return;
   }
@@ -1186,7 +1187,7 @@ void RadioInterface::set_dumping(void)
   sf_info->format     = SF_FORMAT_WAV | SF_FORMAT_PCM_24;
 
   dumpfilePointer = sf_open(file.toLatin1().data(), SFM_WRITE, sf_info);
-  if (dumpfilePointer == NULL)
+  if (dumpfilePointer == nullptr)
   {
     qDebug() << "Cannot open " << file.toLatin1().data();
     return;
@@ -1224,7 +1225,7 @@ void RadioInterface::set_audioDump(void)
   sf_info->format     = SF_FORMAT_WAV | SF_FORMAT_PCM_24;
 
   audiofilePointer = sf_open(file.toLatin1().data(), SFM_WRITE, sf_info);
-  if (audiofilePointer == NULL)
+  if (audiofilePointer == nullptr)
   {
     qDebug() << "Cannot open " << file.toLatin1().data();
     return;
@@ -1309,7 +1310,7 @@ void RadioInterface::setfmStereoSlider(int n)
 //	Deemphasis	= 75 usec (2122 Hz US)
 void RadioInterface::setfmDeemphasis(const QString &s)
 {
-  if (myFMprocessor == NULL)
+  if (myFMprocessor == nullptr)
   {
     return;
   }
@@ -1428,7 +1429,7 @@ void RadioInterface::setRDSisSynchronized(bool syn)
 
 void RadioInterface::setfmMode(const QString &s)
 {
-  if (myFMprocessor == NULL)
+  if (myFMprocessor == nullptr)
   {
     return;
   }
@@ -1437,7 +1438,7 @@ void RadioInterface::setfmMode(const QString &s)
 
 void RadioInterface::setfmRdsSelector(const QString &s)
 {
-  if (myFMprocessor == NULL)
+  if (myFMprocessor == nullptr)
   {
     return;
   }
@@ -1472,7 +1473,7 @@ void RadioInterface::setfmDecoder(const QString &s)
     decoder = fm_Demodulator::FM5DECODER;
   }
 
-  if (myFMprocessor == NULL)
+  if (myFMprocessor == nullptr)
   {
     return;
   }
@@ -1483,7 +1484,7 @@ void RadioInterface::setfmDecoder(const QString &s)
 //
 void RadioInterface::setfmLFcutoff(const QString &s)
 {
-  if (myFMprocessor == NULL)
+  if (myFMprocessor == nullptr)
   {
     return;
   }
@@ -1530,7 +1531,7 @@ void RadioInterface::setfmBandwidth(const QString &s)
   {
     fmBandwidth = Khz(s.toInt());
   }
-  if (myFMprocessor != NULL)
+  if (myFMprocessor != nullptr)
   {
     myFMprocessor->setBandwidth(fmBandwidth);
   }
@@ -1538,7 +1539,7 @@ void RadioInterface::setfmBandwidth(const QString &s)
 
 void RadioInterface::setfmBandwidth(int32_t b)
 {
-  if (myFMprocessor != NULL)
+  if (myFMprocessor != nullptr)
   {
     myFMprocessor->setBandfilterDegree(b);
   }
@@ -1546,13 +1547,13 @@ void RadioInterface::setfmBandwidth(int32_t b)
 
 //
 //	This signal will arrive once every "inputRate" samples
-void RadioInterface::showStrength(float the_pilotStrength,
-                                  float the_dcComponent)
+void RadioInterface::showStrength(float the_pilotStrength, float the_dcComponent)
 {
   char       s[1024];
   static int teller = 0;
 
   pilotStrength->display(the_pilotStrength);
+
   if (the_pilotStrength > 2.0)
   {
     pll_isLocked->setStyleSheet("QLabel {background-color:green}");
@@ -1561,6 +1562,7 @@ void RadioInterface::showStrength(float the_pilotStrength,
   {
     pll_isLocked->setStyleSheet("QLabel {background-color:red}");
   }
+
   dc_component->display(the_dcComponent);
 
   if (logTime > 0 && ++teller == logTime)
@@ -1574,7 +1576,7 @@ void RadioInterface::showStrength(float the_pilotStrength,
 
     fputs(s, stderr);
     //	and into the logfile
-    if (logFile != NULL)
+    if (logFile != nullptr)
     {
       fputs(s, logFile);
     }
@@ -1614,10 +1616,10 @@ void RadioInterface::setLogging(const QString &s)
 
 void RadioInterface::setLogsaving(void)
 {
-  if (logFile != NULL) // just stop it
+  if (logFile != nullptr) // just stop it
   {
     fclose(logFile);
-    logFile = NULL;
+    logFile = nullptr;
     logSaving->setText("save");
     return;
   }
@@ -1626,13 +1628,13 @@ void RadioInterface::setLogsaving(void)
     QString file = QFileDialog::getSaveFileName(
       this, tr("open file .."), QDir::homePath(), tr("text (*.txt)"));
     logFile = fopen(file.toLatin1().data(), "w");
-    if (logFile == NULL)
+    if (logFile == nullptr)
     {
       QMessageBox::warning(this, tr("sdr"), tr("/dev/null is used"));
 
-      //	      logFile	= NULL;		// remains zero
+      //	      logFile	= nullptr;		// remains zero
     }
-    else   // logFile != NULL
+    else   // logFile != nullptr
     {
       logSaving->setText("halt");
       fprintf(logFile, "\nlogging starting\n\n\n");
@@ -1686,7 +1688,7 @@ bool RadioInterface::setupSoundOut(QComboBox *streamOutSelector,
     const char *so = our_audioSink->outputChannelwithRate(i, cardRate);
     qDebug("Investigating Device %d\n", i);
 
-    if (so != NULL)
+    if (so != nullptr)
     {
       streamOutSelector->insertItem(ocnt, so, QVariant(i));
       table[ocnt] = i;
@@ -1726,7 +1728,7 @@ void RadioInterface::setStreamOutSelector(int idx)
 
 void RadioInterface::set_squelchValue(int n)
 {
-  if (myFMprocessor != NULL)
+  if (myFMprocessor != nullptr)
   {
     myFMprocessor->set_squelchValue(n);
   }
@@ -1819,7 +1821,7 @@ void RadioInterface::setup_LFScope(void)
 //
 void RadioInterface::set_squelchMode(void)
 {
-  if (myFMprocessor == NULL)
+  if (myFMprocessor == nullptr)
   {
     return;
   }
@@ -1974,7 +1976,7 @@ void RadioInterface::handle_myLine(void)
           QString::number(freq / Khz(1)).toLatin1().data());
   myList->addRow(programName, QString::number(freq / Khz(1)));
   delete myLine;
-  myLine = NULL;
+  myLine = nullptr;
 }
 
 #include <QCloseEvent>

@@ -89,8 +89,7 @@ void Scope::SelectView(uint8_t n)
     CurrentWidget = SPECTRUM_MODE;
     Spectrum->setBitDepth(bitDepth);
   }
-  else   // n == WATERFALL_MODE
-  if (n == WATERFALL_MODE)
+  else if (n == WATERFALL_MODE)
   {
     if (Spectrum != NULL)
     {
@@ -140,23 +139,23 @@ SpectrumViewer::SpectrumViewer(QwtPlot *plot, uint16_t displaysize)
 #if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
   grid->setMajPen(QPen(Qt::white, 0, Qt::DotLine));
 #else
-  grid->setMajorPen(QPen(Qt::white, 0, Qt::DotLine));
+  grid->setMajorPen(QPen(Qt::gray, 0, Qt::DotLine));
 #endif
   grid->enableXMin(true);
   grid->enableYMin(true);
 #if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0601)
   grid->setMinPen(QPen(Qt::white, 0, Qt::DotLine));
 #else
-  grid->setMinorPen(QPen(Qt::white, 0, Qt::DotLine));
+  grid->setMinorPen(QPen(Qt::gray, 0, Qt::DotLine));
 #endif
   grid->attach(plotgrid);
 
   SpectrumCurve = new QwtPlotCurve("");
-  SpectrumCurve->setPen(QPen(Qt::white));
-  //	SpectrumCurve	-> setStyle	(QwtPlotCurve::Sticks);
-  SpectrumCurve->setOrientation(Qt::Horizontal);
+  SpectrumCurve->setPen(QPen(Qt::yellow));
+  //SpectrumCurve	-> setStyle	(QwtPlotCurve::Sticks);
+  SpectrumCurve->setOrientation(Qt::Vertical);
   SpectrumCurve->setBaseline(get_db(0));
-  ourBrush = new QBrush(Qt::white);
+  ourBrush = new QBrush(Qt::cyan);
   ourBrush->setStyle(Qt::Dense3Pattern);
   SpectrumCurve->setBrush(*ourBrush);
   SpectrumCurve->attach(plotgrid);
@@ -250,19 +249,20 @@ void SpectrumViewer::ViewSpectrum(double *X_axis, double *Y1_value, double amp,
   Y1_value[Displaysize - 1] = get_db(0);
 
   SpectrumCurve->setSamples(X_axis, Y1_value, Displaysize);
+
   if (--counter < 0)
   {
     counter = 5;
-    QwtText MarkerLabel_1 = QwtText(QString::number(max));
-    QwtText MarkerLabel_2 = QwtText(QString::number(avg));
+    QwtText MarkerLabel_1 = QwtText("MAX: " + QString::number(max));
+    QwtText MarkerLabel_2 = QwtText("AVG: " + QString::number(avg));
     QFont   font1("Courier New");
-    font1.setPixelSize(30);
+    font1.setPixelSize(24);
     ;
     MarkerLabel_1.setFont(font1);
-    MarkerLabel_1.setColor(Qt::white);
+    MarkerLabel_1.setColor(Qt::green);
     MarkerLabel_1.setRenderFlags(Qt::AlignLeft | Qt::AlignTop);
     MarkerLabel_2.setFont(font1);
-    MarkerLabel_2.setColor(Qt::white);
+    MarkerLabel_2.setColor(Qt::yellow);
     MarkerLabel_2.setRenderFlags(Qt::AlignRight | Qt::AlignTop);
     maxLabel->detach();
     maxLabel->setText(MarkerLabel_1);
@@ -273,7 +273,7 @@ void SpectrumViewer::ViewSpectrum(double *X_axis, double *Y1_value, double amp,
     Marker->detach();
     Marker = new QwtPlotMarker();
     Marker->setLineStyle(QwtPlotMarker::VLine);
-    Marker->setLinePen(QPen(Qt::white, 3.0));
+    Marker->setLinePen(QPen(Qt::red, 3.0));
     Marker->attach(plotgrid);
     Marker->setXValue(markerValue);
     oldmarkerValue = markerValue;

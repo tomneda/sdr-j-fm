@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2008, 2009, 2010
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -6,7 +5,7 @@
  *
  *    This file is part of the SDR-J (JSDR).
  *    Many of the ideas as implemented in JSDR are derived from
- *    other work, made available through the GNU general Public License. 
+ *    other work, made available through the GNU general Public License.
  *    All copyrights of the original authors are recognized.
  *
  *    SDR-J is free software; you can redistribute it and/or modify
@@ -28,24 +27,24 @@
 #ifndef _SINCOS_H
 #define _SINCOS_H
 
-#include	"fm-constants.h"
+#include "fm-constants.h"
 
-class	SinCos {
+class SinCos
+{
 public:
-	        	SinCos		(DSPCOMPLEX *, int32_t);
-			SinCos		(int32_t);
-			~SinCos		(void);
-	DSPFLOAT	getSin		(DSPFLOAT);
-	DSPFLOAT	getCos		(DSPFLOAT);
-	DSPCOMPLEX	getComplex	(DSPFLOAT);
-	
+  SinCos(DSPCOMPLEX *, int32_t);
+  SinCos(int32_t);
+  ~SinCos(void);
+  DSPFLOAT getSin(DSPFLOAT);
+  DSPFLOAT getCos(DSPFLOAT);
+  DSPCOMPLEX getComplex(DSPFLOAT);
+
 private:
-	DSPCOMPLEX	*Table;
-	int32_t		Rate;
-	bool		localTable;
-	double		C;
-	int32_t		fromPhasetoIndex	(DSPFLOAT);
+  DSPCOMPLEX *Table;
+  int32_t Rate;
+  bool localTable;
+  double C;
+  int32_t fromPhasetoIndex(DSPFLOAT);
 };
 
 #endif
-

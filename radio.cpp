@@ -299,6 +299,11 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
   myList->show();
   myLine = nullptr;
   connect(freqSave, SIGNAL(clicked(void)), this, SLOT(set_freqSave(void)));
+
+  resetSelector();
+
+  QTimer::singleShot(100, this, [this](){ setDevice("dabstick"); } );
+  //setDevice("dabstick");
 }
 
 //
@@ -365,7 +370,7 @@ void RadioInterface::dumpControlState(QSettings *s)
 //	that they can be restarted again.
 void RadioInterface::setStart(void)
 {
-  bool r = 0;
+  bool r = false;
 
   if (runMode == ERunStates::RUNNING) // someone presses while running
   {
@@ -1926,7 +1931,8 @@ void RadioInterface::resetSelector(void)
 {
   disconnect(deviceSelector, SIGNAL(activated(const QString&)), this,
              SLOT(setDevice(const QString&)));
-  int k = deviceSelector->findText(QString("no device"));
+  //int k = deviceSelector->findText(QString("no device"));
+  int k = deviceSelector->findText(QString("dabstick"));
 
   if (k != -1) // should not happen
   {

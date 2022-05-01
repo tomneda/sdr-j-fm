@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2008, 2009, 2010
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -21,39 +20,52 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include	"oscillator.h"
+#include "oscillator.h"
 
-	Oscillator::Oscillator (int32_t rate) {
-int32_t	i;
-	Rate			= rate;
-	OscillatorValues	= new DSPCOMPLEX [rate];
-	for (i = 0; i < rate; i ++)
-	   OscillatorValues [i] = DSPCOMPLEX (cos (2.0 * M_PI * i / rate),
-	                                      sin (2.0 * M_PI * i / rate));
-	LOPhase			= 0;
-	localTable		= true;
+Oscillator::Oscillator(int32_t rate)
+{
+  int32_t i;
+
+  Rate             = rate;
+  OscillatorValues = new DSPCOMPLEX[rate];
+
+  for (i = 0; i < rate; i++)
+  {
+    OscillatorValues[i] = DSPCOMPLEX(cos(2.0 * M_PI * i / rate), sin(2.0 * M_PI * i / rate));
+  }
+
+  LOPhase    = 0;
+  localTable = true;
 }
 
-	Oscillator::Oscillator (DSPCOMPLEX *Table, int32_t rate) {
-	Rate			= rate;
-	OscillatorValues	= Table;
-	LOPhase			= 0;
-	localTable		= false;
+Oscillator::Oscillator(DSPCOMPLEX *Table, int32_t rate)
+{
+  Rate             = rate;
+  OscillatorValues = Table;
+  LOPhase          = 0;
+  localTable       = false;
 }
 
-	Oscillator::~Oscillator () {
-	if (localTable)
-	   delete[]	OscillatorValues;
+Oscillator::~Oscillator()
+{
+  if (localTable)
+  {
+    delete[] OscillatorValues;
+  }
 }
 
-DSPCOMPLEX	Oscillator::nextValue (int32_t step) {
-	LOPhase -= step;
-	if (LOPhase < 0)
-	   LOPhase += Rate;
-	else
-	if (LOPhase >= Rate)
-	   LOPhase -= Rate;
+DSPCOMPLEX Oscillator::nextValue(int32_t step)
+{
+  LOPhase -= step;
 
-	return OscillatorValues [LOPhase];
+  if (LOPhase < 0)
+  {
+    LOPhase += Rate;
+  }
+  else if (LOPhase >= Rate)
+  {
+    LOPhase -= Rate;
+  }
+
+  return OscillatorValues[LOPhase];
 }
-

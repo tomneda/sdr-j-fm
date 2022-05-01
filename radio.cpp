@@ -104,6 +104,8 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
   setupUi(this);
   fmSettings = Si;
 
+  reset_afc();
+
   runMode     = ERunStates::IDLE;
   squelchMode = false;
   //
@@ -299,6 +301,7 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
   myList->show();
   myLine = nullptr;
   connect(freqSave, SIGNAL(clicked(void)), this, SLOT(set_freqSave(void)));
+  connect(cbAfc, &QAbstractButton::clicked, this, [this](bool checked){ mAfcActive = checked; reset_afc(); } );
 
   resetSelector();
 
@@ -1517,7 +1520,7 @@ static inline int32_t numberofDigits(int32_t f)
 void RadioInterface::Display(int32_t freq)
 {
   lcd_Frequency->setDigitCount(6);
-  lcd_Frequency->display((int)freq / KHz(1));
+  lcd_Frequency->display((freq + KHz(1)/2) / KHz(1));
 }
 
 void RadioInterface::setfmBandwidth(const QString &s)
@@ -1563,6 +1566,34 @@ void RadioInterface::showStrength(float the_pilotStrength, float the_dcComponent
   }
 
   dc_component->display(the_dcComponent);
+
+  // some kind of AFC
+  if (mAfcActive)
+  {
+    const int32_t afcOffFreq = the_dcComponent * 10000; // the_dcComponent is postive with too little frequency
+    mAfcCurrOffFreq = (1 - mAfcAlpha) * mAfcCurrOffFreq + mAfcAlpha * afcOffFreq;
+
+//    constexpr int32_t limitOffFreq = 20000;
+//    if      (mAfcCurrOffFreq >  limitOffFreq) mAfcCurrOffFreq =  limitOffFreq;
+//    else if (mAfcCurrOffFreq < -limitOffFreq) mAfcCurrOffFreq = -limitOffFreq;
+
+    const float absAfcCurrOffFreq = abs(mAfcCurrOffFreq);
+
+    if      (absAfcCurrOffFreq <  10) { mAfcAlpha = 0.005f; }
+    else if (absAfcCurrOffFreq < 100) { mAfcAlpha = 0.050f; }
+    else                              { mAfcAlpha = 0.800f; }
+
+    if (absAfcCurrOffFreq > 3) // avoid re-tunings of HW when only a residual frequency offset remains
+    {
+      uint32_t newFreq = currentFreq + mAfcCurrOffFreq;
+
+      fprintf(stderr, "AFC:  DC %f, NewFreq %d = CurrFreq %d + AfcOffFreq %d (unfiltered %d), AFC_Alpha %f\n",
+              the_dcComponent, newFreq, currentFreq, mAfcCurrOffFreq, afcOffFreq, mAfcAlpha);
+
+      currentFreq = setTuner(newFreq);
+    }
+  }
+
 
   if (logTime > 0 && ++teller == logTime)
   {
@@ -1979,6 +2010,12 @@ void RadioInterface::handle_myLine(void)
   myLine = nullptr;
 }
 
+void RadioInterface::reset_afc()
+{
+  mAfcAlpha = 1.0f;
+  mAfcCurrOffFreq = 0;
+}
+
 #include <QCloseEvent>
 void RadioInterface::closeEvent(QCloseEvent *event)
 {
@@ -1998,3 +2035,5 @@ void RadioInterface::closeEvent(QCloseEvent *event)
     event->accept();
   }
 }
+
+

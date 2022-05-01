@@ -66,7 +66,7 @@ fm_Demodulator::fm_Demodulator (int32_t rateIn,
 //		 fm_cvt			= 0.50 * (rateIn / (M_PI * 150000));
 }
 
-fm_Demodulator::~fm_Demodulator (void)
+fm_Demodulator::~fm_Demodulator()
 {
   delete  Arcsine;
   delete  myfm_pll;
@@ -77,7 +77,7 @@ void fm_Demodulator::setDecoder(int8_t nc)
   this->selectedDecoder = nc;
 }
 
-const char  *fm_Demodulator::nameofDecoder(void)
+const char  *fm_Demodulator::nameofDecoder()
 {
   switch (selectedDecoder)
   {
@@ -138,7 +138,7 @@ DSPFLOAT fm_Demodulator::demodulate(DSPCOMPLEX z)
 
   case FM4DECODER:
     myfm_pll->do_pll(z);
-    res = myfm_pll->getPhaseIncr();
+    res = -myfm_pll->getPhaseIncr(); // minus to have same DC as the other demodulatiors (for correct AFC)
     break;
 
   case FM5DECODER:
@@ -157,7 +157,7 @@ DSPFLOAT fm_Demodulator::demodulate(DSPCOMPLEX z)
   return res;
 }
 
-DSPFLOAT fm_Demodulator::get_DcComponent(void)
+DSPFLOAT fm_Demodulator::get_DcComponent()
 {
   return fm_afc;
 }

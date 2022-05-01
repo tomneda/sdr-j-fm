@@ -64,10 +64,10 @@ private:
 
 public:
   fm_Demodulator(int32_t Rate_in, SinCos *mySinCos, DSPFLOAT K_FM);
-  ~fm_Demodulator(void);
+  ~fm_Demodulator();
   void setDecoder(int8_t);
-  const char *nameofDecoder(void);
+  const char *nameofDecoder();
   DSPFLOAT demodulate(DSPCOMPLEX);
-  DSPFLOAT get_DcComponent(void);
+  DSPFLOAT get_DcComponent();
 };
 #endif

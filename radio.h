@@ -84,6 +84,9 @@ private:
   Scope *lfScope;
   int16_t scopeAmplification;
   bool HFAverager;
+  bool mAfcActive{false};
+  float mAfcAlpha{1.0f};
+  int32_t mAfcCurrOffFreq{0};
 
   keyPad *mykeyPad;
   QSettings *fmSettings;
@@ -117,6 +120,7 @@ private:
 
   void restoreGUIsettings(QSettings *);
   void setDetectorScreen(int16_t);
+  void reset_afc();
 
   int32_t mapIncrement(int32_t);
   int32_t IncrementInterval(int16_t);

@@ -102,7 +102,7 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
    *	default values, will be set through the user interface
    *	to their appropriate values
    */
-  this->fmModus        = FM_STEREO;
+  this->fmModus        = FM_Mode::STEREO;
   this->selector       = S_STEREO;
   this->balance        = 0;
   this->leftChannel    = 1.0f;// -(balance - 50.0) / 100.0;
@@ -288,7 +288,7 @@ void fmProcessor::setBandfilterDegree(int32_t d)
 
 void fmProcessor::setfmMode(uint8_t m)
 {
-  fmModus = m ? FM_STEREO : FM_MONO;
+  fmModus = m ? FM_Mode::STEREO : FM_Mode::MONO;
 }
 
 void fmProcessor::setFMdecoder(int8_t d)
@@ -535,7 +535,7 @@ void fmProcessor::run(void)
       }
       if (++peakLevelcnt >= fmRate / 4)
       {
-        DSPFLOAT ratio = max_freq_deviation / norm_freq_deviation;
+        DSPFLOAT ratio = (DSPFLOAT)max_freq_deviation / (DSPFLOAT)norm_freq_deviation;
         if (peakLevel > 0)
         {
           this->audioGain = (ratio / peakLevel) / AUDIO_FREQ_DEV_PROPORTION;
@@ -570,7 +570,7 @@ void fmProcessor::run(void)
         emit lfBufferLoaded();
       }
 
-      if ((fmModus == FM_STEREO))
+      if (fmModus == FM_Mode::STEREO)
       {
         stereo(demod, &result, &rdsData);
 

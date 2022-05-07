@@ -99,7 +99,8 @@ public:
     S_LEFTplusRIGHT = 0103,
     S_LEFTminusRIGHT = 0104
   };
-  enum Mode { FM_STEREO = 0, FM_MONO = 1 };
+
+  enum class FM_Mode { STEREO, MONO };
 
   void set_squelchValue(int16_t);
 
@@ -181,7 +182,7 @@ private:
   int16_t balance;
   DSPFLOAT leftChannel;
   DSPFLOAT rightChannel;
-  uint8_t fmModus;
+  FM_Mode fmModus;
   uint8_t selector;
   DSPFLOAT peakLevel;
   int32_t peakLevelcnt;

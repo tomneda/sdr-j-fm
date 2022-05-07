@@ -343,9 +343,10 @@ void fmProcessor::setVolume(int16_t Vol)
 
 DSPCOMPLEX fmProcessor::audioGainCorrection(DSPCOMPLEX z)
 {
+  return DSPCOMPLEX(Volume * leftChannel * real(z), Volume * rightChannel * imag(z));
   //return cmul(z, audioGain * Volume);
-  return cmul(z, Volume);
-  return z;
+  //return cmul(z, Volume);
+  //return z;
 }
 
 void fmProcessor::startDumping(SNDFILE *f)
@@ -393,7 +394,6 @@ void fmProcessor::run(void)
   double        displayBuffer_hf[displaySize];
   double        displayBuffer_lf[displaySize];
   int32_t       i, k;
-  DSPCOMPLEX    out;
   DSPCOMPLEX    pcmSample;
   int32_t       hfCount = 0;
   int32_t       lfCount = 0;
@@ -577,8 +577,8 @@ void fmProcessor::run(void)
       {
         stereo(demod, &result, &rdsData);
 
-        const DSPFLOAT left  = real(result) + imag(result);
-        const DSPFLOAT right = -(-real(result) + imag(result));
+        const DSPFLOAT left  = real(result) + imag(result);  // 2L = (L+R) + (L-R)
+        const DSPFLOAT right = real(result) - imag(result);  // 2R = (L+R) - (L-R)
 
         switch (selector)
         {
@@ -617,9 +617,7 @@ void fmProcessor::run(void)
         result = fmAudioFilter->Pass(result);
       }
 
-      out = DSPCOMPLEX(leftChannel * real(result), rightChannel * imag(result));
-
-      if (audioDecimator->convert(out, audioOut, &audioAmount))
+      if (audioDecimator->convert(result, audioOut, &audioAmount))
       {
         for (k = 0; k < audioAmount; k++)
         {

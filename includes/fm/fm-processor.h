@@ -173,7 +173,7 @@ private:
   DSPFLOAT pilotDelay;
   DSPCOMPLEX audioGainCorrection(DSPCOMPLEX);
   DSPFLOAT Volume;
-  DSPFLOAT audioGain;
+  //DSPFLOAT audioGain;
   int32_t max_freq_deviation;
   int32_t norm_freq_deviation;
   DSPFLOAT omega_demod;
@@ -184,8 +184,8 @@ private:
   DSPFLOAT rightChannel;
   FM_Mode fmModus;
   uint8_t selector;
-  DSPFLOAT peakLevel;
-  int32_t peakLevelcnt;
+  //DSPFLOAT peakLevel;
+  //int32_t peakLevelcnt;
   fm_Demodulator *TheDemodulator;
 
   int8_t rdsModus;

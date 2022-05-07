@@ -107,7 +107,7 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   this->balance        = 0;
   this->leftChannel    = 1.0f;// -(balance - 50.0) / 100.0;
   this->rightChannel   = 1.0f;// (balance + 50.0) / 100.0;
-  this->Volume         = 80.0;
+  this->Volume         = 10.0;
   this->inputMode      = IandQ;
   this->audioDecimator =
     new newConverter(fmRate, workingRate, workingRate / 200);
@@ -116,11 +116,11 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
    *	averagePeakLevel and audioGain are set
    *	prior to calling the processFM method
    */
-  this->peakLevel           = -100;
-  this->peakLevelcnt        = 0;
+  //this->peakLevel           = -100;
+  //this->peakLevelcnt        = 0;
   this->max_freq_deviation  = 0.95 * (0.5 * fmRate);
   this->norm_freq_deviation = 0.6 * max_freq_deviation;
-  this->audioGain           = 0;
+  //this->audioGain           = 0;
   //
   noiseLevel = 0;
   pilotLevel = 0;
@@ -343,8 +343,8 @@ void fmProcessor::setVolume(int16_t Vol)
 
 DSPCOMPLEX fmProcessor::audioGainCorrection(DSPCOMPLEX z)
 {
-  return cmul(z, audioGain * Volume);
-
+  //return cmul(z, audioGain * Volume);
+  return cmul(z, Volume);
   return z;
 }
 
@@ -400,7 +400,7 @@ void fmProcessor::run(void)
   int32_t       aa, amount;
   squelch       mySquelch(1, workingRate / 10, workingRate / 20, workingRate);
   int32_t       audioAmount;
-  float         audioGainAverage = 0;
+  //float         audioGainAverage = 0;
   int32_t       scanPointer      = 0;
   common_fft    *scan_fft        = new common_fft(1024);
   DSPCOMPLEX    *scanBuffer      = scan_fft->getVector();
@@ -529,34 +529,37 @@ void fmProcessor::run(void)
       }
       //	Now we have the signal ready for decoding
       //	keep track of the peaklevel, we take segments
-      if (abs(v) > peakLevel)
-      {
-        peakLevel = abs(v);
-      }
-      if (++peakLevelcnt >= fmRate / 4)
-      {
-        DSPFLOAT ratio = (DSPFLOAT)max_freq_deviation / (DSPFLOAT)norm_freq_deviation;
-        if (peakLevel > 0)
-        {
-          this->audioGain = (ratio / peakLevel) / AUDIO_FREQ_DEV_PROPORTION;
-        }
-        if (audioGain <= 0.1)
-        {
-          audioGain = 0.1;
-        }
-        audioGain        = 0.99 * audioGainAverage + 0.01 * audioGain;
-        audioGainAverage = audioGain;
-        peakLevelcnt     = 0;
-        //	         fprintf (stderr, "peakLevel = %f\n", peakLevel);
-        peakLevel = -100;
-      }
+//      if (abs(v) > peakLevel)
+//      {
+//        peakLevel = abs(v);
+//      }
+//      if (++peakLevelcnt >= fmRate / 4)
+//      {
+//        DSPFLOAT ratio = (DSPFLOAT)max_freq_deviation / (DSPFLOAT)norm_freq_deviation;
+//        if (peakLevel > 0)
+//        {
+//          this->audioGain = (ratio / peakLevel) / AUDIO_FREQ_DEV_PROPORTION;
+//        }
+//        if (audioGain <= 0.1)
+//        {
+//          audioGain = 0.1;
+//        }
+//        audioGain        = 0.99 * audioGainAverage + 0.01 * audioGain;
+//        audioGainAverage = audioGain;
+//        peakLevelcnt     = 0;
+//        //	         fprintf (stderr, "peakLevel = %f\n", peakLevel);
+//        peakLevel = -100;
+//      }
 
       DSPFLOAT demod = TheDemodulator->demodulate(v);
+
       spectrumBuffer_lf[localP++] = demod;
+
       if (localP >= spectrumSize)
       {
         localP = 0;
       }
+
       if (++lfCount > fmRate / repeatRate)
       {
         double Y_Values[displaySize];

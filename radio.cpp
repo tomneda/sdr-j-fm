@@ -397,6 +397,10 @@ void RadioInterface::setStart(void)
 
   //	and finally: recall that starting overrules pausing
   pauseButton->setText(QString("Pause"));
+
+  set_squelchMode(); // toggle sequelch on
+  set_squelchMode(); // toggle sequelch off (TODO: make this nicer)
+
   runMode = ERunStates::RUNNING;
 }
 //
@@ -1856,8 +1860,9 @@ void RadioInterface::set_squelchMode(void)
     return;
   }
   squelchMode = !squelchMode;
-  squelchButton->setText(squelchMode ? QString("squelchOn")
-                                     : QString("squelchOff"));
+  squelchButton->setText(squelchMode ? QString("Squelch is On")
+                                     : QString("Squelch is Off"));
+  squelchSlider->setEnabled(squelchMode);
   myFMprocessor->set_squelchMode(squelchMode);
 }
 //

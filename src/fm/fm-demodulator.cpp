@@ -28,11 +28,11 @@
 
 fm_Demodulator::TDecoderListNames fm_Demodulator::sIdx2DecoderName =
 {
- "Difference based",
- "Complex Baseband Delay",
- "Mixed Demodulator",
- "Pll decoder",
- "Real Baseband Delay"
+ "Difference Based",
+ "Compl. Baseb. Delay",
+ "Mixed Demod",
+ "Pll Decoder",
+ "Real Baseb. Delay"
 };
 
 

@@ -200,7 +200,7 @@ private slots:
   void setfmBandwidth(int);
   void setfmMode(const QString &);
   void setfmRdsSelector(const QString &);
-  void setfmDecoder(const QString &);
+  void setfmDecoder(const int);
   void setfmChannelSelector(const QString &);
   void setfmDeemphasis(const QString &);
   void setfmStereoSlider(int);

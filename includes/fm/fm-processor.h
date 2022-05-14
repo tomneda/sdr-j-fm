@@ -30,6 +30,7 @@
 #include "fft-filters.h"
 #include "fir-filters.h"
 #include "fm-constants.h"
+#include "fm-demodulator.h"
 #include "oscillator.h"
 #include "pllC.h"
 #include "ringbuffer.h"
@@ -40,7 +41,7 @@
 
 class deviceHandler;
 class RadioInterface;
-class fm_Demodulator;
+//class fm_Demodulator;
 class rdsDecoder;
 class audioSink;
 class newConverter;
@@ -93,6 +94,7 @@ public:
 
   void startScanning();
   void stopScanning();
+  fm_Demodulator::TDecoderListNames & listNameofDecoder();
   const char *nameofDecoder();
 
   enum Channels

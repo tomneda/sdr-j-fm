@@ -24,7 +24,7 @@
 #include "audiosink.h"
 #include "device-handler.h"
 #include "fm-constants.h"
-#include "fm-demodulator.h"
+//#include "fm-demodulator.h"
 #include "newconverter.h"
 #include "radio.h"
 #include "rds-decoder.h"
@@ -263,12 +263,14 @@ DSPFLOAT fmProcessor::get_dcComponent()
   return 0.0;
 }
 
+fm_Demodulator::TDecoderListNames & fmProcessor::listNameofDecoder()
+{
+  return TheDemodulator->listNameofDecoder();
+}
+
 const char *fmProcessor::nameofDecoder()
 {
-  //	if (running)
   return TheDemodulator->nameofDecoder();
-
-  return " ";
 }
 //
 //	changing a filter is in two steps: here we set a marker,
@@ -293,10 +295,7 @@ void fmProcessor::setfmMode(uint8_t m)
 
 void fmProcessor::setFMdecoder(int16_t d)
 {
-  if (running)
-  {
-    TheDemodulator->setDecoder(d);
-  }
+  TheDemodulator->setDecoder(d);
 }
 
 void fmProcessor::setSoundMode(uint8_t selector)

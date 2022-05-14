@@ -1022,31 +1022,12 @@
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select a demodulator, one of 5.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
-             <item>
-              <property name="text">
-               <string>fm3decoder</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>fm1decoder</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>fm2decoder</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>fm4decoder</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>fm5decoder</string>
-              </property>
-             </item>
+             <property name="editable">
+              <bool>false</bool>
+             </property>
+             <property name="currentText">
+              <string/>
+             </property>
             </widget>
            </item>
            <item>

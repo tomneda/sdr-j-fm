@@ -394,6 +394,26 @@ void RadioInterface::setStart(void)
   set_squelchMode(); // toggle sequelch on
   set_squelchMode(); // toggle sequelch off (TODO: make this nicer)
 
+  // populate FM decoder combo box
+  {
+    disconnect(fmDecoder, qOverload<int>(&QComboBox::currentIndexChanged), this, &RadioInterface::setfmDecoder);
+
+    for (const auto & dc : myFMprocessor->listNameofDecoder())
+    {
+      fmDecoder->addItem(dc);
+    }
+
+    const QString h = fmSettings->value("fmDecoder", fmDecoder->currentText()).toString();
+    const int k = fmDecoder->findText(h);
+
+    if (k != -1)
+    {
+      fmDecoder->setCurrentIndex(k);
+      setfmDecoder(k);
+    }
+    connect(fmDecoder, qOverload<int>(&QComboBox::currentIndexChanged), this, &RadioInterface::setfmDecoder);
+  }
+
   runMode = ERunStates::RUNNING;
 }
 //
@@ -780,7 +800,7 @@ void RadioInterface::make_newProcessor(void)
   setfmBandwidth(fmFilterDegree->value());
   setfmMode(fmMode->currentText());
   setfmRdsSelector(fmRdsSelector->currentText());
-  setfmDecoder(fmDecoder->currentText());
+  //setfmDecoder(fmDecoder->currentIndex()); // no valid entries yet
   setfmChannelSelector(fmChannelSelect->currentText());
   setfmDeemphasis(fmDeemphasisSelector->currentText());
   setfmStereoSlider(fmStereoSlider->value());
@@ -1266,35 +1286,23 @@ void RadioInterface::localConnects(void)
   //	connect (inputModeSelect, SIGNAL (activated(const QString&) ),
   //	              this, SLOT (setInputMode (const QString&) ) );
 
-  connect(fc_plus, SIGNAL(clicked(void)), this,
-          SLOT(autoIncrementButton(void)));
-  connect(fc_minus, SIGNAL(clicked(void)), this,
-          SLOT(autoDecrementButton(void)));
+  connect(fc_plus, SIGNAL(clicked(void)), this, SLOT(autoIncrementButton(void)));
+  connect(fc_minus, SIGNAL(clicked(void)), this, SLOT(autoDecrementButton(void)));
   connect(f_plus, SIGNAL(clicked(void)), this, SLOT(IncrementButton(void)));
   connect(f_minus, SIGNAL(clicked(void)), this, SLOT(DecrementButton(void)));
   //
   //	fm specific buttons and sliders
-  connect(fmChannelSelect, SIGNAL(activated(const QString&)), this,
-          SLOT(setfmChannelSelector(const QString&)));
-  connect(logging, SIGNAL(activated(const QString&)), this,
-          SLOT(setLogging(const QString&)));
+  connect(fmChannelSelect, SIGNAL(activated(const QString&)), this, SLOT(setfmChannelSelector(const QString&)));
+  connect(logging, SIGNAL(activated(const QString&)), this, SLOT(setLogging(const QString&)));
   connect(logSaving, SIGNAL(clicked(void)), this, SLOT(setLogsaving(void)));
-  connect(fmFilterSelect, SIGNAL(activated(const QString&)), this,
-          SLOT(setfmBandwidth(const QString&)));
-  connect(fmFilterDegree, SIGNAL(valueChanged(int)), this,
-          SLOT(setfmBandwidth(int)));
-  connect(fmMode, SIGNAL(activated(const QString&)), this,
-          SLOT(setfmMode(const QString&)));
-  connect(fmRdsSelector, SIGNAL(activated(const QString&)), this,
-          SLOT(setfmRdsSelector(const QString&)));
-  connect(fmDecoder, SIGNAL(activated(const QString&)), this,
-          SLOT(setfmDecoder(const QString&)));
-  connect(fmStereoSlider, SIGNAL(valueChanged(int)), this,
-          SLOT(setfmStereoSlider(int)));
-  connect(fmDeemphasisSelector, SIGNAL(activated(const QString&)), this,
-          SLOT(setfmDeemphasis(const QString&)));
-  connect(fmLFcutoff, SIGNAL(activated(const QString&)), this,
-          SLOT(setfmLFcutoff(const QString&)));
+  connect(fmFilterSelect, SIGNAL(activated(const QString&)), this, SLOT(setfmBandwidth(const QString&)));
+  connect(fmFilterDegree, SIGNAL(valueChanged(int)), this, SLOT(setfmBandwidth(int)));
+  connect(fmMode, SIGNAL(activated(const QString&)), this, SLOT(setfmMode(const QString&)));
+  connect(fmRdsSelector, SIGNAL(activated(const QString&)), this, SLOT(setfmRdsSelector(const QString&)));
+  connect(fmDecoder, qOverload<int>(&QComboBox::currentIndexChanged), this, &RadioInterface::setfmDecoder);
+  connect(fmStereoSlider, SIGNAL(valueChanged(int)), this, SLOT(setfmStereoSlider(int)));
+  connect(fmDeemphasisSelector, SIGNAL(activated(const QString&)), this, SLOT(setfmDeemphasis(const QString&)));
+  connect(fmLFcutoff, SIGNAL(activated(const QString&)), this, SLOT(setfmLFcutoff(const QString&)));
   //
 }
 
@@ -1448,40 +1456,18 @@ void RadioInterface::setfmRdsSelector(const QString &s)
   myFMprocessor->setfmRdsSelector(rdsModus);
 }
 
-void RadioInterface::setfmDecoder(const QString &s)
+void RadioInterface::setfmDecoder(const int decoder)
 {
-  int16_t decoder = 0;
-
-  if (s == "fm1decoder")
-  {
-    decoder = 0;
-  }
-  else if (s == "fm2decoder")
-  {
-    decoder = 1;
-  }
-  else if (s == "fm3decoder")
-  {
-    decoder = 2;
-  }
-  else if (s == "fm4decoder")
-  {
-    decoder = 3;
-  }
-  else
-  {
-    decoder = 4;
-  }
-
-  if (myFMprocessor == nullptr)
+  if (myFMprocessor == nullptr || decoder < 0)
   {
     return;
   }
+
   myFMprocessor->setFMdecoder(decoder);
   decoderDisplay->setText(QString(myFMprocessor->nameofDecoder()));
   fprintf(stderr, "we printen %s\n", myFMprocessor->nameofDecoder());
 }
-//
+
 void RadioInterface::setfmLFcutoff(const QString &s)
 {
   if (myFMprocessor == nullptr)
@@ -1907,12 +1893,13 @@ void RadioInterface::restoreGUIsettings(QSettings *s)
     fmRdsSelector->setCurrentIndex(k);
   }
 
-  h = s->value("fmDecoder", fmDecoder->currentText()).toString();
-  k = fmDecoder->findText(h);
-  if (k != -1)
-  {
-    fmDecoder->setCurrentIndex(k);
-  }
+  // the FM decoder combobox is not filled yet
+//  h = s->value("fmDecoder", fmDecoder->currentText()).toString();
+//  k = fmDecoder->findText(h);
+//  if (k != -1)
+//  {
+//    fmDecoder->setCurrentIndex(k);
+//  }
 
   h = s->value("fmChannelSelect", fmChannelSelect->currentText()).toString();
   k = fmChannelSelect->findText(h);

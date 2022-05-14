@@ -34,14 +34,13 @@
 #include "pllC.h"
 #include "ringbuffer.h"
 #include "sincos.h"
-#include "fm-demodulator.h"
 #include <QObject>
 #include <QThread>
 #include <sndfile.h>
 
 class deviceHandler;
 class RadioInterface;
-//class fm_Demodulator;
+class fm_Demodulator;
 class rdsDecoder;
 class audioSink;
 class newConverter;
@@ -65,7 +64,7 @@ public:
   ~fmProcessor() override;
   void stop(); // stop the processor
   void setfmMode(uint8_t);
-  void setFMdecoder(fm_Demodulator::EFmDecoder);
+  void setFMdecoder(int16_t);
   void setSoundMode(uint8_t);
   void setSoundBalance(int16_t);
   void setDeemphasis(int16_t);

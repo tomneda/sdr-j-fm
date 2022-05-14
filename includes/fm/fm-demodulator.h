@@ -31,22 +31,18 @@
 #include "fm-constants.h"
 #include "pllC.h"
 #include "sincos.h"
+#include <vector>
 
 #define PLL_PILOT_GAIN 3000
 
 class fm_Demodulator {
 public:
-  enum class EFmDecoder
-  {
-    DifferenceBased,
-    ComplexBasebandDelay,
-    MixedDemodulator,
-    PllDecoder,
-    RealBasebandDelay
-  };
+  using TDecoderListNames = const std::vector<const char *>;
 
 private:
-  EFmDecoder selectedDecoder;
+  static TDecoderListNames sIdx2DecoderName;
+
+  int16_t selectedDecoder;
   DSPFLOAT max_freq_deviation;
   int32_t rateIn;
   DSPFLOAT fm_afc;
@@ -65,8 +61,10 @@ private:
 public:
   fm_Demodulator(int32_t Rate_in, SinCos *mySinCos, DSPFLOAT K_FM);
   ~fm_Demodulator();
-  void setDecoder(EFmDecoder);
-  const char *nameofDecoder();
+
+  void setDecoder(int16_t);
+  TDecoderListNames & listNameofDecoder() const;
+  const char * nameofDecoder() const;
   DSPFLOAT demodulate(DSPCOMPLEX);
   DSPFLOAT get_DcComponent();
 };

@@ -348,7 +348,8 @@ void RadioInterface::dumpControlState(QSettings *s)
   s->setValue("fmRdsSelector", fmRdsSelector->currentText());
   s->setValue("fmChannelSelect", fmChannelSelect->currentText());
   s->setValue("fmDeemphasisSelector", fmDeemphasisSelector->currentText());
-  s->setValue("fmStereoSlider", fmStereoSlider->value());
+  s->setValue("fmStereoPanoramaSlider", fmStereoPanoramaSlider->value());
+  s->setValue("fmStereoBalanceSlider", fmStereoBalanceSlider->value());
   s->setValue("fmLFcutoff", fmLFcutoff->currentText());
   s->setValue("logging", logging->currentText());
   s->setValue("streamOutSelector", streamOutSelector->currentText());
@@ -803,7 +804,8 @@ void RadioInterface::make_newProcessor(void)
   //setfmDecoder(fmDecoder->currentIndex()); // no valid entries yet
   setfmChannelSelector(fmChannelSelect->currentText());
   setfmDeemphasis(fmDeemphasisSelector->currentText());
-  setfmStereoSlider(fmStereoSlider->value());
+  setfmStereoPanoramaSlider(fmStereoPanoramaSlider->value());
+  setfmStereoBalanceSlider(fmStereoBalanceSlider->value());
   set_squelchValue(squelchSlider->value());
   setfmLFcutoff(fmLFcutoff->currentText());
   setLogging(logging->currentText());
@@ -1300,13 +1302,22 @@ void RadioInterface::localConnects(void)
   connect(fmMode, SIGNAL(activated(const QString&)), this, SLOT(setfmMode(const QString&)));
   connect(fmRdsSelector, SIGNAL(activated(const QString&)), this, SLOT(setfmRdsSelector(const QString&)));
   connect(fmDecoder, qOverload<int>(&QComboBox::currentIndexChanged), this, &RadioInterface::setfmDecoder);
-  connect(fmStereoSlider, SIGNAL(valueChanged(int)), this, SLOT(setfmStereoSlider(int)));
+  connect(fmStereoPanoramaSlider, SIGNAL(valueChanged(int)), this, SLOT(setfmStereoPanoramaSlider(int)));
+  connect(fmStereoBalanceSlider, SIGNAL(valueChanged(int)), this, SLOT(setfmStereoBalanceSlider(int)));
   connect(fmDeemphasisSelector, SIGNAL(activated(const QString&)), this, SLOT(setfmDeemphasis(const QString&)));
   connect(fmLFcutoff, SIGNAL(activated(const QString&)), this, SLOT(setfmLFcutoff(const QString&)));
   //
 }
 
-void RadioInterface::setfmStereoSlider(int n)
+void RadioInterface::setfmStereoPanoramaSlider(int n)
+{
+  if (myFMprocessor != nullptr)
+  {
+    myFMprocessor->setStereoPanorama(n);
+  }
+}
+
+void RadioInterface::setfmStereoBalanceSlider(int n)
 {
   if (myFMprocessor != nullptr)
   {
@@ -1483,7 +1494,7 @@ void RadioInterface::setfmLFcutoff(const QString &s)
     myFMprocessor->setLFcutoff((int32_t)(s.toInt()));
   }
 }
-//
+
 static inline int32_t numberofDigits(int32_t f)
 {
   if (f < 100000)
@@ -1866,8 +1877,11 @@ void RadioInterface::restoreGUIsettings(QSettings *s)
   k = s->value("fmFilterDegree", fmFilterDegree->value()).toInt();
   fmFilterDegree->setValue(k);
 
-  k = s->value("fmStereoSlider", fmStereoSlider->value()).toInt();
-  fmStereoSlider->setValue(k);
+  k = s->value("fmStereoPanoramaSlider", fmStereoPanoramaSlider->value()).toInt();
+  fmStereoPanoramaSlider->setValue(k);
+
+  k = s->value("fmStereoBalanceSlider", fmStereoBalanceSlider->value()).toInt();
+  fmStereoBalanceSlider->setValue(k);
 
   k = s->value("squelchSlider", squelchSlider->value()).toInt();
   squelchSlider->setValue(k);

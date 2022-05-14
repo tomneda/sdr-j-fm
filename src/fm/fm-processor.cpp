@@ -303,6 +303,11 @@ void fmProcessor::setSoundMode(uint8_t selector)
   this->selector = selector;
 }
 
+void fmProcessor::setStereoPanorama(int16_t iStereoPan)
+{
+  // iStereoPan range: 0 (Mono) ... +100 (Stereo)
+}
+
 void fmProcessor::setSoundBalance(int16_t balance)
 {
   // range: -100 <= balance <= +100

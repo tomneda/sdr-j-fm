@@ -67,6 +67,7 @@ public:
   void setfmMode(uint8_t);
   void setFMdecoder(int16_t);
   void setSoundMode(uint8_t);
+  void setStereoPanorama(int16_t iStereoPan);
   void setSoundBalance(int16_t);
   void setDeemphasis(int16_t);
   void setVolume(int16_t);

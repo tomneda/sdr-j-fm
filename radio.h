@@ -203,7 +203,8 @@ private slots:
   void setfmDecoder(const int);
   void setfmChannelSelector(const QString &);
   void setfmDeemphasis(const QString &);
-  void setfmStereoSlider(int);
+  void setfmStereoPanoramaSlider(int);
+  void setfmStereoBalanceSlider(int);
   void setfmLFcutoff(const QString &);
 
   void autoIncrement_timeout();

@@ -337,6 +337,7 @@ void RadioInterface::dumpControlState(QSettings *s)
   s->setValue("spectrumAmplitudeSlider_lf", spectrumAmplitudeSlider_lf->value());
   s->setValue("IQbalanceSlider", IQbalanceSlider->value());
   //s->setValue("inputModeSelect", inputModeSelect->currentText());
+  s->setValue("afc", cbAfc->checkState());
 
   //	now setting the parameters for the fm decoder
   s->setValue("fmFilterSelect", fmFilterSelect->currentText());
@@ -1865,6 +1866,10 @@ void RadioInterface::restoreGUIsettings(QSettings *s)
 {
   QString h;
   int     k;
+
+  k = s->value("afc", mAfcActive).toInt();
+  cbAfc->setCheckState(k ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
+  mAfcActive = (k != 0);
 
   k = s->value("spectrumAmplitudeSlider_hf", spectrumAmplitudeSlider_hf->value()).toInt();
   spectrumAmplitudeSlider_hf->setValue(k);

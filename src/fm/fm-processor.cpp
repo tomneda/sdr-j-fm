@@ -24,7 +24,7 @@
 #include "audiosink.h"
 #include "device-handler.h"
 #include "fm-constants.h"
-#include "fm-demodulator.h"
+//#include "fm-demodulator.h"
 #include "newconverter.h"
 #include "radio.h"
 #include "rds-decoder.h"
@@ -291,7 +291,7 @@ void fmProcessor::setfmMode(uint8_t m)
   fmModus = m ? FM_Mode::STEREO : FM_Mode::MONO;
 }
 
-void fmProcessor::setFMdecoder(int8_t d)
+void fmProcessor::setFMdecoder(fm_Demodulator::EFmDecoder d)
 {
   if (running)
   {

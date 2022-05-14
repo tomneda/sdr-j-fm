@@ -1450,27 +1450,27 @@ void RadioInterface::setfmRdsSelector(const QString &s)
 
 void RadioInterface::setfmDecoder(const QString &s)
 {
-  int8_t decoder = 0;
+  fm_Demodulator::EFmDecoder decoder = fm_Demodulator::EFmDecoder::PllDecoder;
 
   if (s == "fm1decoder")
   {
-    decoder = fm_Demodulator::FM1DECODER;
+    decoder = fm_Demodulator::EFmDecoder::DifferenceBased;
   }
   else if (s == "fm2decoder")
   {
-    decoder = fm_Demodulator::FM2DECODER;
+    decoder = fm_Demodulator::EFmDecoder::ComplexBasebandDelay;
   }
   else if (s == "fm3decoder")
   {
-    decoder = fm_Demodulator::FM3DECODER;
+    decoder = fm_Demodulator::EFmDecoder::MixedDemodulator;
   }
   else if (s == "fm4decoder")
   {
-    decoder = fm_Demodulator::FM4DECODER;
+    decoder = fm_Demodulator::EFmDecoder::PllDecoder;
   }
   else
   {
-    decoder = fm_Demodulator::FM5DECODER;
+    decoder = fm_Demodulator::EFmDecoder::RealBasebandDelay;
   }
 
   if (myFMprocessor == nullptr)

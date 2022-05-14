@@ -36,17 +36,17 @@
 
 class fm_Demodulator {
 public:
-  enum fm_demod {
-    FM1DECODER = 0001,
-    FM2DECODER = 0002,
-    FM3DECODER = 0003,
-    FM4DECODER = 0004,
-    FM5DECODER = 0005,
-    FM6DECODER = 0006
+  enum class EFmDecoder
+  {
+    DifferenceBased,
+    ComplexBasebandDelay,
+    MixedDemodulator,
+    PllDecoder,
+    RealBasebandDelay
   };
 
 private:
-  int8_t selectedDecoder;
+  EFmDecoder selectedDecoder;
   DSPFLOAT max_freq_deviation;
   int32_t rateIn;
   DSPFLOAT fm_afc;
@@ -65,7 +65,7 @@ private:
 public:
   fm_Demodulator(int32_t Rate_in, SinCos *mySinCos, DSPFLOAT K_FM);
   ~fm_Demodulator();
-  void setDecoder(int8_t);
+  void setDecoder(EFmDecoder);
   const char *nameofDecoder();
   DSPFLOAT demodulate(DSPCOMPLEX);
   DSPFLOAT get_DcComponent();

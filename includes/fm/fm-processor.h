@@ -34,13 +34,14 @@
 #include "pllC.h"
 #include "ringbuffer.h"
 #include "sincos.h"
+#include "fm-demodulator.h"
 #include <QObject>
 #include <QThread>
 #include <sndfile.h>
 
 class deviceHandler;
 class RadioInterface;
-class fm_Demodulator;
+//class fm_Demodulator;
 class rdsDecoder;
 class audioSink;
 class newConverter;
@@ -61,10 +62,10 @@ public:
               RingBuffer<double> *, // LFScope
               int16_t,              // filterDepth
               int16_t);             // threshold scanning
-  ~fmProcessor();
+  ~fmProcessor() override;
   void stop(); // stop the processor
   void setfmMode(uint8_t);
-  void setFMdecoder(int8_t);
+  void setFMdecoder(fm_Demodulator::EFmDecoder);
   void setSoundMode(uint8_t);
   void setSoundBalance(int16_t);
   void setDeemphasis(int16_t);
@@ -83,16 +84,20 @@ public:
   void setInputMode(uint8_t);
 
   int32_t totalAmount;
+
   bool ok();
+
   DSPFLOAT get_pilotStrength();
   DSPFLOAT get_rdsStrength();
   DSPFLOAT get_noiseStrength();
   DSPFLOAT get_dcComponent();
+
   void startScanning();
   void stopScanning();
   const char *nameofDecoder();
 
-  enum Channels {
+  enum Channels
+  {
     S_STEREO = 0,
     S_LEFT = 1,
     S_RIGHT = 2,

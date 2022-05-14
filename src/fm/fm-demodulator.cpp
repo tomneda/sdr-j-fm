@@ -42,9 +42,8 @@ fm_Demodulator::fm_Demodulator (int32_t rateIn,
   this->mySinCos = mySinCos;
   this->K_FM     = 2 * K_FM;
 
-  this->selectedDecoder    = FM4DECODER;
-  this->max_freq_deviation =
-    0.95 * (0.5 * rateIn);
+  this->selectedDecoder = EFmDecoder::PllDecoder;
+  this->max_freq_deviation = 0.95 * (0.5 * rateIn);
   myfm_pll = new pllC(rateIn,
                       0,
                       -max_freq_deviation,
@@ -53,17 +52,19 @@ fm_Demodulator::fm_Demodulator (int32_t rateIn,
                       mySinCos);
   ArcsineSize = 4 * 8192;
   Arcsine     = new DSPFLOAT [ArcsineSize];
+
   for (i = 0; i < ArcsineSize; i++)
   {
     Arcsine [i] = asin(2.0 * i / ArcsineSize - 1.0) / 2.0;
   }
+
   Imin1  = 0.2;
   Qmin1  = 0.2;
   Imin2  = 0.2;
   Qmin2  = 0.2;
   fm_afc = 0;
   fm_cvt = 1.0;
-//		 fm_cvt			= 0.50 * (rateIn / (M_PI * 150000));
+  // fm_cvt = 0.50 * (rateIn / (M_PI * 150000));
 }
 
 fm_Demodulator::~fm_Demodulator()
@@ -72,7 +73,7 @@ fm_Demodulator::~fm_Demodulator()
   delete  myfm_pll;
 }
 
-void fm_Demodulator::setDecoder(int8_t nc)
+void fm_Demodulator::setDecoder(EFmDecoder nc)
 {
   this->selectedDecoder = nc;
 }
@@ -81,22 +82,22 @@ const char  *fm_Demodulator::nameofDecoder()
 {
   switch (selectedDecoder)
   {
-  default:
-  case FM1DECODER:
+  case EFmDecoder::DifferenceBased:
     return "Difference based";
 
-  case FM2DECODER:
+  case EFmDecoder::ComplexBasebandDelay:
     return "Complex Baseband Delay";
 
-  case FM3DECODER:
+  case EFmDecoder::MixedDemodulator:
     return "Mixed Demodulator";
 
-  case FM4DECODER:
+  case EFmDecoder::PllDecoder:
     return "Pll decoder";
 
-  case FM5DECODER:
+  case EFmDecoder::RealBasebandDelay:
     return "Real Baseband Delay";
   }
+  return "(unknow)";
 }
 
 DSPFLOAT fm_Demodulator::demodulate(DSPCOMPLEX z)
@@ -120,28 +121,27 @@ DSPFLOAT fm_Demodulator::demodulate(DSPCOMPLEX z)
   z = DSPCOMPLEX(I, Q);
   switch (selectedDecoder)
   {
-  default:
-  case FM1DECODER:
+  case EFmDecoder::DifferenceBased:
     res    = Imin1 * (Q - Qmin2) - Qmin1 * (I - Imin2);
     res   /= Imin1 * Imin1 + Qmin1 * Qmin1;
     Imin2  = Imin1;
     Qmin2  = Qmin1;
     break;
 
-  case FM2DECODER:
+  case EFmDecoder::ComplexBasebandDelay:
     res    = myAtan.argX(z * DSPCOMPLEX(Imin1, -Qmin1));
     break;
 
-  case FM3DECODER:
+  case EFmDecoder::MixedDemodulator:
     res = myAtan.atan2(Q * Imin1 - I * Qmin1, I * Imin1 + Q * Qmin1);
     break;
 
-  case FM4DECODER:
+  case EFmDecoder::PllDecoder:
     myfm_pll->do_pll(z);
     res = -myfm_pll->getPhaseIncr(); // minus to have same DC as the other demodulatiors (for correct AFC)
     break;
 
-  case FM5DECODER:
+  case EFmDecoder::RealBasebandDelay:
     res = (Imin1 * Q - Qmin1 * I + 1.0) / 2.0;
     res = Arcsine [(int)(res * ArcsineSize)];
     break;

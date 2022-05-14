@@ -34,7 +34,7 @@ Scope::Scope(QwtPlot *scope, uint16_t displaysize, uint16_t rastersize)
   Displaysize   = displaysize;
   Rastersize    = rastersize;
   bitDepth      = 24;
-  Spectrum      = NULL;
+  Spectrum      = nullptr;
   Waterfall     = new WaterfallViewer(Plotter, Displaysize, Rastersize);
   CurrentWidget = WATERFALL_MODE;
   connect(Waterfall, SIGNAL(leftClicked(int)), this, SLOT(leftClicked(int)));
@@ -43,11 +43,11 @@ Scope::Scope(QwtPlot *scope, uint16_t displaysize, uint16_t rastersize)
 
 Scope::~Scope(void)
 {
-  if (Spectrum != NULL)
+  if (Spectrum != nullptr)
   {
     delete Spectrum;
   }
-  if (Waterfall != NULL)
+  if (Waterfall != nullptr)
   {
     delete Waterfall;
   }
@@ -77,12 +77,12 @@ void Scope::SelectView(uint8_t n)
 
   if (n == SPECTRUM_MODE)
   {
-    if (Waterfall != NULL)
+    if (Waterfall != nullptr)
     {
       delete Waterfall;
     }
     Plotter->detachItems();
-    Waterfall = NULL;
+    Waterfall = nullptr;
     Spectrum  = new SpectrumViewer(Plotter, Displaysize);
     connect(Spectrum, SIGNAL(leftClicked(int)), this, SLOT(leftClicked(int)));
     connect(Spectrum, SIGNAL(rightClicked(int)), this, SLOT(rightClicked(int)));
@@ -91,23 +91,23 @@ void Scope::SelectView(uint8_t n)
   }
   else if (n == WATERFALL_MODE)
   {
-    if (Spectrum != NULL)
+    if (Spectrum != nullptr)
     {
       delete Spectrum;
     }
     //	   Plotter	-> detachItems ();
-    Spectrum  = NULL;
+    Spectrum  = nullptr;
     Waterfall = new WaterfallViewer(Plotter, Displaysize, Rastersize);
+
     connect(Waterfall, SIGNAL(leftClicked(int)), this, SLOT(leftClicked(int)));
-    connect(Waterfall, SIGNAL(rightClicked(int)), this,
-            SLOT(rightClicked(int)));
+    connect(Waterfall, SIGNAL(rightClicked(int)), this, SLOT(rightClicked(int)));
 
     CurrentWidget = WATERFALL_MODE;
   }
 }
 
 void Scope::Display(double *x_axis, double *buffer, double amp,
-                    int32_t marker)
+                    int32_t marker /*= -1*/)
 {
   if (CurrentWidget == WATERFALL_MODE)
   {
@@ -160,10 +160,10 @@ SpectrumViewer::SpectrumViewer(QwtPlot *plot, uint16_t displaysize)
   SpectrumCurve->setBrush(*ourBrush);
   SpectrumCurve->attach(plotgrid);
 
-  Marker = new QwtPlotMarker();
-  Marker->setLineStyle(QwtPlotMarker::VLine);
-  Marker->setLinePen(QPen(Qt::red));
-  Marker->attach(plotgrid);
+//  Marker = new QwtPlotMarker();
+//  Marker->setLineStyle(QwtPlotMarker::VLine);
+//  Marker->setLinePen(QPen(Qt::red));
+//  Marker->attach(plotgrid);
   oldmarkerValue = -1;
   counter        = 0;
 
@@ -221,7 +221,7 @@ void SpectrumViewer::ViewSpectrum(double *X_axis, double *Y1_value, double amp,
   uint16_t i;
 
   amp            = amp / 100 * (-get_db(0));
-  IndexforMarker = markerValue;
+  IndexforMarker = (markerValue >= 0 ? markerValue : 0);
   plotgrid->setAxisScale(QwtPlot::xBottom, (double)X_axis[0],
                          X_axis[Displaysize - 1]);
   plotgrid->enableAxis(QwtPlot::xBottom);
@@ -270,13 +270,17 @@ void SpectrumViewer::ViewSpectrum(double *X_axis, double *Y1_value, double amp,
     minLabel->detach();
     minLabel->setText(MarkerLabel_2);
     minLabel->attach(plotgrid);
-    Marker->detach();
-    Marker = new QwtPlotMarker();
-    Marker->setLineStyle(QwtPlotMarker::VLine);
-    Marker->setLinePen(QPen(Qt::red, 3.0));
-    Marker->attach(plotgrid);
-    Marker->setXValue(markerValue);
-    oldmarkerValue = markerValue;
+
+    if (markerValue >= 0 && oldmarkerValue != markerValue)
+    {
+      if (Marker) { Marker->detach(); }
+      Marker = new QwtPlotMarker();
+      Marker->setLineStyle(QwtPlotMarker::VLine);
+      Marker->setLinePen(QPen(Qt::red, 3.0));
+      Marker->attach(plotgrid);
+      Marker->setXValue(markerValue);
+      oldmarkerValue = markerValue;
+    }
   }
   plotgrid->replot();
 }
@@ -395,6 +399,8 @@ void WaterfallViewer::rightMouseClick(const QPointF &point)
 void WaterfallViewer::ViewWaterfall(double *X_axis, double *Y1_value,
                                     double amp, int32_t marker)
 {
+  Q_ASSERT(marker >= 0);
+
   int orig  = (int)(X_axis[0]);
   int width = (int)(X_axis[Displaysize - 1] - orig);
 
@@ -419,7 +425,7 @@ void WaterfallViewer::ViewWaterfall(double *X_axis, double *Y1_value,
          Displaysize * sizeof(double));
 
   this->detach();
-  //	if (WaterfallData != NULL)
+  //	if (WaterfallData != nullptr)
   //	   delete WaterfallData;
 
   WaterfallData =

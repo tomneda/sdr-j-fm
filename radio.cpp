@@ -248,16 +248,16 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
   localConnects();
 
   mykeyPad = new keyPad(this);
-  connect(freqButton, SIGNAL(clicked(void)), this,
-          SLOT(handle_freqButton(void)));
+
+  connect(freqButton, SIGNAL(clicked(void)), this, SLOT(handle_freqButton(void)));
 
   //	Create a timer for autoincrement/decrement of the tuning
   autoIncrementTimer = new QTimer();
   autoIncrementTimer->setSingleShot(true);
   autoIncrementTimer->setInterval(5000);
-  connect(autoIncrementTimer, SIGNAL(timeout()), this,
-          SLOT(autoIncrement_timeout()));
-  //
+
+  connect(autoIncrementTimer, SIGNAL(timeout()), this, SLOT(autoIncrement_timeout()));
+
   //	create a timer for displaying the "real" time
   displayTimer = new QTimer();
   displayTimer->setInterval(1000);
@@ -290,14 +290,12 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
   //
   thresHold = fmSettings->value("threshold", 20).toInt();
 
-  connect(fm_increment, SIGNAL(valueChanged(int)), this,
-          SLOT(set_fm_increment(int)));
-  connect(minimumSelect, SIGNAL(valueChanged(int)), this,
-          SLOT(set_minimum(int)));
-  connect(maximumSelect, SIGNAL(valueChanged(int)), this,
-          SLOT(set_maximum(int)));
+  connect(fm_increment,  SIGNAL(valueChanged(int)), this, SLOT(set_fm_increment(int)));
+  connect(minimumSelect, SIGNAL(valueChanged(int)), this, SLOT(set_minimum(int)));
+  connect(maximumSelect, SIGNAL(valueChanged(int)), this, SLOT(set_maximum(int)));
+
   displayTimer->start(1000);
-  myList = new programList(this, stationList);
+  myList = new programList(this, std::move(stationList));
   myList->show();
   myLine = nullptr;
   connect(freqSave, SIGNAL(clicked(void)), this, SLOT(set_freqSave(void)));
@@ -327,10 +325,7 @@ RadioInterface::~RadioInterface()
 
 void RadioInterface::dumpControlState(QSettings *s)
 {
-  if (s == nullptr) // should not happen
-  {
-    return;
-  }
+  Q_ASSERT(s);
 
   s->setValue("rasterSize", rasterSize);
   s->setValue("averageCount", averageCount);
@@ -338,14 +333,11 @@ void RadioInterface::dumpControlState(QSettings *s)
   s->setValue("repeatRate", repeatRate);
 
   s->setValue("fm_increment", fm_increment->value());
-  s->setValue("spectrumAmplitudeSlider_hf",
-              spectrumAmplitudeSlider_hf->value());
-  s->setValue("spectrumAmplitudeSlider_lf",
-              spectrumAmplitudeSlider_lf->value());
+  s->setValue("spectrumAmplitudeSlider_hf", spectrumAmplitudeSlider_hf->value());
+  s->setValue("spectrumAmplitudeSlider_lf", spectrumAmplitudeSlider_lf->value());
   s->setValue("IQbalanceSlider", IQbalanceSlider->value());
-  //	s	-> setValue ("inputModeSelect",
-  //	                               inputModeSelect	-> currentText ());
-  //
+  //s->setValue("inputModeSelect", inputModeSelect->currentText());
+
   //	now setting the parameters for the fm decoder
   s->setValue("fmFilterSelect", fmFilterSelect->currentText());
   s->setValue("fmFilterDegree", fmFilterDegree->value());
@@ -364,11 +356,11 @@ void RadioInterface::dumpControlState(QSettings *s)
 
   s->setValue("min_loop_frequency", minLoopFrequency);
   s->setValue("max_loop_frequency", maxLoopFrequency);
-  //
+
   //	Note that settings for the device used will be restored
   //	on termination of the device handling class
 }
-//
+
 //	On start, we ensure that the streams are stopped so
 //	that they can be restarted again.
 void RadioInterface::setStart(void)
@@ -1034,6 +1026,7 @@ void RadioInterface::autoIncrement_timeout(void)
   low    = KHz(minLoopFrequency);
   high   = KHz(maxLoopFrequency);
   amount = fmIncrement;
+
   if (IncrementIndex < 0)
   {
     amount = -amount;
@@ -1816,7 +1809,7 @@ void RadioInterface::lfBufferLoaded(void)
   //
   //	get the buffer data
   lfBuffer->getDataFromBuffer(Y_values, displaySize);
-  lfScope->Display(X_axis, Y_values, spectrumAmplitudeSlider_lf->value(), 0);
+  lfScope->Display(X_axis, Y_values, spectrumAmplitudeSlider_lf->value());
 }
 
 void RadioInterface::setHFplotterView(int offset)
@@ -1872,6 +1865,12 @@ void RadioInterface::restoreGUIsettings(QSettings *s)
 {
   QString h;
   int     k;
+
+  k = s->value("spectrumAmplitudeSlider_hf", spectrumAmplitudeSlider_hf->value()).toInt();
+  spectrumAmplitudeSlider_hf->setValue(k);
+
+  k = s->value("spectrumAmplitudeSlider_lf", spectrumAmplitudeSlider_lf->value()).toInt();
+  spectrumAmplitudeSlider_lf->setValue(k);
 
   k = s->value("fmFilterDegree", fmFilterDegree->value()).toInt();
   fmFilterDegree->setValue(k);
@@ -1932,7 +1931,7 @@ void RadioInterface::restoreGUIsettings(QSettings *s)
     fmLFcutoff->setCurrentIndex(k);
   }
 }
-//
+
 //	For different input rates we select different rates for the
 //	fm decoding (the fmrate). Decimating from inputRate to fmRate
 //	is always integer. Decimating from fmRate to audioRate maybe

@@ -59,8 +59,8 @@ class programList;
 class RadioInterface : public QDialog, private Ui_sdr_j_fm {
   Q_OBJECT
 public:
-  RadioInterface(QSettings *, QString, int32_t, QWidget *parent = NULL);
-  ~RadioInterface();
+  RadioInterface(QSettings *, QString, int32_t, QWidget *parent = nullptr);
+  ~RadioInterface() override;
 
 private:
   enum Keyboard { NORMAL = 0, CONTROL = 1, ALT = 2, SHIFT = 3 };
@@ -227,7 +227,7 @@ public slots:
   void newFrequency(int);
   void hfBufferLoaded();
   void lfBufferLoaded();
-  void wheelEvent(QWheelEvent *);
+  void wheelEvent(QWheelEvent *) override;
   void setLogging(const QString &);
   void setLogsaving();
   void AdjustFrequency(int);
@@ -247,7 +247,7 @@ public slots:
   void clearMusicSpeechFlag();
   void showStrength(float, float);
   void scanresult();
-  void closeEvent(QCloseEvent *event);
+  void closeEvent(QCloseEvent *event) override;
 
   //
   //	and for the extio handling

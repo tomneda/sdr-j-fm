@@ -65,7 +65,7 @@ class Scope : public QObject {
 public:
   Scope(QwtPlot *, uint16_t, uint16_t);
   ~Scope(void);
-  void Display(double *, double *, double, int32_t);
+  void Display(double *, double *, double, int32_t iMarker = -1);
   void SelectView(uint8_t);
   void setBitDepth(int16_t);
   int currentMode(void);
@@ -133,7 +133,7 @@ private:
   uint16_t Displaysize;
   QwtPlotGrid *grid;
   QwtPlotCurve *SpectrumCurve;
-  QwtPlotMarker *Marker;
+  QwtPlotMarker *Marker{nullptr};
   uint32_t IndexforMarker;
   QwtPlotPicker *lm_picker;
   QwtPlotPicker *rm_picker;

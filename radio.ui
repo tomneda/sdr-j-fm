@@ -1040,19 +1040,6 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_13">
              <item>
-              <widget class="QSpinBox" name="fmFilterDegree">
-               <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Order of filter that is applied on the incoming data stream to isolate the FM signal.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-               <property name="minimum">
-                <number>1</number>
-               </property>
-               <property name="value">
-                <number>15</number>
-               </property>
-              </widget>
-             </item>
-             <item>
               <widget class="QComboBox" name="fmFilterSelect">
                <property name="toolTip">
                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Filter, applied to the incoming raw data to isolate the FM signal from the noise around it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -1097,6 +1084,19 @@
                  <string>Off</string>
                 </property>
                </item>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="fmFilterDegree">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Order of filter that is applied on the incoming data stream to isolate the FM signal.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="minimum">
+                <number>1</number>
+               </property>
+               <property name="value">
+                <number>15</number>
+               </property>
               </widget>
              </item>
             </layout>

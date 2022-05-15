@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2014
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -20,123 +19,143 @@
  *    along with dab-pluto-fm; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#include	"program-list.h"
-#include	"radio.h"
-#include	<QFile>
-#include	<QDataStream>
 
-	programList::programList (RadioInterface *mr,
-	                          QString saveName) {
-	this	-> saveName	= saveName;
-	myWidget	= new QScrollArea (NULL);
-	myWidget	-> resize (240, 200);
-	myWidget	-> setWidgetResizable(true);
+#include "program-list.h"
+#include "radio.h"
+#include <QDataStream>
+#include <QFile>
 
-	tableWidget 	= new QTableWidget (0, 2);
-	myWidget	-> setWidget(tableWidget);
-	tableWidget 	-> setHorizontalHeaderLabels (
-	            QStringList () << tr ("station") << tr ("frequency"));
-	connect (tableWidget, SIGNAL (cellClicked (int, int)),
-	         this, SLOT (tableSelect (int, int)));
-	connect (tableWidget, SIGNAL (cellDoubleClicked (int, int)),
-	         this, SLOT (removeRow (int, int)));
-	connect (this, SIGNAL (newFrequency (int)),
-	         mr, SLOT (newFrequency (int)));
-	loadTable ();
+programList::programList(RadioInterface *mr, QString saveName)
+{
+  this->saveName = saveName;
+  myWidget       = new QScrollArea(nullptr);
+  myWidget->resize(240, 200);
+  myWidget->setWidgetResizable(true);
+
+  tableWidget = new QTableWidget(0, 2);
+  myWidget->setWidget(tableWidget);
+  tableWidget->setHorizontalHeaderLabels(QStringList() << tr("Station") << tr("Frequency"));
+
+  connect(tableWidget, SIGNAL(cellClicked(int,int)), this, SLOT(tableSelect(int,int)));
+  connect(tableWidget, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(removeRow(int,int)));
+  connect(this, SIGNAL(newFrequency(int)), mr, SLOT(newFrequency(int)));
+
+  loadTable();
 }
 
-	programList::~programList (void) {
-int16_t	i;
-int16_t	rows	= tableWidget -> rowCount ();
+programList::~programList()
+{
+  int16_t rows = tableWidget->rowCount();
 
-	for (i = rows; i > 0; i --)
-	   tableWidget -> removeRow (i);
-	delete	tableWidget;
-	delete	myWidget;
+  for (int16_t i = rows; i > 0; i--)
+  {
+    tableWidget->removeRow(i);
+  }
+
+  delete tableWidget;
+  delete myWidget;
 }
 
-void	programList::show	(void) {
-	myWidget	-> show ();
+void programList::show()
+{
+  myWidget->show();
 }
 
-void	programList::hide	(void) {
-	myWidget	-> hide ();
+void programList::hide()
+{
+  myWidget->hide();
 }
 
-void	programList::addRow (const QString &name, const QString &freq) {
-int16_t	row	= tableWidget -> rowCount ();
+void programList::addRow(const QString &name, const QString &freq)
+{
+  int16_t row = tableWidget->rowCount();
 
-	fprintf (stderr, "adding %s %s\n", name. toLatin1 (). data (),
-	                                   freq. toLatin1 (). data ());
-	tableWidget	-> insertRow (row);
-	QTableWidgetItem *item0	= new QTableWidgetItem;
-	item0		-> setTextAlignment (Qt::AlignRight |Qt::AlignVCenter);
-	item0		-> setText (name);
-	tableWidget	-> setItem (row, 0, item0);
-	fprintf (stderr, "making of new widgetItem\n");
-	QTableWidgetItem *item1 = new QTableWidgetItem;
-	item1		-> setTextAlignment(Qt::AlignRight);
-	item1		-> setText (freq);
-	tableWidget	-> setItem (row, 1, item1);
+  fprintf(stderr, "adding %s %s\n", name.toLatin1().data(), freq.toLatin1().data());
+  tableWidget->insertRow(row);
+  QTableWidgetItem *item0 = new QTableWidgetItem;
 
-//	tableWidget	-> setCurrentItem (item0);
-//	tableWidget	-> item (row, 0) -> setText (name);
-//	tableWidget	-> item (row, 1) -> setText (freq);
-	fprintf (stderr, "widget is set\n");
+  item0->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+  item0->setText(name);
+  tableWidget->setItem(row, 0, item0);
+  fprintf(stderr, "making of new widgetItem\n");
+  QTableWidgetItem *item1 = new QTableWidgetItem;
+
+  item1->setTextAlignment(Qt::AlignRight);
+  item1->setText(freq);
+  tableWidget->setItem(row, 1, item1);
+
+  //	tableWidget	-> setCurrentItem (item0);
+  //	tableWidget	-> item (row, 0) -> setText (name);
+  //	tableWidget	-> item (row, 1) -> setText (freq);
+  fprintf(stderr, "widget is set\n");
 }
 //
 //	Locally we dispatch the "click" and "translate"
 //	it into a frequency and a call to the main gui to change
 //	the frequency
 
-void	programList::tableSelect (int row, int column) {
-QTableWidgetItem* theItem = tableWidget  -> item (row, 1);
+void programList::tableSelect(int row, int column)
+{
+  QTableWidgetItem *theItem = tableWidget->item(row, 1);
 
-	(void)column;
-	QString theFreq	= theItem -> text ();
-	int32_t	freq	= theFreq. toInt ();
-	emit newFrequency (Khz (freq));
+  (void)column;
+  QString theFreq = theItem->text();
+  int32_t freq    = theFreq.toInt();
+
+  emit newFrequency(Khz(freq));
 }
 
-void	programList::removeRow (int row, int column) {
-	tableWidget	-> removeRow (row);
-	(void)column;
+void programList::removeRow(int row, int column)
+{
+  (void)column;
+  tableWidget->removeRow(row);
 }
 
-void	programList::saveTable (void) {
-QFile	file (saveName);
+void programList::saveTable()
+{
+  QFile file(saveName);
 
-	if (file. open (QIODevice::WriteOnly)) {
-	   QDataStream stream (&file);
-	   int32_t	n = tableWidget -> rowCount ();
-	   int32_t	m = tableWidget -> columnCount ();
-	   stream << n << m;
+  if (file.open(QIODevice::WriteOnly))
+  {
+    QDataStream stream(&file);
+    int32_t     n = tableWidget->rowCount();
+    int32_t     m = tableWidget->columnCount();
+    stream << n << m;
 
-	   for (int i = 0; i < n; i ++) 
-	      for (int j = 0; j < m; j ++) 
-	         tableWidget -> item (i, j) -> write (stream);
-	   file. close ();
-	}
+    for (int i = 0; i < n; i++)
+    {
+      for (int j = 0; j < m; j++)
+      {
+        tableWidget->item(i, j)->write(stream);
+      }
+    }
+
+    file.close();
+  }
 }
 
-void	programList::loadTable (void) {
-QFile	file (saveName);
+void programList::loadTable()
+{
+  QFile file(saveName);
 
-	if (file. open (QIODevice::ReadOnly)) {
-	   QDataStream stream (&file);
-	   int32_t	n, m;
-	   stream >> n >> m;
-	   tableWidget	-> setRowCount (n);
-	   tableWidget	-> setColumnCount	(m);
+  if (file.open(QIODevice::ReadOnly))
+  {
+    QDataStream stream(&file);
+    int32_t     n, m;
+    stream >> n >> m;
+    tableWidget->setRowCount(n);
+    tableWidget->setColumnCount(m);
 
-	   for (int i = 0; i < n; i ++) {
-	      for (int j = 0; j < m; j ++) {
-	         QTableWidgetItem *item = new QTableWidgetItem;
-	         item -> read (stream);
-	         tableWidget -> setItem (i, j, item);
-	      }
-	   }
-	   file. close ();
-	}
+    for (int i = 0; i < n; i++)
+    {
+      for (int j = 0; j < m; j++)
+      {
+        QTableWidgetItem *item = new QTableWidgetItem;
+        item->read(stream);
+        tableWidget->setItem(i, j, item);
+      }
+    }
+
+    file.close();
+  }
 }
-

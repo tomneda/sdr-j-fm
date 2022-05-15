@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2014
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -6,7 +5,7 @@
  *
  *    This file is part of the  SDR-J series.
  *    Many of the ideas as implemented in the SDR-J are derived from
- *    other work, made available through the (a) GNU general Public License. 
+ *    other work, made available through the (a) GNU general Public License.
  *    All copyrights of the original authors are recognized.
  *
  *    SDR-J is free software; you can redistribute it and/or modify
@@ -22,39 +21,40 @@
  *    You should have received a copy of the GNU General Public License
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef	__PROGRAM_LIST
-#define	__PROGRAM_LIST
+#ifndef __PROGRAM_LIST
+#define __PROGRAM_LIST
 
-#include	<QWidget>
-#include	<QScrollArea>
-#include	<QTableWidget>
-#include	<QStringList>
-#include	<QTableWidgetItem>
-#include	<QObject>
-#include	<QString>
+#include <QObject>
+#include <QScrollArea>
+#include <QString>
+#include <QStringList>
+#include <QTableWidget>
+#include <QTableWidgetItem>
+#include <QWidget>
 
-class	RadioInterface;
+class RadioInterface;
 
-class programList:public QObject {
-Q_OBJECT
+class programList : public QObject {
+  Q_OBJECT
 public:
-		programList	(RadioInterface *, QString);
-		~programList	(void);
-	void	addRow		(const QString &, const QString &);
-	void	show		(void);
-	void	hide		(void);
-	void	loadTable	(void);
-	void	saveTable	(void);
+  programList(RadioInterface *, QString);
+  ~programList(void);
+
+  void addRow(const QString &, const QString &);
+  void show();
+  void hide();
+  void loadTable();
+  void saveTable();
 private slots:
-	void	tableSelect	(int, int);
-	void	removeRow	(int, int);
+  void tableSelect(int, int);
+  void removeRow(int, int);
 signals:
-	void	newFrequency	(int);
+  void newFrequency(int);
+
 private:
-	QScrollArea		*myWidget;
-	QTableWidget	*tableWidget;
-	QString		saveName;
+  QScrollArea *myWidget;
+  QTableWidget *tableWidget;
+  QString saveName;
 };
 
 #endif
-

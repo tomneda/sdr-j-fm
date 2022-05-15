@@ -1405,11 +1405,11 @@ void RadioInterface::setMusicSpeechFlag(int n)
 {
   if (n != 0)
   {
-    speechLabel->setText(QString("music"));
+    speechLabel->setText(QString("Music"));
   }
   else
   {
-    speechLabel->setText(QString("speech"));
+    speechLabel->setText(QString("Speech"));
   }
 }
 

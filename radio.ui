@@ -323,7 +323,7 @@
              <item>
               <widget class="QLabel" name="pll_isLocked">
                <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Green means that a decent pilot signal could be detected.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Green means that the pilot signal recovery PLL has locked&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="frameShape">
                 <enum>QFrame::Panel</enum>
@@ -335,7 +335,10 @@
                 <number>2</number>
                </property>
                <property name="text">
-                <string>pilot</string>
+                <string>Pilot</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
                </property>
               </widget>
              </item>

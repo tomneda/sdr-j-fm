@@ -14,15 +14,6 @@
   <property name="palette">
    <palette>
     <active>
-     <colorrole role="Base">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>255</red>
-        <green>255</green>
-        <blue>255</blue>
-       </color>
-      </brush>
-     </colorrole>
      <colorrole role="Window">
       <brush brushstyle="SolidPattern">
        <color alpha="255">
@@ -34,15 +25,6 @@
      </colorrole>
     </active>
     <inactive>
-     <colorrole role="Base">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>255</red>
-        <green>255</green>
-        <blue>255</blue>
-       </color>
-      </brush>
-     </colorrole>
      <colorrole role="Window">
       <brush brushstyle="SolidPattern">
        <color alpha="255">
@@ -54,15 +36,6 @@
      </colorrole>
     </inactive>
     <disabled>
-     <colorrole role="Base">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>255</red>
-        <green>255</green>
-        <blue>255</blue>
-       </color>
-      </brush>
-     </colorrole>
      <colorrole role="Window">
       <brush brushstyle="SolidPattern">
        <color alpha="255">
@@ -77,7 +50,6 @@
   </property>
   <property name="font">
    <font>
-    <weight>50</weight>
     <bold>false</bold>
    </font>
   </property>
@@ -101,15 +73,6 @@
        <property name="palette">
         <palette>
          <active>
-          <colorrole role="Base">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>255</red>
-             <green>255</green>
-             <blue>255</blue>
-            </color>
-           </brush>
-          </colorrole>
           <colorrole role="Window">
            <brush brushstyle="SolidPattern">
             <color alpha="255">
@@ -121,15 +84,6 @@
           </colorrole>
          </active>
          <inactive>
-          <colorrole role="Base">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>255</red>
-             <green>255</green>
-             <blue>255</blue>
-            </color>
-           </brush>
-          </colorrole>
           <colorrole role="Window">
            <brush brushstyle="SolidPattern">
             <color alpha="255">
@@ -141,15 +95,6 @@
           </colorrole>
          </inactive>
          <disabled>
-          <colorrole role="Base">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>255</red>
-             <green>255</green>
-             <blue>0</blue>
-            </color>
-           </brush>
-          </colorrole>
           <colorrole role="Window">
            <brush brushstyle="SolidPattern">
             <color alpha="255">
@@ -184,15 +129,6 @@
        <property name="palette">
         <palette>
          <active>
-          <colorrole role="Base">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>255</red>
-             <green>255</green>
-             <blue>255</blue>
-            </color>
-           </brush>
-          </colorrole>
           <colorrole role="Window">
            <brush brushstyle="SolidPattern">
             <color alpha="255">
@@ -204,15 +140,6 @@
           </colorrole>
          </active>
          <inactive>
-          <colorrole role="Base">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>255</red>
-             <green>255</green>
-             <blue>255</blue>
-            </color>
-           </brush>
-          </colorrole>
           <colorrole role="Window">
            <brush brushstyle="SolidPattern">
             <color alpha="255">
@@ -224,15 +151,6 @@
           </colorrole>
          </inactive>
          <disabled>
-          <colorrole role="Base">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>255</red>
-             <green>255</green>
-             <blue>0</blue>
-            </color>
-           </brush>
-          </colorrole>
           <colorrole role="Window">
            <brush brushstyle="SolidPattern">
             <color alpha="255">
@@ -267,15 +185,6 @@
        <property name="palette">
         <palette>
          <active>
-          <colorrole role="Base">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>255</red>
-             <green>255</green>
-             <blue>255</blue>
-            </color>
-           </brush>
-          </colorrole>
           <colorrole role="Window">
            <brush brushstyle="SolidPattern">
             <color alpha="255">
@@ -287,15 +196,6 @@
           </colorrole>
          </active>
          <inactive>
-          <colorrole role="Base">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>255</red>
-             <green>255</green>
-             <blue>255</blue>
-            </color>
-           </brush>
-          </colorrole>
           <colorrole role="Window">
            <brush brushstyle="SolidPattern">
             <color alpha="255">
@@ -307,15 +207,6 @@
           </colorrole>
          </inactive>
          <disabled>
-          <colorrole role="Base">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>255</red>
-             <green>255</green>
-             <blue>0</blue>
-            </color>
-           </brush>
-          </colorrole>
           <colorrole role="Window">
            <brush brushstyle="SolidPattern">
             <color alpha="255">
@@ -403,8 +294,11 @@
         <layout class="QHBoxLayout" name="horizontalLayout_8">
          <item>
           <widget class="QSlider" name="spectrumAmplitudeSlider_lf">
+           <property name="value">
+            <number>20</number>
+           </property>
            <property name="sliderPosition">
-            <number>30</number>
+            <number>20</number>
            </property>
            <property name="orientation">
             <enum>Qt::Vertical</enum>
@@ -450,15 +344,6 @@
                <property name="palette">
                 <palette>
                  <active>
-                  <colorrole role="Base">
-                   <brush brushstyle="SolidPattern">
-                    <color alpha="255">
-                     <red>255</red>
-                     <green>255</green>
-                     <blue>255</blue>
-                    </color>
-                   </brush>
-                  </colorrole>
                   <colorrole role="Window">
                    <brush brushstyle="SolidPattern">
                     <color alpha="255">
@@ -470,15 +355,6 @@
                   </colorrole>
                  </active>
                  <inactive>
-                  <colorrole role="Base">
-                   <brush brushstyle="SolidPattern">
-                    <color alpha="255">
-                     <red>255</red>
-                     <green>255</green>
-                     <blue>255</blue>
-                    </color>
-                   </brush>
-                  </colorrole>
                   <colorrole role="Window">
                    <brush brushstyle="SolidPattern">
                     <color alpha="255">
@@ -490,15 +366,6 @@
                   </colorrole>
                  </inactive>
                  <disabled>
-                  <colorrole role="Base">
-                   <brush brushstyle="SolidPattern">
-                    <color alpha="255">
-                     <red>255</red>
-                     <green>255</green>
-                     <blue>0</blue>
-                    </color>
-                   </brush>
-                  </colorrole>
                   <colorrole role="Window">
                    <brush brushstyle="SolidPattern">
                     <color alpha="255">
@@ -530,15 +397,6 @@
                <property name="palette">
                 <palette>
                  <active>
-                  <colorrole role="Base">
-                   <brush brushstyle="SolidPattern">
-                    <color alpha="255">
-                     <red>255</red>
-                     <green>255</green>
-                     <blue>255</blue>
-                    </color>
-                   </brush>
-                  </colorrole>
                   <colorrole role="Window">
                    <brush brushstyle="SolidPattern">
                     <color alpha="255">
@@ -550,15 +408,6 @@
                   </colorrole>
                  </active>
                  <inactive>
-                  <colorrole role="Base">
-                   <brush brushstyle="SolidPattern">
-                    <color alpha="255">
-                     <red>255</red>
-                     <green>255</green>
-                     <blue>255</blue>
-                    </color>
-                   </brush>
-                  </colorrole>
                   <colorrole role="Window">
                    <brush brushstyle="SolidPattern">
                     <color alpha="255">
@@ -570,15 +419,6 @@
                   </colorrole>
                  </inactive>
                  <disabled>
-                  <colorrole role="Base">
-                   <brush brushstyle="SolidPattern">
-                    <color alpha="255">
-                     <red>255</red>
-                     <green>255</green>
-                     <blue>0</blue>
-                    </color>
-                   </brush>
-                  </colorrole>
                   <colorrole role="Window">
                    <brush brushstyle="SolidPattern">
                     <color alpha="255">
@@ -618,24 +458,6 @@
              <property name="palette">
               <palette>
                <active>
-                <colorrole role="BrightText">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
-                <colorrole role="Base">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
                 <colorrole role="Window">
                  <brush brushstyle="SolidPattern">
                   <color alpha="255">
@@ -647,24 +469,6 @@
                 </colorrole>
                </active>
                <inactive>
-                <colorrole role="BrightText">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
-                <colorrole role="Base">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
                 <colorrole role="Window">
                  <brush brushstyle="SolidPattern">
                   <color alpha="255">
@@ -676,24 +480,6 @@
                 </colorrole>
                </inactive>
                <disabled>
-                <colorrole role="BrightText">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
-                <colorrole role="Base">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>0</blue>
-                  </color>
-                 </brush>
-                </colorrole>
                 <colorrole role="Window">
                  <brush brushstyle="SolidPattern">
                   <color alpha="255">
@@ -710,7 +496,6 @@
               <font>
                <family>Andale Mono</family>
                <pointsize>8</pointsize>
-               <weight>50</weight>
                <bold>false</bold>
               </font>
              </property>
@@ -737,7 +522,6 @@
              <property name="font">
               <font>
                <pointsize>8</pointsize>
-               <weight>50</weight>
                <italic>true</italic>
                <bold>false</bold>
               </font>
@@ -762,7 +546,7 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout">
              <item>
-              <widget class="QSlider" name="fmStereoSlider">
+              <widget class="QSlider" name="fmStereoBalanceSlider">
                <property name="toolTip">
                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Balance slider: balance between the audiochannels left and right.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
@@ -785,15 +569,6 @@
                <property name="palette">
                 <palette>
                  <active>
-                  <colorrole role="Base">
-                   <brush brushstyle="SolidPattern">
-                    <color alpha="255">
-                     <red>255</red>
-                     <green>255</green>
-                     <blue>255</blue>
-                    </color>
-                   </brush>
-                  </colorrole>
                   <colorrole role="Window">
                    <brush brushstyle="SolidPattern">
                     <color alpha="255">
@@ -805,15 +580,6 @@
                   </colorrole>
                  </active>
                  <inactive>
-                  <colorrole role="Base">
-                   <brush brushstyle="SolidPattern">
-                    <color alpha="255">
-                     <red>255</red>
-                     <green>255</green>
-                     <blue>255</blue>
-                    </color>
-                   </brush>
-                  </colorrole>
                   <colorrole role="Window">
                    <brush brushstyle="SolidPattern">
                     <color alpha="255">
@@ -825,15 +591,6 @@
                   </colorrole>
                  </inactive>
                  <disabled>
-                  <colorrole role="Base">
-                   <brush brushstyle="SolidPattern">
-                    <color alpha="255">
-                     <red>255</red>
-                     <green>255</green>
-                     <blue>0</blue>
-                    </color>
-                   </brush>
-                  </colorrole>
                   <colorrole role="Window">
                    <brush brushstyle="SolidPattern">
                     <color alpha="255">
@@ -891,15 +648,6 @@
                <property name="palette">
                 <palette>
                  <active>
-                  <colorrole role="Base">
-                   <brush brushstyle="SolidPattern">
-                    <color alpha="255">
-                     <red>255</red>
-                     <green>255</green>
-                     <blue>255</blue>
-                    </color>
-                   </brush>
-                  </colorrole>
                   <colorrole role="Window">
                    <brush brushstyle="SolidPattern">
                     <color alpha="255">
@@ -911,15 +659,6 @@
                   </colorrole>
                  </active>
                  <inactive>
-                  <colorrole role="Base">
-                   <brush brushstyle="SolidPattern">
-                    <color alpha="255">
-                     <red>255</red>
-                     <green>255</green>
-                     <blue>255</blue>
-                    </color>
-                   </brush>
-                  </colorrole>
                   <colorrole role="Window">
                    <brush brushstyle="SolidPattern">
                     <color alpha="255">
@@ -931,15 +670,6 @@
                   </colorrole>
                  </inactive>
                  <disabled>
-                  <colorrole role="Base">
-                   <brush brushstyle="SolidPattern">
-                    <color alpha="255">
-                     <red>255</red>
-                     <green>255</green>
-                     <blue>0</blue>
-                    </color>
-                   </brush>
-                  </colorrole>
                   <colorrole role="Window">
                    <brush brushstyle="SolidPattern">
                     <color alpha="255">
@@ -979,75 +709,149 @@
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_3">
            <item>
-            <widget class="QComboBox" name="fmMode">
+            <layout class="QHBoxLayout" name="horizontalLayout_12">
+             <item>
+              <widget class="QComboBox" name="fmMode">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select mono or stereo reception. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <item>
+                <property name="text">
+                 <string>Stereo</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Stereo (Pano)</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Mono</string>
+                </property>
+               </item>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="fmChannelSelect">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select the sound combination of channels. Default is stereo, i.e. a summation of the L+R signal that is transmitted in the low part of the spectrum and the L-R signal that is shifted 38 Khz.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <item>
+                <property name="text">
+                 <string>Stereo</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Left</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Right</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Left+Right</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Left-Right</string>
+                </property>
+               </item>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QSlider" name="fmStereoPanoramaSlider">
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select mono or stereo reception. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the Stereo panorama:&lt;/p&gt;&lt;p&gt;Most left is mono, &lt;br/&gt;Mid is normal Stereo, &lt;br/&gt;most right is widen Stereo panorama. &lt;/p&gt;&lt;p&gt;Use this to reduce Stereo noise.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
-             <item>
-              <property name="text">
-               <string>stereo</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>mono</string>
-              </property>
-             </item>
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="value">
+              <number>100</number>
+             </property>
+             <property name="sliderPosition">
+              <number>100</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
             </widget>
            </item>
            <item>
-            <widget class="QComboBox" name="fmChannelSelect">
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select the sound combination of channels. Default is stereo, i.e. a summation of the L+R signal that is transmitted in the low part of the spectrum and the L-R signal that is shifted 38 Khz.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_11">
              <item>
-              <property name="text">
-               <string>stereo</string>
-              </property>
+              <widget class="QComboBox" name="fmDeemphasisSelector">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select the de-emphasis filter.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <item>
+                <property name="text">
+                 <string>50us  (EU)</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>75us  (USA)</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Off</string>
+                </property>
+               </item>
+              </widget>
              </item>
              <item>
-              <property name="text">
-               <string>Left</string>
-              </property>
+              <widget class="QComboBox" name="fmLFcutoff">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select the Lowpass filter, applied to the resulting audio.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <item>
+                <property name="text">
+                 <string>6000Hz</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>9600Hz</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>12000Hz</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>15000Hz</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>20000Hz</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>25000Hz</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Off</string>
+                </property>
+               </item>
+              </widget>
              </item>
-             <item>
-              <property name="text">
-               <string>Right</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Left+Right</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Left-Right</string>
-              </property>
-             </item>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="fmDeemphasisSelector">
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select the de-emphasis filter.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <item>
-              <property name="text">
-               <string>50</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>none</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>75</string>
-              </property>
-             </item>
-            </widget>
+            </layout>
            </item>
            <item>
             <widget class="QSlider" name="squelchSlider">
@@ -1194,14 +998,17 @@
            <property name="maximum">
             <number>100</number>
            </property>
+           <property name="value">
+            <number>80</number>
+           </property>
            <property name="sliderPosition">
-            <number>50</number>
+            <number>80</number>
            </property>
            <property name="orientation">
             <enum>Qt::Vertical</enum>
            </property>
            <property name="tickPosition">
-            <enum>QSlider::TicksBothSides</enum>
+            <enum>QSlider::NoTicks</enum>
            </property>
            <property name="tickInterval">
             <number>20</number>
@@ -1231,95 +1038,80 @@
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_2">
            <item>
-            <widget class="QComboBox" name="fmFilterSelect">
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Filter, applied to the incoming raw data to isolate the FM signal from the noise around it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_13">
              <item>
-              <property name="text">
-               <string>---</string>
-              </property>
+              <widget class="QComboBox" name="fmFilterSelect">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Filter, applied to the incoming raw data to isolate the FM signal from the noise around it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <item>
+                <property name="text">
+                 <string>65kHz</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>75kHz</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>90kHz</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>115kHz</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>140kHz</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>165kHz</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>190kHz</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Off</string>
+                </property>
+               </item>
+              </widget>
              </item>
              <item>
-              <property name="text">
-               <string>65</string>
-              </property>
+              <widget class="QSpinBox" name="fmFilterDegree">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Order of filter that is applied on the incoming data stream to isolate the FM signal.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="minimum">
+                <number>1</number>
+               </property>
+               <property name="value">
+                <number>15</number>
+               </property>
+              </widget>
              </item>
-             <item>
-              <property name="text">
-               <string>75</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>90</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>115</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>140</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>165</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>190</string>
-              </property>
-             </item>
-            </widget>
-           </item>
-           <item>
-            <widget class="QSpinBox" name="fmFilterDegree">
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Order of filter that is applied on the incoming data stream to isolate the FM signal.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="minimum">
-              <number>1</number>
-             </property>
-             <property name="value">
-              <number>15</number>
-             </property>
-            </widget>
+            </layout>
            </item>
            <item>
             <widget class="QComboBox" name="fmDecoder">
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select a demodulator, one of 5.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
-             <item>
-              <property name="text">
-               <string>fm3decoder</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>fm1decoder</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>fm2decoder</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>fm4decoder</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>fm5decoder</string>
-              </property>
-             </item>
+             <property name="editable">
+              <bool>false</bool>
+             </property>
+             <property name="currentText">
+              <string/>
+             </property>
             </widget>
            </item>
            <item>
@@ -1327,7 +1119,6 @@
              <property name="font">
               <font>
                <pointsize>9</pointsize>
-               <weight>50</weight>
                <bold>false</bold>
               </font>
              </property>
@@ -1348,48 +1139,6 @@
            <item>
             <widget class="QComboBox" name="theSelector"/>
            </item>
-           <item>
-            <widget class="QComboBox" name="fmLFcutoff">
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select the Lowpass filter, applied to the resulting audio.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <item>
-              <property name="text">
-               <string>12000</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>15000</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>9600</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>6000</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>20000</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>25000</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>off</string>
-              </property>
-             </item>
-            </widget>
-           </item>
           </layout>
          </item>
          <item>
@@ -1400,7 +1149,6 @@
               <font>
                <family>Cantarell</family>
                <pointsize>11</pointsize>
-               <weight>50</weight>
                <bold>false</bold>
               </font>
              </property>
@@ -1484,7 +1232,6 @@
              <property name="font">
               <font>
                <pointsize>24</pointsize>
-               <weight>75</weight>
                <bold>true</bold>
               </font>
              </property>
@@ -1576,7 +1323,6 @@
              <property name="font">
               <font>
                <pointsize>9</pointsize>
-               <weight>50</weight>
                <bold>false</bold>
               </font>
              </property>
@@ -1615,7 +1361,6 @@
              <property name="font">
               <font>
                <pointsize>9</pointsize>
-               <weight>50</weight>
                <bold>false</bold>
               </font>
              </property>
@@ -1642,15 +1387,6 @@
              <property name="palette">
               <palette>
                <active>
-                <colorrole role="Base">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
                 <colorrole role="Window">
                  <brush brushstyle="SolidPattern">
                   <color alpha="255">
@@ -1662,15 +1398,6 @@
                 </colorrole>
                </active>
                <inactive>
-                <colorrole role="Base">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
                 <colorrole role="Window">
                  <brush brushstyle="SolidPattern">
                   <color alpha="255">
@@ -1682,15 +1409,6 @@
                 </colorrole>
                </inactive>
                <disabled>
-                <colorrole role="Base">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>0</blue>
-                  </color>
-                 </brush>
-                </colorrole>
                 <colorrole role="Window">
                  <brush brushstyle="SolidPattern">
                   <color alpha="255">
@@ -1729,15 +1447,6 @@
              <property name="palette">
               <palette>
                <active>
-                <colorrole role="Base">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
                 <colorrole role="Window">
                  <brush brushstyle="SolidPattern">
                   <color alpha="255">
@@ -1749,15 +1458,6 @@
                 </colorrole>
                </active>
                <inactive>
-                <colorrole role="Base">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
                 <colorrole role="Window">
                  <brush brushstyle="SolidPattern">
                   <color alpha="255">
@@ -1769,15 +1469,6 @@
                 </colorrole>
                </inactive>
                <disabled>
-                <colorrole role="Base">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>0</blue>
-                  </color>
-                 </brush>
-                </colorrole>
                 <colorrole role="Window">
                  <brush brushstyle="SolidPattern">
                   <color alpha="255">
@@ -1816,15 +1507,6 @@
              <property name="palette">
               <palette>
                <active>
-                <colorrole role="Base">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
                 <colorrole role="Window">
                  <brush brushstyle="SolidPattern">
                   <color alpha="255">
@@ -1836,15 +1518,6 @@
                 </colorrole>
                </active>
                <inactive>
-                <colorrole role="Base">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
                 <colorrole role="Window">
                  <brush brushstyle="SolidPattern">
                   <color alpha="255">
@@ -1856,15 +1529,6 @@
                 </colorrole>
                </inactive>
                <disabled>
-                <colorrole role="Base">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>0</blue>
-                  </color>
-                 </brush>
-                </colorrole>
                 <colorrole role="Window">
                  <brush brushstyle="SolidPattern">
                   <color alpha="255">
@@ -1903,15 +1567,6 @@
              <property name="palette">
               <palette>
                <active>
-                <colorrole role="Base">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
                 <colorrole role="Window">
                  <brush brushstyle="SolidPattern">
                   <color alpha="255">
@@ -1923,15 +1578,6 @@
                 </colorrole>
                </active>
                <inactive>
-                <colorrole role="Base">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
                 <colorrole role="Window">
                  <brush brushstyle="SolidPattern">
                   <color alpha="255">
@@ -1943,15 +1589,6 @@
                 </colorrole>
                </inactive>
                <disabled>
-                <colorrole role="Base">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>0</blue>
-                  </color>
-                 </brush>
-                </colorrole>
                 <colorrole role="Window">
                  <brush brushstyle="SolidPattern">
                   <color alpha="255">
@@ -1983,7 +1620,6 @@
              <property name="font">
               <font>
                <pointsize>10</pointsize>
-               <weight>50</weight>
                <bold>false</bold>
               </font>
              </property>
@@ -2016,15 +1652,6 @@
              <property name="palette">
               <palette>
                <active>
-                <colorrole role="Base">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
                 <colorrole role="Window">
                  <brush brushstyle="SolidPattern">
                   <color alpha="255">
@@ -2036,15 +1663,6 @@
                 </colorrole>
                </active>
                <inactive>
-                <colorrole role="Base">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
                 <colorrole role="Window">
                  <brush brushstyle="SolidPattern">
                   <color alpha="255">
@@ -2056,15 +1674,6 @@
                 </colorrole>
                </inactive>
                <disabled>
-                <colorrole role="Base">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>0</blue>
-                  </color>
-                 </brush>
-                </colorrole>
                 <colorrole role="Window">
                  <brush brushstyle="SolidPattern">
                   <color alpha="255">
@@ -2085,6 +1694,13 @@
              </property>
              <property name="segmentStyle">
               <enum>QLCDNumber::Flat</enum>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="2">
+            <widget class="QCheckBox" name="cbAfc">
+             <property name="text">
+              <string>AFC</string>
              </property>
             </widget>
            </item>

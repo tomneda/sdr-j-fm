@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2008, 2009, 2010
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -6,7 +5,7 @@
  *
  *    This file is part of the SDR-J
  *    Many of the ideas as implemented in SDR-J are derived from
- *    other work, made available through the GNU general Public License. 
+ *    other work, made available through the GNU general Public License.
  *    All copyrights of the original authors are recognized.
  *
  *    SDR-J is free software; you can redistribute it and/or modify
@@ -27,20 +26,20 @@
 #ifndef __OSCILLATOR
 #define __OSCILLATOR
 
-#include	"fm-constants.h"
+#include "fm-constants.h"
 
-class	Oscillator {
+class Oscillator {
 public:
-	        	Oscillator (DSPCOMPLEX *, int32_t);
-			Oscillator (int32_t);
-			~Oscillator ();
-	DSPCOMPLEX	nextValue	(int32_t);
+  Oscillator(DSPCOMPLEX *, int32_t);
+  Oscillator(int32_t);
+  ~Oscillator();
+  DSPCOMPLEX nextValue(int32_t);
+
 private:
-	uint8_t		localTable;
-	DSPCOMPLEX	*OscillatorValues;
-	int32_t		Rate;
-	int32_t		LOPhase;
+  uint8_t localTable;
+  DSPCOMPLEX *OscillatorValues;
+  int32_t Rate;
+  int32_t LOPhase;
 };
 
 #endif
-

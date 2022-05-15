@@ -184,7 +184,7 @@ CONFIG		+= hackrf
 CONFIG		+= lime
 CONFIG		+= pluto
 CONFIG		+= colibri
-INCLUDEPATH 	+= /usr/include/qt5/qwt
+INCLUDEPATH 	+= /usr/include/qwt
 #for ubuntu the first line
 #LIBS +=  -lqwt -lusb-1.0 -lrt -lportaudio -lsndfile -lfftw3f -lrtlsdr -ldl
 #for fedora 21

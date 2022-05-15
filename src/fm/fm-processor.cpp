@@ -324,21 +324,11 @@ void fmProcessor::setSoundBalance(int16_t balance)
 //	tau		= 2 * M_PI * Freq = 1000000 / time
 void fmProcessor::setDeemphasis(int16_t v)
 {
+  Q_ASSERT(v >= 1);
   DSPFLOAT Tau;
 
-  switch (v)
-  {
-  default:
-    v = 1;
-    [[fallthrough]];
-
-  case 1:
-  case 50:
-  case 75:
-    //	pass the Tau
-    Tau   = 1000000.0 / v;
-    alpha = 1.0 / (DSPFLOAT(fmRate) / Tau + 1.0);
-  }
+  Tau   = 1000000.0 / v;
+  alpha = 1.0 / (DSPFLOAT(fmRate) / Tau + 1.0);
 }
 
 void fmProcessor::setVolume(int16_t Vol)
@@ -728,15 +718,13 @@ void fmProcessor::setLFcutoff(int32_t Hz)
 {
   LowPassFIR *tempFmAudioFilter = fmAudioFilter;
 
-  fmAudioFilter = nullptr;// set to null first due to other thread is using
-                          // pointer while deletion
+  fmAudioFilter = nullptr; // set to null first due to other thread is using pointer while deletion
+
   delete tempFmAudioFilter;
 
   if (Hz > 0)
   {
-    fmAudioFilter = new LowPassFIR(
-      55, Hz, fmRate);  // 11 is too less (55 is also arbitrary) for this high
-                        // sample rate fmRate = 256000S/s
+    fmAudioFilter = new LowPassFIR(55, Hz, fmRate);  // 11 is too less (55 is also arbitrary) for this high sample rate fmRate = 256000S/s
   }
 }
 

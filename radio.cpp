@@ -1333,21 +1333,14 @@ void RadioInterface::setfmDeemphasis(const QString &s)
   {
     return;
   }
-  if (s == "50us (EU)")
-  {
-    myFMprocessor->setDeemphasis(50);
-  }
-  else if (s == "75us (USA)")
-  {
-    myFMprocessor->setDeemphasis(75);
-  }
-  else if (s == "Off")
+
+  if (s == "Off")
   {
     myFMprocessor->setDeemphasis(1);
   }
   else
   {
-    Q_ASSERT(0);
+    myFMprocessor->setDeemphasis(stol(s.toStdString().c_str())); // toInt will not work with text after the number
   }
 }
 
@@ -1511,13 +1504,15 @@ void RadioInterface::setfmLFcutoff(const QString &s)
   {
     return;
   }
-  if (s == "off")
+
+  if (s == "Off")
   {
     myFMprocessor->setLFcutoff(-1);
   }
   else
   {
-    myFMprocessor->setLFcutoff((int32_t)(s.toInt()));
+    //myFMprocessor->setLFcutoff((int32_t)(s.toInt()));
+    myFMprocessor->setLFcutoff(stol(s.toStdString().c_str()));
   }
 }
 
@@ -1948,14 +1943,14 @@ void RadioInterface::restoreGUIsettings(QSettings *s)
     fmChannelSelect->setCurrentIndex(k);
   }
 
-  h = s->value("fmDeemphasisSelector", "50us (EU)").toString();
+  h = s->value("fmDeemphasisSelector", "50us  (EU)").toString();
   k = fmDeemphasisSelector->findText(h);
   if (k != -1)
   {
     fmDeemphasisSelector->setCurrentIndex(k);
   }
 
-  h = s->value("fmLFcutoff", fmLFcutoff->currentText()).toString();
+  h = s->value("fmLFcutoff", "15000Hz").toString();
   k = fmLFcutoff->findText(h);
   if (k != -1)
   {

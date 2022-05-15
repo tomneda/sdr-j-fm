@@ -102,7 +102,7 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
    *	default values, will be set through the user interface
    *	to their appropriate values
    */
-  this->fmModus        = FM_Mode::STEREO;
+  this->fmModus        = FM_Mode::Stereo;
   this->selector       = S_STEREO;
   this->balance        = 0;
   this->leftChannel    = 1.0f;// -(balance - 50.0) / 100.0;
@@ -288,9 +288,9 @@ void fmProcessor::setBandfilterDegree(int32_t d)
   newFilter      = true;
 }
 
-void fmProcessor::setfmMode(uint8_t m)
+void fmProcessor::setfmMode(FM_Mode m)
 {
-  fmModus = m ? FM_Mode::STEREO : FM_Mode::MONO;
+  fmModus = m;
 }
 
 void fmProcessor::setFMdecoder(int16_t d)
@@ -305,7 +305,8 @@ void fmProcessor::setSoundMode(uint8_t selector)
 
 void fmProcessor::setStereoPanorama(int16_t iStereoPan)
 {
-  // iStereoPan range: 0 (Mono) ... +100 (Stereo)
+  // iStereoPan range: 0 (Mono) ... +50 (Stereo) ... +100 (Stereo with widen panorama)
+  mPanorama = (DSPFLOAT)iStereoPan / 50.0f;
 }
 
 void fmProcessor::setSoundBalance(int16_t balance)
@@ -577,12 +578,16 @@ void fmProcessor::run(void)
         emit lfBufferLoaded();
       }
 
-      if (fmModus == FM_Mode::STEREO)
+      if (fmModus != FM_Mode::Mono)
       {
         stereo(demod, &result, &rdsData);
 
-        const DSPFLOAT left  = real(result) + imag(result);  // 2L = (L+R) + (L-R)
-        const DSPFLOAT right = real(result) - imag(result);  // 2R = (L+R) - (L-R)
+        const DSPFLOAT sumLR  = real(result);
+        const DSPFLOAT diffLR = imag(result);
+        const DSPFLOAT diffLRWeightend = diffLR * (fmModus == FM_Mode::StereoPano ? mPanorama : 1.0f);
+
+        const DSPFLOAT left  = sumLR + diffLRWeightend;  // 2L = (L+R) + (L-R)
+        const DSPFLOAT right = sumLR - diffLRWeightend;  // 2R = (L+R) - (L-R)
 
         switch (selector)
         {
@@ -600,11 +605,11 @@ void fmProcessor::run(void)
           break;
 
         case S_LEFTplusRIGHT:
-          result = DSPCOMPLEX(real(result), real(result));
+          result = DSPCOMPLEX(sumLR, sumLR);
           break;
 
         case S_LEFTminusRIGHT:
-          result = DSPCOMPLEX(imag(result), imag(result));
+          result = DSPCOMPLEX(diffLRWeightend, diffLRWeightend);
           break;
         }
       }

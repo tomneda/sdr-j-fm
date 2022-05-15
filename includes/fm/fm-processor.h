@@ -48,6 +48,10 @@ class newConverter;
 
 class fmProcessor : public QThread {
   Q_OBJECT
+
+public:
+  enum class FM_Mode { Stereo, StereoPano, Mono };
+
 public:
   fmProcessor(deviceHandler *, RadioInterface *, audioSink *,
               int32_t,              // inputRate
@@ -63,8 +67,9 @@ public:
               int16_t,              // filterDepth
               int16_t);             // threshold scanning
   ~fmProcessor() override;
+
   void stop(); // stop the processor
-  void setfmMode(uint8_t);
+  void setfmMode(FM_Mode);
   void setFMdecoder(int16_t);
   void setSoundMode(uint8_t);
   void setStereoPanorama(int16_t iStereoPan);
@@ -106,8 +111,6 @@ public:
     S_LEFTplusRIGHT = 0103,
     S_LEFTminusRIGHT = 0104
   };
-
-  enum class FM_Mode { STEREO, MONO };
 
   void set_squelchValue(int16_t);
 
@@ -186,6 +189,7 @@ private:
   DSPFLOAT omega_demod;
   LowPassFIR *fmAudioFilter;
 
+  DSPFLOAT mPanorama{1.0f};
   int16_t balance;
   DSPFLOAT leftChannel;
   DSPFLOAT rightChannel;

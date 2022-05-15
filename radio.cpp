@@ -843,7 +843,7 @@ void RadioInterface::setInputMode(const QString &s)
 
 void RadioInterface::setfmChannelSelector(const QString &s)
 {
-  if (s == "stereo")
+  if (s == "Stereo")
   {
     channelSelector = fmProcessor::S_STEREO;
   }
@@ -1452,7 +1452,29 @@ void RadioInterface::setfmMode(const QString &s)
   {
     return;
   }
-  myFMprocessor->setfmMode(s == "stereo");
+
+  if (s == "Stereo")
+  {
+    myFMprocessor->setfmMode(fmProcessor::FM_Mode::Stereo);
+    fmStereoPanoramaSlider->setEnabled(false);
+    fmChannelSelect->setEnabled(true);
+  }
+  else if (s == "Stereo (Pano)")
+  {
+    myFMprocessor->setfmMode(fmProcessor::FM_Mode::StereoPano);
+    fmStereoPanoramaSlider->setEnabled(true);
+    fmChannelSelect->setEnabled(true);
+  }
+  else if (s == "Mono")
+  {
+    myFMprocessor->setfmMode(fmProcessor::FM_Mode::Mono);
+    fmStereoPanoramaSlider->setEnabled(false);
+    fmChannelSelect->setEnabled(false);
+  }
+  else
+  {
+    Q_ASSERT(0);
+  }
 }
 
 void RadioInterface::setfmRdsSelector(const QString &s)

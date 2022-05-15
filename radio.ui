@@ -714,12 +714,17 @@
                </property>
                <item>
                 <property name="text">
-                 <string>stereo</string>
+                 <string>Stereo</string>
                 </property>
                </item>
                <item>
                 <property name="text">
-                 <string>mono</string>
+                 <string>Stereo (Pano)</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Mono</string>
                 </property>
                </item>
               </widget>
@@ -731,7 +736,7 @@
                </property>
                <item>
                 <property name="text">
-                 <string>stereo</string>
+                 <string>Stereo</string>
                 </property>
                </item>
                <item>
@@ -760,6 +765,9 @@
            </item>
            <item>
             <widget class="QSlider" name="fmStereoPanoramaSlider">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the Stereo panorama:&lt;/p&gt;&lt;p&gt;Most left is mono, &lt;br/&gt;Mid is normal Stereo, &lt;br/&gt;most right is widen Stereo panorama. &lt;/p&gt;&lt;p&gt;Use this to reduce Stereo noise.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
              <property name="maximum">
               <number>100</number>
              </property>

@@ -129,16 +129,13 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   //	and decimate in an efficient way. We have an optimized
   //	decimating filter (optimized or not, it takes quite some
   //	cycles when entering with high rates)
-  fmBandfilter = new DecimatingFIR(15 * decimatingScale, fmRate / 2, inputRate,
-                                   decimatingScale);
+  fmBandfilter = new DecimatingFIR(15 * decimatingScale, fmRate / 2, inputRate, decimatingScale);
 
   //	to isolate the pilot signal, we need a reasonable
   //	filter. The filtered signal is beautified by a pll
   pilotBandFilter = new fftFilter(FFT_SIZE, PILOTFILTER_SIZE);
-  pilotBandFilter->setBand(PILOT_FREQUENCY - PILOT_WIDTH / 2,
-                           PILOT_FREQUENCY + PILOT_WIDTH / 2, fmRate);
-  pilotRecover =
-    new pilotRecovery(fmRate, OMEGA_PILOT, 25 * omega_demod, mySinCos);
+  pilotBandFilter->setBand(PILOT_FREQUENCY - PILOT_WIDTH / 2, PILOT_FREQUENCY + PILOT_WIDTH / 2, fmRate);
+  pilotRecover = new pilotRecovery(fmRate, OMEGA_PILOT, 25 * omega_demod, mySinCos);
   pilotDelay = (FFT_SIZE - PILOTFILTER_SIZE) * OMEGA_PILOT;
 
   rdsLowPassFilter = new fftFilter(FFT_SIZE, RDSLOWPASS_SIZE);

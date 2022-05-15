@@ -1574,13 +1574,16 @@ void RadioInterface::showStrength(float the_pilotStrength, float the_dcComponent
 
   pilotStrength->display(the_pilotStrength);
 
-  if (the_pilotStrength > 2.0)
+  //if (the_pilotStrength > 2.0)
+  if (myFMprocessor->isPilotLocked())
   {
-    pll_isLocked->setStyleSheet("QLabel {background-color:green}");
+    pll_isLocked->setStyleSheet("QLabel {background-color:lightgreen}");
+    pll_isLocked->setText("Pilot Locked");
   }
   else
   {
     pll_isLocked->setStyleSheet("QLabel {background-color:red}");
+    pll_isLocked->setText("Pilot Unlocked");
   }
 
   dc_component->display(the_dcComponent);

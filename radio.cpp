@@ -2026,7 +2026,7 @@ void RadioInterface::newFrequency(int f)
 void RadioInterface::set_freqSave()
 {
   myLine = new QLineEdit();
-  myLine->setText(stationLabelTextBox->text());
+  myLine->setText(stationLabelTextBox->text().trimmed());
   myLine->show();
   connect(myLine, SIGNAL(returnPressed()), this, SLOT(handle_myLine()));
 }

@@ -789,17 +789,17 @@
              </property>
              <item>
               <property name="text">
-               <string>50</string>
+               <string>Off</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>none</string>
+               <string>50us (EU)</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>75</string>
+               <string>75us (USA)</string>
               </property>
              </item>
             </widget>

@@ -1333,17 +1333,21 @@ void RadioInterface::setfmDeemphasis(const QString &s)
   {
     return;
   }
-  if (s == "50")
+  if (s == "50us (EU)")
   {
     myFMprocessor->setDeemphasis(50);
   }
-  else if (s == "75")
+  else if (s == "75us (USA)")
   {
     myFMprocessor->setDeemphasis(75);
   }
-  else
+  else if (s == "Off")
   {
     myFMprocessor->setDeemphasis(1);
+  }
+  else
+  {
+    Q_ASSERT(0);
   }
 }
 
@@ -1944,8 +1948,7 @@ void RadioInterface::restoreGUIsettings(QSettings *s)
     fmChannelSelect->setCurrentIndex(k);
   }
 
-  h = s->value("fmDeemphasisSelector", fmDeemphasisSelector->currentText())
-      .toInt();
+  h = s->value("fmDeemphasisSelector", "50us (EU)").toString();
   k = fmDeemphasisSelector->findText(h);
   if (k != -1)
   {

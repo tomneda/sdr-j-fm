@@ -1341,7 +1341,7 @@ void RadioInterface::setfmDeemphasis(const QString &s)
   }
   else
   {
-    myFMprocessor->setDeemphasis(stol(s.toStdString().c_str())); // toInt will not work with text after the number
+    myFMprocessor->setDeemphasis(std::stol(s.toStdString())); // toInt will not work with text after the number
   }
 }
 
@@ -1513,7 +1513,7 @@ void RadioInterface::setfmLFcutoff(const QString &s)
   else
   {
     //myFMprocessor->setLFcutoff((int32_t)(s.toInt()));
-    myFMprocessor->setLFcutoff(stol(s.toStdString().c_str()));
+    myFMprocessor->setLFcutoff(std::stol(s.toStdString()));
   }
 }
 
@@ -1548,7 +1548,7 @@ void RadioInterface::setfmBandwidth(const QString &s)
   }
   else
   {
-    fmBandwidth = Khz(stol(s.toStdString().c_str()));
+    fmBandwidth = Khz(std::stol(s.toStdString()));
   }
 
   if (myFMprocessor != nullptr)

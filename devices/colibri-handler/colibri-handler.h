@@ -88,7 +88,7 @@ public:
 	RingBuffer<std::complex<float>>	_I_Buffer;
 	int16_t		convBufferSize;
 	int16_t		convIndex;
-	std::vector <complex<float> >   convBuffer;
+  std::vector <std::complex<float> >   convBuffer;
 	int16_t		mapTable_int   [2048];
 	float		mapTable_float [2048];
 private:
@@ -118,7 +118,7 @@ private:
 	void			colibri_version		(uint32_t &major,
 	                                         uint32_t &minor,
 	                                         uint32_t &patch);
-	string			colibri_information	();
+  std::string	colibri_information	();
 	uint32_t		colibri_devices		();
 	bool			colibri_open		(Descriptor *pDev,
 	                                         const uint32_t devIndex);

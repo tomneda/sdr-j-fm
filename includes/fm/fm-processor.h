@@ -228,36 +228,41 @@ private:
     int32_t count;
 
   public:
-    pilotRecovery(int32_t Rate_in, DSPFLOAT omega, DSPFLOAT gain,
-                  SinCos *mySinCos) {
-      this->Rate_in = Rate_in;
-      this->omega = omega;
-      this->gain = gain;
-      this->mySinCos = mySinCos;
-      pll_isLocked = false;
-      pilot_Lock = 0;
-      pilot_oldValue = 0;
+    pilotRecovery(int32_t Rate_in, DSPFLOAT omega, DSPFLOAT gain, SinCos * mySinCos)
+    {
+      this->Rate_in         = Rate_in;
+      this->omega           = omega;
+      this->gain            = gain;
+      this->mySinCos        = mySinCos;
+      pll_isLocked          = false;
+      pilot_Lock            = 0;
+      pilot_oldValue        = 0;
       pilot_OscillatorPhase = 0;
     }
 
-    ~pilotRecovery(void) {}
+    ~pilotRecovery() = default;
 
-    bool isLocked(void) { return pll_isLocked; }
+    bool isLocked()
+    {
+      return pll_isLocked;
+    }
 
-    DSPFLOAT getPilotPhase(DSPFLOAT pilot) {
+    DSPFLOAT getPilotPhase(DSPFLOAT pilot)
+    {
       DSPFLOAT OscillatorValue = mySinCos->getCos(pilot_OscillatorPhase);
-      DSPFLOAT PhaseError = pilot * OscillatorValue;
+      DSPFLOAT PhaseError      = pilot * OscillatorValue;
       DSPFLOAT currentPhase;
+
       pilot_OscillatorPhase += PhaseError * gain;
-      currentPhase = PI_Constrain(pilot_OscillatorPhase);
+      currentPhase           = PI_Constrain(pilot_OscillatorPhase);
 
       pilot_OscillatorPhase = PI_Constrain(pilot_OscillatorPhase + omega);
 
       quadRef = (OscillatorValue - pilot_oldValue) / omega;
       //	         quadRef	= PI_Constrain (quadRef);
       pilot_oldValue = OscillatorValue;
-      pilot_Lock =
-          1.0 / 30 * (-quadRef * pilot) + pilot_Lock * (1.0 - (1.0 / 30));
+      pilot_Lock     =
+        1.0 / 30 * (-quadRef * pilot) + pilot_Lock * (1.0 - (1.0 / 30));
       pll_isLocked = pilot_Lock > 0.1;
       return currentPhase;
     }

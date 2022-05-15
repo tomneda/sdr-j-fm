@@ -397,6 +397,7 @@ void RadioInterface::setStart(void)
 
   // populate FM decoder combo box
   {
+    // disconnect GUI link temporary as filling the GUI-list will trigger the signal
     disconnect(fmDecoder, qOverload<int>(&QComboBox::currentIndexChanged), this, &RadioInterface::setfmDecoder);
 
     for (const auto & dc : myFMprocessor->listNameofDecoder())
@@ -404,7 +405,7 @@ void RadioInterface::setStart(void)
       fmDecoder->addItem(dc);
     }
 
-    const QString h = fmSettings->value("fmDecoder", fmDecoder->currentText()).toString();
+    const QString h = fmSettings->value("fmDecoder", "PLL Decoder").toString();
     const int k = fmDecoder->findText(h);
 
     if (k != -1)
@@ -1541,14 +1542,15 @@ void RadioInterface::Display(int32_t freq)
 
 void RadioInterface::setfmBandwidth(const QString &s)
 {
-  if (s == "---")
+  if (s == "Off")
   {
     fmBandwidth = 0.95 * fmRate;
   }
   else
   {
-    fmBandwidth = Khz(s.toInt());
+    fmBandwidth = Khz(stol(s.toStdString().c_str()));
   }
+
   if (myFMprocessor != nullptr)
   {
     myFMprocessor->setBandwidth(fmBandwidth);
@@ -1907,7 +1909,7 @@ void RadioInterface::restoreGUIsettings(QSettings *s)
   k = s->value("squelchSlider", squelchSlider->value()).toInt();
   squelchSlider->setValue(k);
 
-  h = s->value("fmFilterSelect", fmFilterSelect->currentText()).toString();
+  h = s->value("fmFilterSelect", "165kHz").toString();
   k = fmFilterSelect->findText(h);
   if (k != -1)
   {

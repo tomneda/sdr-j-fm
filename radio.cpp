@@ -249,7 +249,7 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
 
   mykeyPad = new keyPad(this);
 
-  connect(freqButton, SIGNAL(clicked(void)), this, SLOT(handle_freqButton(void)));
+  connect(freqButton, SIGNAL(clicked()), this, SLOT(handle_freqButton()));
 
   //	Create a timer for autoincrement/decrement of the tuning
   autoIncrementTimer = new QTimer();
@@ -298,7 +298,7 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
   myList = new programList(this, std::move(stationList));
   myList->show();
   myLine = nullptr;
-  connect(freqSave, SIGNAL(clicked(void)), this, SLOT(set_freqSave(void)));
+  connect(freqSave, SIGNAL(clicked()), this, SLOT(set_freqSave()));
   connect(cbAfc, &QAbstractButton::clicked, this, [this](bool checked){ mAfcActive = checked; reset_afc(); } );
 
   resetSelector();
@@ -365,7 +365,7 @@ void RadioInterface::dumpControlState(QSettings *s)
 
 //	On start, we ensure that the streams are stopped so
 //	that they can be restarted again.
-void RadioInterface::setStart(void)
+void RadioInterface::setStart()
 {
   bool r = false;
 
@@ -420,7 +420,7 @@ void RadioInterface::setStart(void)
 }
 //
 //	always tricky to kill tasks
-void RadioInterface::TerminateProcess(void)
+void RadioInterface::TerminateProcess()
 {
   runMode = ERunStates::STOPPING;
 
@@ -466,7 +466,7 @@ void RadioInterface::abortSystem(int d)
 }
 //
 
-void RadioInterface::stopDumping(void)
+void RadioInterface::stopDumping()
 {
   if (myFMprocessor == nullptr)
   {
@@ -517,24 +517,24 @@ void RadioInterface::set_ExtLO(int f)
   set_ExtFrequency(f);
 }
 
-void RadioInterface::set_lockLO(void)
+void RadioInterface::set_lockLO()
 {
   //	fprintf (stderr, "ExtioLock is true\n");
   ExtioLock = true;
 }
 
-void RadioInterface::set_unlockLO(void)
+void RadioInterface::set_unlockLO()
 {
   //	fprintf (stderr, "ExtioLock is false\n");
   ExtioLock = false;
 }
 
-void RadioInterface::set_stopHW(void)
+void RadioInterface::set_stopHW()
 {
   myRig->stopReader();
 }
 
-void RadioInterface::set_startHW(void)
+void RadioInterface::set_startHW()
 {
   if (runMode == ERunStates::RUNNING) // looks strange, but seems right
   {
@@ -775,10 +775,10 @@ void RadioInterface::setDevice(const QString &s)
     connect(myRig, SIGNAL(set_ExtFrequency(int)), this,
             SLOT(set_ExtFrequency(int)));
     connect(myRig, SIGNAL(set_ExtLO(int)), this, SLOT(set_ExtLO(int)));
-    connect(myRig, SIGNAL(set_lockLO(void)), this, SLOT(set_lockLO(void)));
-    connect(myRig, SIGNAL(set_unlockLO(void)), this, SLOT(set_unlockLO(void)));
-    connect(myRig, SIGNAL(set_stopHW(void)), this, SLOT(set_stopHW(void)));
-    connect(myRig, SIGNAL(set_startHW(void)), this, SLOT(set_startHW(void)));
+    connect(myRig, SIGNAL(set_lockLO()), this, SLOT(set_lockLO()));
+    connect(myRig, SIGNAL(set_unlockLO()), this, SLOT(set_unlockLO()));
+    connect(myRig, SIGNAL(set_stopHW()), this, SLOT(set_stopHW()));
+    connect(myRig, SIGNAL(set_startHW()), this, SLOT(set_startHW()));
   }
 #endif
   myRig->setVFOFrequency(currentFreq);
@@ -786,7 +786,7 @@ void RadioInterface::setDevice(const QString &s)
 }
 //
 //	Just for convenience packed as a function
-void RadioInterface::make_newProcessor(void)
+void RadioInterface::make_newProcessor()
 {
   myFMprocessor = new fmProcessor(myRig, this, our_audioSink, inputRate, fmRate,
                                   workingRate, this->audioRate, displaySize,
@@ -1041,7 +1041,7 @@ void RadioInterface::set_incrementFlag(int16_t incr)
   incrementingFlag->setText(temp);
 }
 //
-void RadioInterface::autoIncrement_timeout(void)
+void RadioInterface::autoIncrement_timeout()
 {
   int32_t amount;
   int32_t frequency;
@@ -1076,7 +1076,7 @@ void RadioInterface::autoIncrement_timeout(void)
   }
 }
 
-void RadioInterface::scanresult(void)
+void RadioInterface::scanresult()
 {
   stopIncrementing();
 }
@@ -1099,7 +1099,7 @@ void RadioInterface::stopIncrementing()
   }
 }
 
-void RadioInterface::autoIncrementButton(void)
+void RadioInterface::autoIncrementButton()
 {
   if (autoIncrementTimer->isActive())
   {
@@ -1121,7 +1121,7 @@ void RadioInterface::autoIncrementButton(void)
   set_incrementFlag(IncrementIndex);
 }
 
-void RadioInterface::autoDecrementButton(void)
+void RadioInterface::autoDecrementButton()
 {
   if (autoIncrementTimer->isActive())
   {
@@ -1160,26 +1160,26 @@ void RadioInterface::set_maximum(int f)
   maxLoopFrequency = Khz(f);
 }
 
-void RadioInterface::IncrementButton(void)
+void RadioInterface::IncrementButton()
 {
   stopIncrementing();
   currentFreq = setTuner(currentFreq + Khz(fmIncrement));
 }
 
-void RadioInterface::DecrementButton(void)
+void RadioInterface::DecrementButton()
 {
   stopIncrementing();
   currentFreq = setTuner(currentFreq - Khz(fmIncrement));
 }
 //
-void RadioInterface::updateTimeDisplay(void)
+void RadioInterface::updateTimeDisplay()
 {
   QDateTime currentTime = QDateTime::currentDateTime();
 
   timeDisplay->setText(currentTime.toString(QString("dd.MM.yy:hh:mm:ss")));
 }
 
-void RadioInterface::set_dumping(void)
+void RadioInterface::set_dumping()
 {
   SF_INFO *sf_info = (SF_INFO *)alloca(sizeof(SF_INFO));
 
@@ -1221,7 +1221,7 @@ void RadioInterface::set_dumping(void)
   myFMprocessor->startDumping(dumpfilePointer);
 }
 
-void RadioInterface::set_audioDump(void)
+void RadioInterface::set_audioDump()
 {
   SF_INFO *sf_info = (SF_INFO *)alloca(sizeof(SF_INFO));
 
@@ -1264,20 +1264,20 @@ void RadioInterface::set_audioDump(void)
  *	The local connects, knobs, sliders and displays,
  *	are connected here.
  */
-void RadioInterface::localConnects(void)
+void RadioInterface::localConnects()
 {
   //	connect (startButton, SIGNAL (clicked ()),
   //	              this, SLOT (setStart ()));
-  connect(pauseButton, SIGNAL(clicked(void)), this, SLOT(clickPause(void)));
+  connect(pauseButton, SIGNAL(clicked()), this, SLOT(clickPause()));
   connect(streamOutSelector, SIGNAL(activated(int)), this,
           SLOT(setStreamOutSelector(int)));
   connect(deviceSelector, SIGNAL(activated(const QString&)), this,
           SLOT(setDevice(const QString&)));
-  connect(dumpButton, SIGNAL(clicked(void)), this, SLOT(set_dumping(void)));
-  connect(audioDump, SIGNAL(clicked(void)), this, SLOT(set_audioDump(void)));
+  connect(dumpButton, SIGNAL(clicked()), this, SLOT(set_dumping()));
+  connect(audioDump, SIGNAL(clicked()), this, SLOT(set_audioDump()));
 
-  connect(squelchButton, SIGNAL(clicked(void)), this,
-          SLOT(set_squelchMode(void)));
+  connect(squelchButton, SIGNAL(clicked()), this,
+          SLOT(set_squelchMode()));
   connect(squelchSlider, SIGNAL(valueChanged(int)), this,
           SLOT(set_squelchValue(int)));
 
@@ -1289,15 +1289,15 @@ void RadioInterface::localConnects(void)
   //	connect (inputModeSelect, SIGNAL (activated(const QString&) ),
   //	              this, SLOT (setInputMode (const QString&) ) );
 
-  connect(fc_plus, SIGNAL(clicked(void)), this, SLOT(autoIncrementButton(void)));
-  connect(fc_minus, SIGNAL(clicked(void)), this, SLOT(autoDecrementButton(void)));
-  connect(f_plus, SIGNAL(clicked(void)), this, SLOT(IncrementButton(void)));
-  connect(f_minus, SIGNAL(clicked(void)), this, SLOT(DecrementButton(void)));
+  connect(fc_plus, SIGNAL(clicked()), this, SLOT(autoIncrementButton()));
+  connect(fc_minus, SIGNAL(clicked()), this, SLOT(autoDecrementButton()));
+  connect(f_plus, SIGNAL(clicked()), this, SLOT(IncrementButton()));
+  connect(f_minus, SIGNAL(clicked()), this, SLOT(DecrementButton()));
   //
   //	fm specific buttons and sliders
   connect(fmChannelSelect, SIGNAL(activated(const QString&)), this, SLOT(setfmChannelSelector(const QString&)));
   connect(logging, SIGNAL(activated(const QString&)), this, SLOT(setLogging(const QString&)));
-  connect(logSaving, SIGNAL(clicked(void)), this, SLOT(setLogsaving(void)));
+  connect(logSaving, SIGNAL(clicked()), this, SLOT(setLogsaving()));
   connect(fmFilterSelect, SIGNAL(activated(const QString&)), this, SLOT(setfmBandwidth(const QString&)));
   connect(fmFilterDegree, SIGNAL(valueChanged(int)), this, SLOT(setfmBandwidth(int)));
   connect(fmMode, SIGNAL(activated(const QString&)), this, SLOT(setfmMode(const QString&)));
@@ -1390,7 +1390,7 @@ void RadioInterface::setPiCode(int n)
   rdsPiDisplay->display(n);
 }
 
-void RadioInterface::clearStationLabel(void)
+void RadioInterface::clearStationLabel()
 {
   StationLabel = QString("");
   stationLabelTextBox->setText(StationLabel);
@@ -1413,12 +1413,12 @@ void RadioInterface::setMusicSpeechFlag(int n)
   }
 }
 
-void RadioInterface::clearMusicSpeechFlag(void)
+void RadioInterface::clearMusicSpeechFlag()
 {
   speechLabel->setText(QString(""));
 }
 
-void RadioInterface::clearRadioText(void)
+void RadioInterface::clearRadioText()
 {
   RadioText = QString("");
   radioTextBox->setText(RadioText);
@@ -1517,7 +1517,7 @@ void RadioInterface::setfmLFcutoff(const QString &s)
   }
 }
 
-static inline int32_t numberofDigits(int32_t f)
+inline int32_t numberofDigits(int32_t f)
 {
   if (f < 100000)
   {
@@ -1662,7 +1662,7 @@ void RadioInterface::setLogging(const QString &s)
   }
 }
 
-void RadioInterface::setLogsaving(void)
+void RadioInterface::setLogsaving()
 {
   if (logFile != nullptr) // just stop it
   {
@@ -1690,7 +1690,7 @@ void RadioInterface::setLogsaving(void)
   }
 }
 //
-void RadioInterface::clickPause(void)
+void RadioInterface::clickPause()
 {
   if (runMode == ERunStates::IDLE)
   {
@@ -1786,7 +1786,7 @@ void RadioInterface::set_squelchValue(int n)
 //	in the GUI environment. The FM processor prepares "views"
 //	and punt these views into a shared buffer. If the buffer is
 //	full, a signal is sent.
-void RadioInterface::hfBufferLoaded(void)
+void RadioInterface::hfBufferLoaded()
 {
   double  *X_axis   = (double *)alloca(displaySize * sizeof(double));
   double  *Y_values = (double *)alloca(displaySize * sizeof(double));
@@ -1814,7 +1814,7 @@ void RadioInterface::hfBufferLoaded(void)
 //	in the GUI environment. The FM processor prepares "views"
 //	and punt these views into a shared buffer. If the buffer is
 //	full, a signal is sent.
-void RadioInterface::lfBufferLoaded(void)
+void RadioInterface::lfBufferLoaded()
 {
   double  *X_axis   = (double *)alloca(displaySize * sizeof(double));
   double  *Y_values = (double *)alloca(displaySize * sizeof(double));
@@ -1858,7 +1858,7 @@ void RadioInterface::setup_HFScope()
           SLOT(setHFplotterView(int)));
 }
 
-void RadioInterface::setup_LFScope(void)
+void RadioInterface::setup_LFScope()
 {
   lfBuffer   = new RingBuffer<double>(2 * displaySize);
   lfScope    = new Scope(lfscope, this->displaySize, this->rasterSize);
@@ -1867,7 +1867,7 @@ void RadioInterface::setup_LFScope(void)
 }
 
 //
-void RadioInterface::set_squelchMode(void)
+void RadioInterface::set_squelchMode()
 {
   if (myFMprocessor == nullptr)
   {
@@ -1990,7 +1990,7 @@ int32_t RadioInterface::mapRates(int32_t inputRate)
 //	from the slot. Obviously, after setting the index of
 //	the device selector, we connect again
 
-void RadioInterface::resetSelector(void)
+void RadioInterface::resetSelector()
 {
   disconnect(deviceSelector, SIGNAL(activated(const QString&)), this,
              SLOT(setDevice(const QString&)));
@@ -2005,7 +2005,7 @@ void RadioInterface::resetSelector(void)
           SLOT(setDevice(const QString&)));
 }
 
-void RadioInterface::handle_freqButton(void)
+void RadioInterface::handle_freqButton()
 {
   if (mykeyPad->isVisible())
   {
@@ -2023,14 +2023,15 @@ void RadioInterface::newFrequency(int f)
   currentFreq = setTuner(f);
 }
 
-void RadioInterface::set_freqSave(void)
+void RadioInterface::set_freqSave()
 {
   myLine = new QLineEdit();
+  myLine->setText(stationLabelTextBox->text());
   myLine->show();
-  connect(myLine, SIGNAL(returnPressed(void)), this, SLOT(handle_myLine(void)));
+  connect(myLine, SIGNAL(returnPressed()), this, SLOT(handle_myLine()));
 }
 
-void RadioInterface::handle_myLine(void)
+void RadioInterface::handle_myLine()
 {
   int32_t freq        = myRig->getVFOFrequency() + LOFrequency;
   QString programName = myLine->text();

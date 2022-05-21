@@ -769,6 +769,19 @@ bool fmProcessor::ok()
   return running;
 }
 
+bool fmProcessor::isPilotLocked(float & oLockStrength) const
+{
+  if (fmModus != FM_Mode::Mono && pilotRecover)
+  {
+    return pilotRecover->isLocked(oLockStrength);
+  }
+  else
+  {
+    oLockStrength = 0;
+    return false;
+  }
+}
+
 void fmProcessor::setFreezer(bool b)
 {
   freezer = b ? 10 : 0;

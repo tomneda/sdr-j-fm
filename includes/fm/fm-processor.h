@@ -88,8 +88,8 @@ public:
   void setFreezer(bool);
   void set_squelchMode(bool);
   void setInputMode(uint8_t);
-  bool isPilotLocked() const { return (fmModus != FM_Mode::Mono && pilotRecover ? pilotRecover->isLocked() : false); }
   bool ok();
+  bool isPilotLocked(float & oLockStrength) const;
 
   DSPFLOAT get_pilotStrength();
   DSPFLOAT get_rdsStrength();
@@ -240,8 +240,9 @@ private:
 
     ~pilotRecovery() = default;
 
-    bool isLocked()
+    bool isLocked(float & oLockStrength)
     {
+      oLockStrength = pilot_Lock;
       return pll_isLocked;
     }
 
@@ -259,9 +260,10 @@ private:
       quadRef = (OscillatorValue - pilot_oldValue) / omega;
       //	         quadRef	= PI_Constrain (quadRef);
       pilot_oldValue = OscillatorValue;
-      pilot_Lock     = 1.0 / 30 * (-quadRef * pilot) + pilot_Lock * (1.0 - (1.0 / 30));
+      constexpr float alpha = 1.0f / 3000.0f;
+      pilot_Lock     = alpha * (-quadRef * pilot) + pilot_Lock * (1.0 - alpha);
 
-      pll_isLocked = (pilot_Lock > 0.1f);
+      pll_isLocked = (pilot_Lock > 0.08f);
 
       return currentPhase;
     }

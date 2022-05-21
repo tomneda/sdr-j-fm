@@ -1176,7 +1176,7 @@ void RadioInterface::updateTimeDisplay()
 {
   QDateTime currentTime = QDateTime::currentDateTime();
 
-  timeDisplay->setText(currentTime.toString(QString("dd.MM.yy:hh:mm:ss")));
+  timeDisplay->setText(currentTime.toString(QString("dd.MM.yy hh:mm:ss")));
 }
 
 void RadioInterface::set_dumping()
@@ -1569,8 +1569,16 @@ void RadioInterface::setfmBandwidth(int32_t b)
 //	This signal will arrive once every "inputRate" samples
 void RadioInterface::showStrength(float the_pilotStrength, float the_dcComponent)
 {
-  char       s[1024];
+  static std::array<char, 1024> s{};
   static int teller = 0;
+
+  bool triggerLog = false;
+
+  if (logTime > 0 && ++teller == logTime)
+  {
+    triggerLog = true;
+    teller = 0;
+  }
 
   pilotStrength->display(the_pilotStrength);
 
@@ -1604,34 +1612,36 @@ void RadioInterface::showStrength(float the_pilotStrength, float the_dcComponent
     else if (absAfcCurrOffFreq < 100) { mAfcAlpha = 0.050f; }
     else                              { mAfcAlpha = 0.800f; }
 
-    if (absAfcCurrOffFreq > 3) // avoid re-tunings of HW when only a residual frequency offset remains
-    {
-      uint32_t newFreq = currentFreq + mAfcCurrOffFreq;
+    uint32_t newFreq = currentFreq + mAfcCurrOffFreq;
 
+    if (triggerLog)
+    {
       fprintf(stderr, "AFC:  DC %f, NewFreq %d = CurrFreq %d + AfcOffFreq %d (unfiltered %d), AFC_Alpha %f\n",
               the_dcComponent, newFreq, currentFreq, mAfcCurrOffFreq, afcOffFreq, mAfcAlpha);
+    }
 
+    if (absAfcCurrOffFreq > 3) // avoid re-tunings of HW when only a residual frequency offset remains
+    {
       currentFreq = setTuner(newFreq);
     }
   }
 
 
-  if (logTime > 0 && ++teller == logTime)
+  if (triggerLog)
   {
     QDateTime currentTime = QDateTime::currentDateTime();
-    sprintf(s, "%s : Freq = %d,\n PI code = %4X, pilot = %f\n",
-            currentTime.toString(QString("dd.MM.yy:hh:mm:ss"))
+    sprintf(s.begin(), "%s : Freq = %d,\n PI code = %4X, pilot = %f\n",
+            currentTime.toString(QString("dd.MM.yy hh:mm:ss"))
             .toStdString()
             .c_str(),
             currentFreq, currentPIcode, the_pilotStrength);
 
-    fputs(s, stderr);
+    fputs(s.cbegin(), stderr);
     //	and into the logfile
     if (logFile != nullptr)
     {
-      fputs(s, logFile);
+      fputs(s.cbegin(), logFile);
     }
-    teller = 0;
   }
 }
 
@@ -1640,10 +1650,8 @@ void RadioInterface::setLogging(const QString &s)
   if (s == "log off")
   {
     logTime = 0;
-    return;
   }
-
-  if (s == "log 1 sec")
+  else if (s == "log 1 sec")
   {
     logTime = 1;
   }

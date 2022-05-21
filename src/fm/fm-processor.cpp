@@ -704,7 +704,15 @@ void fmProcessor::stereo(float demod, DSPCOMPLEX *audioOut,
   //	apply deemphasis
   LRPlus    = xkm1 = (LRPlus - xkm1) * alpha + xkm1;
   LRDiff    = ykm1 = (LRDiff - ykm1) * alpha + ykm1;
-  *audioOut = DSPCOMPLEX(LRPlus, LRDiff);
+
+  if (pilotRecover->isLocked() || mAutoMono == false)
+  {
+    *audioOut = DSPCOMPLEX(LRPlus, LRDiff);
+  }
+  else
+  {
+    *audioOut = DSPCOMPLEX(LRPlus, 0); // force to mono audio (TODO: what is with RDS when pilot is unlocked?)
+  }
 }
 //
 //	Since setLFcutoff is only called from within the "run"  function
@@ -773,7 +781,8 @@ bool fmProcessor::isPilotLocked(float & oLockStrength) const
 {
   if (fmModus != FM_Mode::Mono && pilotRecover)
   {
-    return pilotRecover->isLocked(oLockStrength);
+    oLockStrength = pilotRecover->getLockedStrength();
+    return pilotRecover->isLocked();
   }
   else
   {

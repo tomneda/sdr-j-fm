@@ -714,6 +714,19 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_12">
              <item>
+              <widget class="QCheckBox" name="cbAutoMono">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Force audio to mono if no pilot is detected&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="text">
+                <string>Auto mono</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QComboBox" name="fmMode">
                <property name="toolTip">
                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select mono or stereo reception. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>

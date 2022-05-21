@@ -417,6 +417,8 @@ void RadioInterface::setStart()
     connect(fmDecoder, qOverload<int>(&QComboBox::currentIndexChanged), this, &RadioInterface::setfmDecoder);
   }
 
+  connect(cbAutoMono, &QCheckBox::clicked, this, [this](bool isChecked){ myFMprocessor->set_auto_mono_mode(isChecked); });
+
   runMode = ERunStates::RUNNING;
 }
 //

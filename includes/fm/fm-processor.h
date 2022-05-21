@@ -90,6 +90,7 @@ public:
   void setInputMode(uint8_t);
   bool ok();
   bool isPilotLocked(float & oLockStrength) const;
+  void set_auto_mono_mode(const bool iAutoMonoMode) { mAutoMono = iAutoMonoMode; }
 
   DSPFLOAT get_pilotStrength();
   DSPFLOAT get_rdsStrength();
@@ -155,6 +156,7 @@ private:
   int32_t fmBandwidth;
   int32_t fmFilterDegree;
   bool newFilter;
+  bool mAutoMono{true};
 
   int16_t old_squelchValue;
   int16_t squelchValue;
@@ -240,11 +242,8 @@ private:
 
     ~pilotRecovery() = default;
 
-    bool isLocked(float & oLockStrength)
-    {
-      oLockStrength = pilot_Lock;
-      return pll_isLocked;
-    }
+    bool isLocked() const { return pll_isLocked; }
+    float getLockedStrength() const { return pilot_Lock; }
 
     DSPFLOAT getPilotPhase(const DSPFLOAT pilot)
     {

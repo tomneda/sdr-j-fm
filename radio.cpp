@@ -265,8 +265,9 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
   //
   //
   //	Display the version
-  QString v = "sdrJ-FM -V";
-  v.append(CURRENT_VERSION);
+  QString v = QString(GITHASH).toUpper();
+  //QString v = "sdrJ-FM -V";
+  //v.append(CURRENT_VERSION);
   systemindicator->setText(v.toLatin1().data());
 
   ExtioLock = false;

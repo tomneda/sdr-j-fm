@@ -24,112 +24,113 @@
 #ifndef __DABSTICK__
 #define	__DABSTICK__
 
-#include	<QObject>
-#include	<QSettings>
-#include	<QFrame>
-#include	"fm-constants.h"
-#include	"ringbuffer.h"
 #include	"device-handler.h"
 #include	"dongleselect.h"
+#include	"fm-constants.h"
+#include	"ringbuffer.h"
 #include	"ui_dabstick-widget.h"
+#include	<QFrame>
+#include	<QObject>
+#include	<QSettings>
 
 class	dll_driver;
 //
 //	create typedefs for the library functions
 typedef	struct rtlsdr_dev rtlsdr_dev_t;
 
-typedef	void (*rtlsdr_read_async_cb_t) (uint8_t *buf, uint32_t len, void *ctx);
-typedef	 int (*  pfnrtlsdr_open )(rtlsdr_dev_t **, uint32_t);
-typedef	int (*  pfnrtlsdr_close) (rtlsdr_dev_t *);
-typedef	int (*  pfnrtlsdr_set_center_freq) (rtlsdr_dev_t *, uint32_t);
-typedef uint32_t (*  pfnrtlsdr_get_center_freq) (rtlsdr_dev_t *);
-typedef	int (*  pfnrtlsdr_get_tuner_gains) (rtlsdr_dev_t *, int *);
-typedef	int (*  pfnrtlsdr_set_tuner_gain_mode) (rtlsdr_dev_t *, int);
-typedef	int (*  pfnrtlsdr_set_sample_rate) (rtlsdr_dev_t *, uint32_t);
-typedef	int (*  pfnrtlsdr_get_sample_rate) (rtlsdr_dev_t *);
-typedef int (*  pfnrtlsdr_set_agc_mode) (rtlsdr_dev_t *, int);
-typedef	int (*  pfnrtlsdr_set_tuner_gain) (rtlsdr_dev_t *, int);
-typedef	int (*  pfnrtlsdr_get_tuner_gain) (rtlsdr_dev_t *);
-typedef int (*  pfnrtlsdr_reset_buffer) (rtlsdr_dev_t *);
-typedef	int (*  pfnrtlsdr_read_async) (rtlsdr_dev_t *,
-	                               rtlsdr_read_async_cb_t,
-	                               void *,
-	                               uint32_t,
-	                               uint32_t);
-typedef int (*  pfnrtlsdr_cancel_async) (rtlsdr_dev_t *);
-typedef int (*  pfnrtlsdr_set_direct_sampling) (rtlsdr_dev_t *, int);
-typedef uint32_t (*  pfnrtlsdr_get_device_count) (void);
-typedef	int (* pfnrtlsdr_set_freq_correction)(rtlsdr_dev_t *, int);
-typedef	char *(* pfnrtlsdr_get_device_name)(int);
+using rtlsdr_read_async_cb_t        = void (*)(uint8_t *, uint32_t, void *);
+using pfnrtlsdr_open                = int (*)(rtlsdr_dev_t **, uint32_t);
+using pfnrtlsdr_close               = int (*)(rtlsdr_dev_t *);
+using pfnrtlsdr_set_center_freq     = int (*)(rtlsdr_dev_t *, uint32_t);
+using pfnrtlsdr_get_center_freq     = uint32_t (*)(rtlsdr_dev_t *);
+using pfnrtlsdr_get_tuner_gains     = int (*)(rtlsdr_dev_t *, int *);
+using pfnrtlsdr_set_tuner_gain_mode = int (*)(rtlsdr_dev_t *, int);
+using pfnrtlsdr_set_sample_rate     = int (*)(rtlsdr_dev_t *, uint32_t);
+using pfnrtlsdr_get_sample_rate     = int (*)(rtlsdr_dev_t *);
+using pfnrtlsdr_set_agc_mode        = int (*)(rtlsdr_dev_t *, int);
+using pfnrtlsdr_set_tuner_gain      = int (*)(rtlsdr_dev_t *, int);
+using pfnrtlsdr_get_tuner_gain      = int (*)(rtlsdr_dev_t *);
+using pfnrtlsdr_reset_buffer        = int (*)(rtlsdr_dev_t *);
+using pfnrtlsdr_read_async          = int (*)(rtlsdr_dev_t *, rtlsdr_read_async_cb_t, void *, uint32_t, uint32_t);
+using pfnrtlsdr_cancel_async        = int (*)(rtlsdr_dev_t *);
+using pfnrtlsdr_set_direct_sampling = int (*)(rtlsdr_dev_t *, int);
+using pfnrtlsdr_get_device_count    = uint32_t (*)();
+using pfnrtlsdr_set_freq_correction = int (*)(rtlsdr_dev_t *, int);
+using pfnrtlsdr_get_device_name     = char *(*)(int);
+
 //	This class is a simple wrapper around the
 //	rtlsdr library that is read is as dll
 //	It does not do any processing itself.
-class	rtlsdrHandler: public deviceHandler, public Ui_dabstickWidget {
-Q_OBJECT
+class rtlsdrHandler : public deviceHandler, public Ui_dabstickWidget {
+  Q_OBJECT
 public:
-			rtlsdrHandler		(QSettings *, bool);
-			~rtlsdrHandler		(void);
-	void		setVFOFrequency		(int32_t);
-	int32_t		getVFOFrequency		(void);
-	int32_t		setExternalRate		(int32_t);
-	int32_t		defaultFrequency	(void);
-	bool		legalFrequency		(int32_t);
-	uint8_t		myIdentity		(void);
-//	interface to the reader
-	bool		restartReader		(void);
-	void		stopReader		(void);
-	int32_t		getSamples		(std::complex<float> *, int32_t);
-	int32_t		getSamples		(std::complex<float> *, int32_t, uint8_t);
-	int32_t		Samples			(void);
-	void		resetBuffer		(void);
-	int16_t		bitDepth		(void);
-	int32_t		getRate			(void);
-//
-//	These need to be visible for the separate usb handling thread
-	RingBuffer<uint8_t>	*_I_Buffer;
-	pfnrtlsdr_read_async	rtlsdr_read_async;
-	struct rtlsdr_dev	*device;
-	int32_t		sampleCounter;
-private:
-	QSettings	*dabSettings;
-	dongleSelect	*dongleSelector;
-	int32_t		inputRate;
-	QFrame		*myFrame;
-	int32_t		deviceCount;
-	HINSTANCE	Handle;
-	dll_driver	*workerHandle;
-	int32_t		lastFrequency;
-	bool		libraryLoaded;
-	bool		open;
-	int		*gains;
-	int16_t		gainsCount;
-//	here we need to load functions from the dll
-	bool		load_rtlFunctions	(void);
-	pfnrtlsdr_open	rtlsdr_open;
-	pfnrtlsdr_close	rtlsdr_close;
+  rtlsdrHandler(QSettings *, bool);
+  ~rtlsdrHandler() override;
 
-	pfnrtlsdr_set_center_freq rtlsdr_set_center_freq;
-	pfnrtlsdr_get_center_freq rtlsdr_get_center_freq;
-	pfnrtlsdr_get_tuner_gains rtlsdr_get_tuner_gains;
-	pfnrtlsdr_set_tuner_gain_mode rtlsdr_set_tuner_gain_mode;
-	pfnrtlsdr_set_agc_mode rtlsdr_set_agc_mode;
-	pfnrtlsdr_set_sample_rate rtlsdr_set_sample_rate;
-	pfnrtlsdr_get_sample_rate rtlsdr_get_sample_rate;
-	pfnrtlsdr_set_tuner_gain rtlsdr_set_tuner_gain;
-	pfnrtlsdr_get_tuner_gain rtlsdr_get_tuner_gain;
-	pfnrtlsdr_reset_buffer rtlsdr_reset_buffer;
-	pfnrtlsdr_cancel_async rtlsdr_cancel_async;
-	pfnrtlsdr_set_direct_sampling	rtlsdr_set_direct_sampling;
-	pfnrtlsdr_get_device_count rtlsdr_get_device_count;
-	pfnrtlsdr_set_freq_correction rtlsdr_set_freq_correction;
-	pfnrtlsdr_get_device_name rtlsdr_get_device_name;
+  void setVFOFrequency(int32_t) override;
+  int32_t getVFOFrequency() override;
+  int32_t defaultFrequency() override;
+  bool legalFrequency(int32_t) override;
+  uint8_t myIdentity() override;
+
+  //	interface to the reader
+  bool restartReader() override;
+  void stopReader() override;
+  int32_t getSamples(std::complex<float> *, int32_t) override;
+  int32_t getSamples(std::complex<float> *, int32_t, uint8_t) override;
+  int32_t Samples() override;
+  void resetBuffer() override;
+  int16_t bitDepth() override;
+  int32_t getRate() override;
+
+  int32_t setExternalRate(int32_t);
+
+  //	These need to be visible for the separate usb handling thread
+  RingBuffer<uint8_t> *_I_Buffer;
+  pfnrtlsdr_read_async rtlsdr_read_async;
+  struct rtlsdr_dev *device;
+  int32_t sampleCounter;
+
+private:
+  QSettings *dabSettings;
+  dongleSelect *dongleSelector;
+  int32_t inputRate;
+  QFrame *myFrame;
+  int32_t deviceCount;
+  HINSTANCE Handle;
+  dll_driver *workerHandle;
+  int32_t lastFrequency;
+  bool libraryLoaded;
+  bool open;
+  int *gains;
+  int16_t gainsCount;
+
+  //	here we need to load functions from the dll
+  bool load_rtlFunctions(void);
+  pfnrtlsdr_open rtlsdr_open;
+  pfnrtlsdr_close rtlsdr_close;
+  pfnrtlsdr_set_center_freq rtlsdr_set_center_freq;
+  pfnrtlsdr_get_center_freq rtlsdr_get_center_freq;
+  pfnrtlsdr_get_tuner_gains rtlsdr_get_tuner_gains;
+  pfnrtlsdr_set_tuner_gain_mode rtlsdr_set_tuner_gain_mode;
+  pfnrtlsdr_set_agc_mode rtlsdr_set_agc_mode;
+  pfnrtlsdr_set_sample_rate rtlsdr_set_sample_rate;
+  pfnrtlsdr_get_sample_rate rtlsdr_get_sample_rate;
+  pfnrtlsdr_set_tuner_gain rtlsdr_set_tuner_gain;
+  pfnrtlsdr_get_tuner_gain rtlsdr_get_tuner_gain;
+  pfnrtlsdr_reset_buffer rtlsdr_reset_buffer;
+  pfnrtlsdr_cancel_async rtlsdr_cancel_async;
+  pfnrtlsdr_set_direct_sampling rtlsdr_set_direct_sampling;
+  pfnrtlsdr_get_device_count rtlsdr_get_device_count;
+  pfnrtlsdr_set_freq_correction rtlsdr_set_freq_correction;
+  pfnrtlsdr_get_device_name rtlsdr_get_device_name;
+
 private slots:
-	void		set_gainSlider	(int);
-	void		set_Agc		(int);
-	void		freqCorrection	(int);
-	void		setKhzOffset	(int);
-	void		setHzOffset	(int);
-	void		set_rateSelector (const QString &);
+  void set_gainSlider(int);
+  void set_Agc(int);
+  void freqCorrection(int);
+  void setKhzOffset(int);
+  void setHzOffset(int);
+  void set_rateSelector(const QString &);
 };
 #endif
-

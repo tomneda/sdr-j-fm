@@ -89,9 +89,6 @@ public:
   void set_squelchMode(bool);
   void setInputMode(uint8_t);
   bool isPilotLocked() const { return (fmModus != FM_Mode::Mono && pilotRecover ? pilotRecover->isLocked() : false); }
-
-  int32_t totalAmount;
-
   bool ok();
 
   DSPFLOAT get_pilotStrength();
@@ -116,7 +113,7 @@ public:
   void set_squelchValue(int16_t);
 
 private:
-  virtual void run(void);
+  void run() override;
   void mapSpectrum(DSPCOMPLEX *, double *);
   void add_to_average(double *, double *);
   void extractLevels(double *, int32_t);
@@ -248,14 +245,14 @@ private:
       return pll_isLocked;
     }
 
-    DSPFLOAT getPilotPhase(DSPFLOAT pilot)
+    DSPFLOAT getPilotPhase(const DSPFLOAT pilot)
     {
-      DSPFLOAT OscillatorValue = mySinCos->getCos(pilot_OscillatorPhase);
-      DSPFLOAT PhaseError      = pilot * OscillatorValue;
-      DSPFLOAT currentPhase;
+      const DSPFLOAT OscillatorValue = mySinCos->getCos(pilot_OscillatorPhase);
+      const DSPFLOAT PhaseError      = pilot * OscillatorValue;
 
       pilot_OscillatorPhase += PhaseError * gain;
-      currentPhase           = PI_Constrain(pilot_OscillatorPhase);
+
+      const DSPFLOAT currentPhase = PI_Constrain(pilot_OscillatorPhase);
 
       pilot_OscillatorPhase = PI_Constrain(pilot_OscillatorPhase + omega);
 
@@ -263,7 +260,9 @@ private:
       //	         quadRef	= PI_Constrain (quadRef);
       pilot_oldValue = OscillatorValue;
       pilot_Lock     = 1.0 / 30 * (-quadRef * pilot) + pilot_Lock * (1.0 - (1.0 / 30));
-      pll_isLocked = pilot_Lock > 0.1;
+
+      pll_isLocked = (pilot_Lock > 0.1f);
+
       return currentPhase;
     }
   };
@@ -272,10 +271,10 @@ private:
 
 signals:
   void setPLLisLocked(bool);
-  void hfBufferLoaded(void);
-  void lfBufferLoaded(void);
+  void hfBufferLoaded();
+  void lfBufferLoaded();
   void showStrength(float, float);
-  void scanresult(void);
+  void scanresult();
 };
 
 #endif

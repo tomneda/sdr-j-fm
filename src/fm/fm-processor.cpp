@@ -377,7 +377,7 @@ void fmProcessor::stopScanning(void)
 //	In this variant, we have a separate thread for the
 //	fm processing
 
-void fmProcessor::run(void)
+void fmProcessor::run()
 {
   DSPCOMPLEX    result;
   DSPFLOAT      rdsData;
@@ -764,7 +764,7 @@ void fmProcessor::set_localOscillator(int32_t lo)
   lo_frequency = lo;
 }
 
-bool fmProcessor::ok(void)
+bool fmProcessor::ok()
 {
   return running;
 }

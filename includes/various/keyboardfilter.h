@@ -1,4 +1,3 @@
-#
 /*
  *
  *    Copyright (C) 2013
@@ -21,24 +20,28 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#
+
 //	Starting with version 4.2 we include keyboard
 //	alternatives for mouse clicks.
 //	The keyboard filter is the generic handler for this
-#ifndef	__KEYBOARDFILTER
-#define	__KEYBOARDFILTER
+#ifndef __KEYBOARDFILTER
+#define __KEYBOARDFILTER
 
-#include	<QObject>
+#include <QObject>
 
-class	KeyboardFilter : public QObject {
-Q_OBJECT
+class KeyboardFilter : public QObject
+{
+  Q_OBJECT
+
 public:
-	KeyboardFilter	(QObject *parent = 0);
-	~KeyboardFilter	(void);
-protected:
-bool	eventFilter	(QObject *, QEvent *);
-signals:
-void	KeyPressed	(int);
-};
-#endif
+  KeyboardFilter(QObject *parent = 0);
+  ~KeyboardFilter() = default;
 
+protected:
+  bool eventFilter(QObject *, QEvent *);
+
+signals:
+  void KeyPressed(int);
+};
+
+#endif

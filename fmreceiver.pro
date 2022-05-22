@@ -121,7 +121,6 @@ SOURCES += ./main.cpp \
 #
 # for windows32 we use:
 win32 {
-  DESTDIR	= /usr/shared/w32-programs/windows-fmreceiver
   exists ("./.git") {
      GITHASHSTRING = $$system(git rev-parse --short HEAD)
      !isEmpty(GITHASHSTRING) {
@@ -133,6 +132,7 @@ win32 {
       DEFINES += GITHASH=\\\"------\\\"
   }
 
+  DESTDIR	= ./windows-fmreceiver
   DEFINES +=_USE_MATH_DEFINES
   CONFIG	-= console
   #CONFIG	+= extio
@@ -148,23 +148,26 @@ win32 {
   #LIBS            += -L/usr/i686-w64-mingw32/sys-root/mingw/lib
   #INCLUDEPATH 	+= /usr/i686-w64-mingw32/sys-root/mingw/include
   #INCLUDEPATH 	+= /usr/i686-w64-mingw32/sys-root/mingw/include/qt5/qwt
-  INCLUDEPATH 	+= c:\vcpkg\packages\libsamplerate_x86-windows\include
-  INCLUDEPATH 	+= c:\vcpkg\packages\libsndfile_x86-windows\include
-  INCLUDEPATH 	+= c:\vcpkg\packages\portaudio_x86-windows\include
-  INCLUDEPATH 	+= c:\vcpkg\packages\fftw3_x86-windows\include
+  INCLUDEPATH 	+= c:\vcpkg\installed\x86-windows\include
+  #INCLUDEPATH 	+= c:\vcpkg\packages\libsamplerate_x86-windows\include
+  #INCLUDEPATH 	+= c:\vcpkg\packages\libsndfile_x86-windows\include
+  #INCLUDEPATH 	+= c:\vcpkg\packages\portaudio_x86-windows\include
+  #INCLUDEPATH 	+= c:\vcpkg\packages\fftw3_x86-windows\include
   INCLUDEPATH 	+= c:\Qwt-6.2.0\include
 
-  LIBS	+= c:\vcpkg\packages\libsamplerate_x86-windows\lib\samplerate.lib
-  LIBS	+= c:\vcpkg\packages\libsndfile_x86-windows\lib\sndfile.lib
-  LIBS	+= c:\vcpkg\packages\portaudio_x86-windows\lib\portaudio.lib
-  LIBS	+= c:\vcpkg\packages\fftw3_x86-windows\lib\fftw3f.lib
-  LIBS	+= c:\Qwt-6.2.0\lib\qwt.dll
+  LIBPATH 	+= c:\vcpkg\installed\x86-windows\lib\
 
-  #LIBS  += -lfftw3f
-  #LIBS	+= -lportaudio
+  #LIBS	+= c:\vcpkg\packages\libsamplerate_x86-windows\lib\samplerate.lib
+  #LIBS	+= c:\vcpkg\packages\libsndfile_x86-windows\lib\sndfile.lib
+  #LIBS	+= c:\vcpkg\packages\portaudio_x86-windows\lib\portaudio.lib
+  #LIBS	+= c:\vcpkg\packages\fftw3_x86-windows\lib\fftw3f.lib
+  LIBS	+= c:\Qwt-6.2.0\lib\libqwt.a
+
+  LIBS  += -lfftw3f
+  LIBS	+= -lportaudio
   #LIBS	+= -lqwt-qt5
-  #LIBS	+= -lsndfile
-  #LIBS	+= -lsamplerate
+  LIBS	+= -lsndfile
+  LIBS	+= -lsamplerate
   LIBS	+= -lole32
   LIBS	+= -lwinmm
   LIBS 	+= -lstdc++
@@ -174,7 +177,6 @@ win32 {
 #
 #for fedora and ubuntu  we use
 unix {
-  DESTDIR		= ./linux-bin
   exists ("./.git") {
      GITHASHSTRING = $$system(git rev-parse --short HEAD)
      !isEmpty(GITHASHSTRING) {
@@ -186,6 +188,7 @@ unix {
       DEFINES += GITHASH=\\\"------\\\"
   }
 
+  DESTDIR		= ./linux-bin
   #CONFIG		+= console
   #CONFIG		+= pmsdr
   #CONFIG		+= sdrplay

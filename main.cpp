@@ -145,5 +145,7 @@ int main(int argc, char **argv)
   ISettings->sync();
 //	delete MyRadioInterface;
 //	ISettings	-> ~QSettings ();
+
+  return 0;
 }
 

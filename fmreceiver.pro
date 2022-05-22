@@ -133,29 +133,42 @@ win32 {
       DEFINES += GITHASH=\\\"------\\\"
   }
 
+  DEFINES +=_USE_MATH_DEFINES
   CONFIG	-= console
-  CONFIG	+= extio
+  #CONFIG	+= extio
   CONFIG	+= dabstick
-  CONFIG	+= sdrplay
-  CONFIG	+= sdrplay-v3
-  CONFIG	+= airspy
-  CONFIG	+= hackrf
-  CONFIG	+= lime
-  CONFIG	+= pluto
-  CONFIG	+= colibri
+  #CONFIG	+= sdrplay
+  #CONFIG	+= sdrplay-v3
+  #CONFIG	+= airspy
+  #CONFIG	+= hackrf
+  #CONFIG	+= lime
+  #CONFIG	+= pluto
+  #CONFIG	+= colibri
   # includes in mingw differ from the includes in fedora linux
-  LIBS            += -L/usr/i686-w64-mingw32/sys-root/mingw/lib
-  INCLUDEPATH 	+= /usr/i686-w64-mingw32/sys-root/mingw/include
-  INCLUDEPATH 	+= /usr/i686-w64-mingw32/sys-root/mingw/include/qt5/qwt
-  LIBS		+= -lfftw3f
-  LIBS	+= -lportaudio
-  LIBS	+= -lqwt-qt5
-  LIBS	+= -lsndfile
-  LIBS	+= -lsamplerate
+  #LIBS            += -L/usr/i686-w64-mingw32/sys-root/mingw/lib
+  #INCLUDEPATH 	+= /usr/i686-w64-mingw32/sys-root/mingw/include
+  #INCLUDEPATH 	+= /usr/i686-w64-mingw32/sys-root/mingw/include/qt5/qwt
+  INCLUDEPATH 	+= c:\vcpkg\packages\libsamplerate_x86-windows\include
+  INCLUDEPATH 	+= c:\vcpkg\packages\libsndfile_x86-windows\include
+  INCLUDEPATH 	+= c:\vcpkg\packages\portaudio_x86-windows\include
+  INCLUDEPATH 	+= c:\vcpkg\packages\fftw3_x86-windows\include
+  INCLUDEPATH 	+= c:\Qwt-6.2.0\include
+
+  LIBS	+= c:\vcpkg\packages\libsamplerate_x86-windows\lib\samplerate.lib
+  LIBS	+= c:\vcpkg\packages\libsndfile_x86-windows\lib\sndfile.lib
+  LIBS	+= c:\vcpkg\packages\portaudio_x86-windows\lib\portaudio.lib
+  LIBS	+= c:\vcpkg\packages\fftw3_x86-windows\lib\fftw3f.lib
+  LIBS	+= c:\Qwt-6.2.0\lib\qwt.dll
+
+  #LIBS  += -lfftw3f
+  #LIBS	+= -lportaudio
+  #LIBS	+= -lqwt-qt5
+  #LIBS	+= -lsndfile
+  #LIBS	+= -lsamplerate
   LIBS	+= -lole32
   LIBS	+= -lwinmm
   LIBS 	+= -lstdc++
-  LIBS	+= -lusb-1.0
+  #LIBS	+= -lusb-1.0
   LIBS	+= -lwinpthread
 }
 #

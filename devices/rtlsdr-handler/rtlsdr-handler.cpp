@@ -38,14 +38,13 @@
 #endif
 
 #define READLEN_DEFAULT    8192
-//
+
 //	For the callback, we do need some environment which
 //	is passed through the ctx parameter
 //
 //	This is the user-side call back function
 //	ctx is the calling task
-static
-void RTLSDRCallBack(uint8_t *buf, uint32_t len, void *ctx)
+static void RTLSDRCallBack(uint8_t *buf, uint32_t len, void *ctx)
 {
   rtlsdrHandler *theStick = (rtlsdrHandler *)ctx;
   int32_t       tmp;
@@ -90,16 +89,12 @@ virtual void run()
                                  READLEN_DEFAULT);
 }
 };
-//
+
 //	Our wrapper is a simple classs
 rtlsdrHandler::rtlsdrHandler (QSettings *s, bool full)
 {
   int16_t deviceCount;
-  int32_t r;
   int16_t deviceIndex;
-  int16_t i;
-  QString h;
-  int     k;
 
   dabSettings   = s;
   this->myFrame = new QFrame(nullptr);
@@ -107,17 +102,19 @@ rtlsdrHandler::rtlsdrHandler (QSettings *s, bool full)
   this->myFrame->show();
 
   dabSettings->beginGroup("dabstick");
-  h = dabSettings->value("dabRate", 1536).toString();
-  k = rateSelector->findText(h);
+  const QString h = dabSettings->value("dabRate", 1536).toString();
+  const int k = rateSelector->findText(h);
+
   if (k != -1)
   {
     rateSelector->setCurrentIndex(k);
   }
+
   inputRate = Khz(rateSelector->currentText().toInt());
   dabSettings->endGroup();
-//
-//	for the mini we only allow selection of this value,
-//	i.e. kill all others
+
+  //	for the mini we only allow selection of this value,
+  //	i.e. kill all others
   if (!full)
   {
     while (rateSelector->count() > 0)
@@ -149,100 +146,101 @@ rtlsdrHandler::rtlsdrHandler (QSettings *s, bool full)
   }
 
   libraryLoaded = true;
-  if (!load_rtlFunctions())
-  {
-    goto err;
-  }
 
-//
-//	Ok, from here we have the library functions accessible
-  deviceCount = this->rtlsdr_get_device_count();
-  if (deviceCount == 0)
+  if (load_rtlFunctions())
   {
-    fprintf(stderr, "No devices found\n");
-    return;
-  }
-
-  deviceIndex = 0;  // default
-  if (deviceCount > 1)
-  {
-    dongleSelector = new dongleSelect();
-    for (deviceIndex = 0; deviceIndex < deviceCount; deviceIndex++)
+    //	Ok, from here we have the library functions accessible
+    deviceCount = this->rtlsdr_get_device_count();
+    if (deviceCount == 0)
     {
-      dongleSelector->
-      addtoDongleList(rtlsdr_get_device_name(deviceIndex));
+      fprintf(stderr, "No devices found\n");
+      return;
     }
-    deviceIndex = dongleSelector->QDialog::exec();
-    delete dongleSelector;
-  }
-//
-//	OK, now open the hardware
-  r = this->rtlsdr_open(&device, deviceIndex);
-  if (r < 0)
-  {
-    fprintf(stderr, "Opening dabstick failed\n");
-    throw (21);
-  }
-  open = true;
-  r    = this->rtlsdr_set_sample_rate(device,
-                                      inputRate);
-  if (r < 0)
-  {
-    fprintf(stderr, "Setting samplerate failed\n");
-    throw (22);
-  }
 
-  r = this->rtlsdr_get_sample_rate(device);
-  fprintf(stderr, "samplerate set to %d\n", r);
+    deviceIndex = 0;  // default
 
-  gainsCount = rtlsdr_get_tuner_gains(device, nullptr);
-  fprintf(stderr, "Supported gain values (%d): ", gainsCount);
-  gains      = new int [gainsCount];
-  gainsCount = rtlsdr_get_tuner_gains(device, gains);
-  gainSlider->setMaximum(gainsCount);
-  for (i = gainsCount; i > 0; i--)
-  {
-    fprintf(stderr, "%.1f ", gains [i - 1] / 10.0);
+    if (deviceCount > 1)
+    {
+      dongleSelector = new dongleSelect();
+      for (deviceIndex = 0; deviceIndex < deviceCount; deviceIndex++)
+      {
+        dongleSelector->
+        addtoDongleList(rtlsdr_get_device_name(deviceIndex));
+      }
+      deviceIndex = dongleSelector->QDialog::exec();
+      delete dongleSelector;
+    }
+
+    //	OK, now open the hardware
+    int32_t r = this->rtlsdr_open(&device, deviceIndex);
+
+    if (r < 0)
+    {
+      fprintf(stderr, "Opening dabstick failed\n");
+      throw (21);
+    }
+
+    open = true;
+
+    r = this->rtlsdr_set_sample_rate(device, inputRate);
+
+    if (r < 0)
+    {
+      fprintf(stderr, "Setting samplerate failed\n");
+      throw (22);
+    }
+
+    r = this->rtlsdr_get_sample_rate(device);
+    fprintf(stderr, "samplerate set to %d\n", r);
+
+    gainsCount = rtlsdr_get_tuner_gains(device, nullptr);
+    fprintf(stderr, "Supported gain values (%d): ", gainsCount);
+    gains      = new int [gainsCount];
+    gainsCount = rtlsdr_get_tuner_gains(device, gains);
+    gainSlider->setMaximum(gainsCount);
+
+    for (int16_t i = gainsCount; i > 0; i--)
+    {
+      fprintf(stderr, "%.1f ", gains [i - 1] / 10.0);
+    }
+
+    rtlsdr_set_tuner_gain_mode(device, 1);
+    rtlsdr_set_tuner_gain(device, gains [gainsCount / 2]);
+
+    _I_Buffer    = new RingBuffer<uint8_t>(1024 * 1024);
+
+    workerHandle = nullptr;
+
+    connect(gainSlider, SIGNAL(valueChanged(int)), this, SLOT(set_gainSlider(int)));
+    connect(agcChecker, SIGNAL(stateChanged(int)), this, SLOT(set_Agc(int)));
+    connect(f_correction, SIGNAL(valueChanged(int)), this, SLOT(freqCorrection(int)));
+    connect(rateSelector, SIGNAL(activated(const QString&)), this, SLOT(set_rateSelector(const QString&)));
+    connect(KhzOffset, SIGNAL(valueChanged(int)), this, SLOT(setKhzOffset(int)));
+    connect(HzOffset, SIGNAL(valueChanged(int)), this, SLOT(setHzOffset(int)));
+
+    dabSettings->beginGroup("dabstick");
+    gainSlider->setValue(dabSettings->value("gainSlider", 10).toInt());
+    f_correction->setValue(dabSettings->value("f_correction", 0).toInt());
+    KhzOffset->setValue(dabSettings->value("KhzOffset", 0).toInt());
+    HzOffset->setValue(dabSettings->value("HzOffset", 0).toInt());
+    dabSettings->endGroup();
   }
-  rtlsdr_set_tuner_gain_mode(device, 1);
-  rtlsdr_set_tuner_gain(device, gains [gainsCount / 2]);
-
-  _I_Buffer    = new RingBuffer<uint8_t>(1024 * 1024);
-  workerHandle = nullptr;
-  connect(gainSlider, SIGNAL(valueChanged(int)),
-          this, SLOT(set_gainSlider(int)));
-  connect(agcChecker, SIGNAL(stateChanged(int)),
-          this, SLOT(set_Agc(int)));
-  connect(f_correction, SIGNAL(valueChanged(int)),
-          this, SLOT(freqCorrection(int)));
-  connect(rateSelector, SIGNAL(activated(const QString&)),
-          this, SLOT(set_rateSelector(const QString&)));
-  connect(KhzOffset, SIGNAL(valueChanged(int)),
-          this, SLOT(setKhzOffset(int)));
-  connect(HzOffset, SIGNAL(valueChanged(int)),
-          this, SLOT(setHzOffset(int)));
-  dabSettings->beginGroup("dabstick");
-  gainSlider->setValue(dabSettings->value("gainSlider", 10).toInt());
-  f_correction->setValue(dabSettings->value("f_correction", 0).toInt());
-  KhzOffset->setValue(dabSettings->value("KhzOffset", 0).toInt());
-  HzOffset->setValue(dabSettings->value("HzOffset", 0).toInt());
-  dabSettings->endGroup();
-  return;
-
- err:
-  if (open)
+  else
   {
-    this->rtlsdr_close(device);
+    if (open)
+    {
+      this->rtlsdr_close(device);
+    }
+
+  #ifdef __MINGW32__
+    FreeLibrary(Handle);
+  #else
+    dlclose(Handle);
+  #endif
+    libraryLoaded = false;
+    open          = false;
+    throw (23);
   }
-#ifdef __MINGW32__
-  FreeLibrary(Handle);
-#else
-  dlclose(Handle);
-#endif
-  libraryLoaded = false;
-  open          = false;
-  throw (23);
-  return;
 }
 
 rtlsdrHandler::~rtlsdrHandler ()

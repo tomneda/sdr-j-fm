@@ -104,10 +104,6 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
    */
   this->fmModus        = FM_Mode::Stereo;
   this->selector       = S_STEREO;
-  this->balance        = 0;
-  this->leftChannel    = 1.0f;// -(balance - 50.0) / 100.0;
-  this->rightChannel   = 1.0f;// (balance + 50.0) / 100.0;
-  this->Volume         = 10.0;
   this->inputMode      = IandQ;
   this->audioDecimator =
     new newConverter(fmRate, workingRate, workingRate / 200);
@@ -309,11 +305,11 @@ void fmProcessor::setStereoPanorama(int16_t iStereoPan)
 void fmProcessor::setSoundBalance(int16_t balance)
 {
   // range: -100 <= balance <= +100
-  this->balance = balance;
+  this->mBalance = balance;
   //  leftChannel   = -(balance - 50.0) / 100.0;
   //  rightChannel  = (balance + 50.0) / 100.0;
-  leftChannel  = (balance > 0 ? (100 - balance) / 100.0 : 1.0f);
-  rightChannel = (balance < 0 ? (100 + balance) / 100.0 : 1.0f);
+  mLeftChannel  = (balance > 0 ? (100 - balance) / 100.0 : 1.0f);
+  mRightChannel = (balance < 0 ? (100 + balance) / 100.0 : 1.0f);
 }
 
 //	Deemphasis	= 50 usec (3183 Hz, Europe)
@@ -328,17 +324,54 @@ void fmProcessor::setDeemphasis(int16_t v)
   alpha = 1.0 / (DSPFLOAT(fmRate) / Tau + 1.0);
 }
 
-void fmProcessor::setVolume(int16_t Vol)
+void fmProcessor::setVolume(int16_t iVolDb)
 {
-  Volume = Vol;
+  if (iVolDb <= -40)
+  {
+    mVolumeFactor = 0.0f;
+  }
+  else
+  {
+    mVolumeFactor = std::pow(10.0f, iVolDb / 20.0f);
+  }
+  //qInfo("iVolDb: %d -> VolFactor: %f", iVolDb, mVolumeFactor);
 }
 
 DSPCOMPLEX fmProcessor::audioGainCorrection(DSPCOMPLEX z)
 {
-  return DSPCOMPLEX(Volume * leftChannel * real(z), Volume * rightChannel * imag(z));
-  //return cmul(z, audioGain * Volume);
-  //return cmul(z, Volume);
-  //return z;
+  static DSPFLOAT leftAbsMax = -1e38f;
+  static DSPFLOAT rightAbsMax = -1e38f;
+  static DSPFLOAT lastVolume = 0.0f;
+  bool printMaxValues = false;
+
+  if (lastVolume != mVolumeFactor)
+  {
+    lastVolume = mVolumeFactor;
+    leftAbsMax = rightAbsMax = -1e38f;
+  }
+
+  const DSPFLOAT left  = 10.0f * mVolumeFactor * mLeftChannel * real(z);
+  const DSPFLOAT right = 10.0f * mVolumeFactor * mRightChannel * imag(z);
+
+  if (abs(left) > leftAbsMax)
+  {
+    leftAbsMax = abs(left);
+    printMaxValues = true;
+  }
+
+  if (abs(right) > rightAbsMax)
+  {
+    rightAbsMax = abs(right);
+    printMaxValues = true;
+  }
+
+  if (printMaxValues)
+  {
+    qInfo("leftAbsMax: %f, rightAbsMax: %f", leftAbsMax, rightAbsMax);
+  }
+
+  return DSPCOMPLEX(left, right);
+  //return DSPCOMPLEX(mVolumeFactor * leftChannel * real(z), mVolumeFactor * rightChannel * imag(z));
 }
 
 void fmProcessor::startDumping(SNDFILE *f)

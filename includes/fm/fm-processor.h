@@ -182,7 +182,7 @@ private:
 
   DSPFLOAT pilotDelay;
   DSPCOMPLEX audioGainCorrection(DSPCOMPLEX);
-  DSPFLOAT Volume;
+  DSPFLOAT mVolumeFactor{0.5f};
   //DSPFLOAT audioGain;
   int32_t max_freq_deviation;
   int32_t norm_freq_deviation;
@@ -190,9 +190,9 @@ private:
   LowPassFIR *fmAudioFilter;
 
   DSPFLOAT mPanorama{1.0f};
-  int16_t balance;
-  DSPFLOAT leftChannel;
-  DSPFLOAT rightChannel;
+  int16_t mBalance{0};
+  DSPFLOAT mLeftChannel{1.0f};   // -(balance - 50.0) / 100.0;;
+  DSPFLOAT mRightChannel{1.0f};  // (balance + 50.0) / 100.0;;
   FM_Mode fmModus;
   uint8_t selector;
   //DSPFLOAT peakLevel;
@@ -262,7 +262,7 @@ private:
       constexpr float alpha = 1.0f / 3000.0f;
       pilot_Lock     = alpha * (-quadRef * pilot) + pilot_Lock * (1.0 - alpha);
 
-      pll_isLocked = (pilot_Lock > 0.08f);
+      pll_isLocked = (pilot_Lock > 0.07f);
 
       return currentPhase;
     }

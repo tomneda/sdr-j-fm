@@ -346,6 +346,7 @@ void RadioInterface::dumpControlState(QSettings *s)
 
   s->setValue("fmMode", fmMode->currentText());
   s->setValue("fmDecoder", fmDecoder->currentText());
+  s->setValue("volumeDB", volumeSlider->value());
   s->setValue("fmRdsSelector", fmRdsSelector->currentText());
   s->setValue("fmChannelSelect", fmChannelSelect->currentText());
   s->setValue("fmDeemphasisSelector", fmDeemphasisSelector->currentText());
@@ -418,6 +419,9 @@ void RadioInterface::setStart()
   }
 
   connect(cbAutoMono, &QCheckBox::clicked, this, [this](bool isChecked){ myFMprocessor->set_auto_mono_mode(isChecked); });
+  connect(volumeSlider, &QSlider::valueChanged, this, [this](int iValue){ myFMprocessor->setVolume(iValue); });
+
+  volumeSlider->setValue(fmSettings->value("volumeDB", -6).toInt());
 
   runMode = ERunStates::RUNNING;
 }
@@ -1498,8 +1502,8 @@ void RadioInterface::setfmDecoder(const int decoder)
   }
 
   myFMprocessor->setFMdecoder(decoder);
-  decoderDisplay->setText(QString(myFMprocessor->nameofDecoder()));
-  fprintf(stderr, "we printen %s\n", myFMprocessor->nameofDecoder());
+  //decoderDisplay->setText(QString(myFMprocessor->nameofDecoder()));
+  qInfo("Using FM decoder: %s", myFMprocessor->nameofDecoder());
 }
 
 void RadioInterface::setfmLFcutoff(const QString &s)

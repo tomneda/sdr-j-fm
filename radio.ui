@@ -1142,10 +1142,10 @@
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Left peak level in dBFS&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="lowerBound">
-              <double>-39.000000000000000</double>
+              <double>-30.000000000000000</double>
              </property>
              <property name="upperBound">
-              <double>5.000000000000000</double>
+              <double>3.000000000000000</double>
              </property>
              <property name="scaleMaxMajor">
               <number>9</number>
@@ -1179,10 +1179,10 @@
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Right peak level in dBFS&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="lowerBound">
-              <double>-39.000000000000000</double>
+              <double>-30.000000000000000</double>
              </property>
              <property name="upperBound">
-              <double>5.000000000000000</double>
+              <double>3.000000000000000</double>
              </property>
              <property name="scaleMaxMajor">
               <number>9</number>

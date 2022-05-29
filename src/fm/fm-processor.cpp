@@ -72,7 +72,7 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   Lgain                  = 20;
   Rgain                  = 20;
 
-  mPeakLevelSampleMax = workingRate / 10;  // workingRate is typ. 48000Ss -> so eval each 4800 samples for 100ms for peak level meter
+  mPeakLevelSampleMax = workingRate / 5;  // workingRate is typ. 48000Ss -> so eval each 9600 samples for 200ms for peak level meter
   myRdsDecoder = NULL;
 
   this->localBuffer = new double[displaySize];

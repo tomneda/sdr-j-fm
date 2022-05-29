@@ -1,0 +1,27 @@
+# Format Style Options - Created with Clang Power Tools
+---
+BasedOnStyle: LLVM
+#Standard: Cpp14
+#AlignConsecutiveMacros: Consecutive
+#AlignConsecutiveAssignments: Consecutive
+AllowShortFunctionsOnASingleLine: None
+AlwaysBreakBeforeMultilineStrings: true
+BinPackParameters: false
+BreakBeforeBinaryOperators: All
+BreakBeforeBraces: Allman
+BreakBeforeTernaryOperators: false
+BreakConstructorInitializers: AfterColon
+ColumnLimit: 150
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+ConstructorInitializerIndentWidth : 2
+ContinuationIndentWidth: 2
+Cpp11BracedListStyle: false
+IncludeBlocks: Regroup
+#InsertBraces: Always
+MaxEmptyLinesToKeep: 2
+ReflowComments: false
+SortIncludes: false
+#SpaceAroundPointerQualifiers: Before
+SpacesBeforeTrailingComments: 3
+SpaceBeforeSquareBrackets: true
+

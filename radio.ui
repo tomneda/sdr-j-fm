@@ -50,6 +50,7 @@
   </property>
   <property name="font">
    <font>
+    <weight>50</weight>
     <bold>false</bold>
    </font>
   </property>
@@ -499,6 +500,7 @@
               <font>
                <family>Andale Mono</family>
                <pointsize>8</pointsize>
+               <weight>50</weight>
                <bold>false</bold>
               </font>
              </property>
@@ -525,6 +527,7 @@
              <property name="font">
               <font>
                <pointsize>8</pointsize>
+               <weight>50</weight>
                <italic>true</italic>
                <bold>false</bold>
               </font>
@@ -1134,20 +1137,78 @@
             </widget>
            </item>
            <item>
-            <spacer name="verticalSpacer">
+            <widget class="QwtThermo" name="thermoPeakLevelLeft">
+             <property name="lowerBound">
+              <double>-39.000000000000000</double>
+             </property>
+             <property name="upperBound">
+              <double>5.000000000000000</double>
+             </property>
+             <property name="scaleMaxMajor">
+              <number>9</number>
+             </property>
+             <property name="scaleMaxMinor">
+              <number>3</number>
+             </property>
+             <property name="scaleStepSize">
+              <double>3.000000000000000</double>
+             </property>
              <property name="orientation">
-              <enum>Qt::Vertical</enum>
+              <enum>Qt::Horizontal</enum>
              </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::Preferred</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
+            </widget>
+           </item>
+           <item>
+            <widget class="QwtThermo" name="thermoPeakLevelRight">
+             <property name="baseSize">
               <size>
-               <width>20</width>
-               <height>40</height>
+               <width>0</width>
+               <height>0</height>
               </size>
              </property>
-            </spacer>
+             <property name="cursor">
+              <cursorShape>ArrowCursor</cursorShape>
+             </property>
+             <property name="mouseTracking">
+              <bool>false</bool>
+             </property>
+             <property name="lowerBound">
+              <double>-39.000000000000000</double>
+             </property>
+             <property name="upperBound">
+              <double>5.000000000000000</double>
+             </property>
+             <property name="scaleMaxMajor">
+              <number>9</number>
+             </property>
+             <property name="scaleMaxMinor">
+              <number>3</number>
+             </property>
+             <property name="scaleStepSize">
+              <double>3.000000000000000</double>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="scalePosition">
+              <enum>QwtThermo::LeadingScale</enum>
+             </property>
+             <property name="originMode">
+              <enum>QwtThermo::OriginMinimum</enum>
+             </property>
+             <property name="alarmEnabled">
+              <bool>false</bool>
+             </property>
+             <property name="spacing">
+              <number>3</number>
+             </property>
+             <property name="borderWidth">
+              <number>2</number>
+             </property>
+             <property name="pipeWidth">
+              <number>10</number>
+             </property>
+            </widget>
            </item>
            <item>
             <widget class="QSlider" name="volumeSlider">
@@ -1178,6 +1239,7 @@
               <font>
                <family>Cantarell</family>
                <pointsize>11</pointsize>
+               <weight>50</weight>
                <bold>false</bold>
               </font>
              </property>
@@ -1261,6 +1323,7 @@
              <property name="font">
               <font>
                <pointsize>24</pointsize>
+               <weight>75</weight>
                <bold>true</bold>
               </font>
              </property>
@@ -1352,6 +1415,7 @@
              <property name="font">
               <font>
                <pointsize>9</pointsize>
+               <weight>50</weight>
                <bold>false</bold>
               </font>
              </property>
@@ -1390,6 +1454,7 @@
              <property name="font">
               <font>
                <pointsize>9</pointsize>
+               <weight>50</weight>
                <bold>false</bold>
               </font>
              </property>
@@ -1649,6 +1714,7 @@
              <property name="font">
               <font>
                <pointsize>10</pointsize>
+               <weight>50</weight>
                <bold>false</bold>
               </font>
              </property>
@@ -1750,6 +1816,11 @@
    <extends>QFrame</extends>
    <header>qwt_plot.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QwtThermo</class>
+   <extends>QWidget</extends>
+   <header>qwt_thermo.h</header>
   </customwidget>
  </customwidgets>
  <includes>

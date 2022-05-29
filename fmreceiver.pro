@@ -10,6 +10,9 @@ QT += widgets
 QMAKE_CXXFLAGS += -std=c++14
 
 win32 {
+  include ($(QWT_ROOT)\features\qwt.prf)
+  #CONFIG += qwt
+
   # works bad without optimization in debug version
   QMAKE_CFLAGS += -O3 -ffast-math
   QMAKE_CXXFLAGS += -O3 -ffast-math
@@ -162,19 +165,19 @@ win32 {
   #INCLUDEPATH 	+= /usr/i686-w64-mingw32/sys-root/mingw/include/qt5/qwt
 
   INCLUDEPATH += c:\vcpkg\installed\x86-windows\include
-  INCLUDEPATH += c:\Qwt-6.2.0\include
+  #INCLUDEPATH += c:\Qwt-6.2.0\include
 
   LIBS += -Lc:\vcpkg\installed\x86-windows\lib
-  LIBS += -Lc:\Qwt-6.2.0\lib
+  #LIBS += -Lc:\Qwt-6.2.0\lib
 
 # Debug version is is not working without using QWT debug version
 # (Error “Widget: Must construct a QApplication before a QWidget”)
 CONFIG(debug, debug|release) {
-  LIBS += -llibqwtd
+  #LIBS += -llibqwtd
 }
 
 CONFIG(release, debug|release) {
-  LIBS += -llibqwt
+  #LIBS += -llibqwt
 }
 
   LIBS += -lfftw3f

@@ -346,7 +346,7 @@ void RadioInterface::dumpControlState(QSettings *s)
 
   s->setValue("fmMode", fmMode->currentText());
   s->setValue("fmDecoder", fmDecoder->currentText());
-  s->setValue("volumeDB", volumeSlider->value());
+  s->setValue("volumeHalfDb", volumeSlider->value());
   s->setValue("fmRdsSelector", fmRdsSelector->currentText());
   s->setValue("fmChannelSelect", fmChannelSelect->currentText());
   s->setValue("fmDeemphasisSelector", fmDeemphasisSelector->currentText());
@@ -421,7 +421,7 @@ void RadioInterface::setStart()
   connect(cbAutoMono, &QCheckBox::clicked, this, [this](bool isChecked){ myFMprocessor->set_auto_mono_mode(isChecked); });
   connect(volumeSlider, &QSlider::valueChanged, this, [this](int iValue){ myFMprocessor->setVolume(iValue); });
 
-  volumeSlider->setValue(fmSettings->value("volumeDB", -6).toInt());
+  volumeSlider->setValue(fmSettings->value("volumeHalfDb", -12).toInt());
 
   runMode = ERunStates::RUNNING;
 }
@@ -1920,7 +1920,7 @@ void RadioInterface::restoreGUIsettings(QSettings *s)
   k = s->value("fmFilterDegree", fmFilterDegree->value()).toInt();
   fmFilterDegree->setValue(k);
 
-  k = s->value("fmStereoPanoramaSlider", fmStereoPanoramaSlider->value()).toInt();
+  k = s->value("fmStereoPanoramaSlider", 100).toInt();
   fmStereoPanoramaSlider->setValue(k);
 
   k = s->value("fmStereoBalanceSlider", fmStereoBalanceSlider->value()).toInt();

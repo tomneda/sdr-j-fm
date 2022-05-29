@@ -298,8 +298,8 @@ void fmProcessor::setSoundMode(uint8_t selector)
 
 void fmProcessor::setStereoPanorama(int16_t iStereoPan)
 {
-  // iStereoPan range: 0 (Mono) ... +50 (Stereo) ... +100 (Stereo with widen panorama)
-  mPanorama = (DSPFLOAT)iStereoPan / 50.0f;
+  // iStereoPan range: 0 (Mono) ... +100 (Stereo) ... +200 (Stereo with widen panorama)
+  mPanorama = (DSPFLOAT)iStereoPan / 100.0f;
 }
 
 void fmProcessor::setSoundBalance(int16_t balance)
@@ -324,51 +324,49 @@ void fmProcessor::setDeemphasis(int16_t v)
   alpha = 1.0 / (DSPFLOAT(fmRate) / Tau + 1.0);
 }
 
-void fmProcessor::setVolume(int16_t iVolDb)
+void fmProcessor::setVolume(int16_t iVolHalfDb)
 {
-  if (iVolDb <= -40)
-  {
-    mVolumeFactor = 0.0f;
-  }
-  else
-  {
-    mVolumeFactor = std::pow(10.0f, iVolDb / 20.0f);
-  }
-  //qInfo("iVolDb: %d -> VolFactor: %f", iVolDb, mVolumeFactor);
+  const float volDb = iVolHalfDb / 2.0f;
+  mVolumeFactor = (volDb < -39.5f ? 0.0f : std::pow(10.0f, volDb / 20.0f));
+  //qInfo("iVolDb: %f -> VolFactor: %f", volDb, mVolumeFactor);
 }
 
 DSPCOMPLEX fmProcessor::audioGainCorrection(DSPCOMPLEX z)
 {
-  static DSPFLOAT leftAbsMax = -1e38f;
-  static DSPFLOAT rightAbsMax = -1e38f;
-  static DSPFLOAT lastVolume = 0.0f;
-  bool printMaxValues = false;
-
-  if (lastVolume != mVolumeFactor)
-  {
-    lastVolume = mVolumeFactor;
-    leftAbsMax = rightAbsMax = -1e38f;
-  }
-
   const DSPFLOAT left  = 10.0f * mVolumeFactor * mLeftChannel * real(z);
   const DSPFLOAT right = 10.0f * mVolumeFactor * mRightChannel * imag(z);
 
-  if (abs(left) > leftAbsMax)
+#if 0
   {
-    leftAbsMax = abs(left);
-    printMaxValues = true;
-  }
+    static DSPFLOAT leftAbsMax = -1e38f;
+    static DSPFLOAT rightAbsMax = -1e38f;
+    static DSPFLOAT lastVolume = 0.0f;
+    bool printMaxValues = false;
 
-  if (abs(right) > rightAbsMax)
-  {
-    rightAbsMax = abs(right);
-    printMaxValues = true;
-  }
+    if (lastVolume != mVolumeFactor)
+    {
+      lastVolume = mVolumeFactor;
+      leftAbsMax = rightAbsMax = -1e38f;
+    }
 
-  if (printMaxValues)
-  {
-    qInfo("leftAbsMax: %f, rightAbsMax: %f", leftAbsMax, rightAbsMax);
+    if (abs(left) > leftAbsMax)
+    {
+      leftAbsMax = abs(left);
+      printMaxValues = true;
+    }
+
+    if (abs(right) > rightAbsMax)
+    {
+      rightAbsMax = abs(right);
+      printMaxValues = true;
+    }
+
+    if (printMaxValues)
+    {
+      qInfo("leftAbsMax: %f, rightAbsMax: %f", leftAbsMax, rightAbsMax);
+    }
   }
+#endif
 
   return DSPCOMPLEX(left, right);
   //return DSPCOMPLEX(mVolumeFactor * leftChannel * real(z), mVolumeFactor * rightChannel * imag(z));

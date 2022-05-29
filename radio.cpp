@@ -796,7 +796,7 @@ void RadioInterface::setDevice(const QString &s)
 void RadioInterface::make_newProcessor()
 {
   myFMprocessor = new fmProcessor(myRig, this, our_audioSink, inputRate, fmRate,
-                                  workingRate, this->audioRate, displaySize,
+                                  workingRate, audioRate, displaySize,
                                   spectrumSize, averageCount, repeatRate,
                                   hfBuffer, lfBuffer, filterDepth, thresHold);
   lcd_fmRate->display((int)this->fmRate);
@@ -1570,6 +1570,14 @@ void RadioInterface::setfmBandwidth(int32_t b)
   {
     myFMprocessor->setBandfilterDegree(b);
   }
+}
+
+
+void RadioInterface::showPeakLevel(const float iPeakLeft, const float iPeakRight)
+{
+  //qInfo("PeakLeft %f, PeakRight %f", iPeakLeft, iPeakRight);
+  thermoPeakLevelLeft->setValue(iPeakLeft);
+  thermoPeakLevelRight->setValue(iPeakRight);
 }
 
 //

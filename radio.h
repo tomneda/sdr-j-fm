@@ -246,6 +246,7 @@ public slots:
   void setRDSisSynchronized(bool);
   void setMusicSpeechFlag(int);
   void clearMusicSpeechFlag();
+  void showPeakLevel(const float iPeakLeft, const float iPeakRight);
   void showStrength(float, float);
   void scanresult();
   void closeEvent(QCloseEvent *event) override;

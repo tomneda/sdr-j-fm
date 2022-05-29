@@ -1138,6 +1138,9 @@
            </item>
            <item>
             <widget class="QwtThermo" name="thermoPeakLevelLeft">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Left peak level in dBFS&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
              <property name="lowerBound">
               <double>-39.000000000000000</double>
              </property>
@@ -1171,6 +1174,9 @@
              </property>
              <property name="mouseTracking">
               <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Right peak level in dBFS&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="lowerBound">
               <double>-39.000000000000000</double>
@@ -1212,11 +1218,14 @@
            </item>
            <item>
             <widget class="QSlider" name="volumeSlider">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Volume gain in dB.&lt;/p&gt;&lt;p&gt;The range is -39.5 to +12.0 dB in 0.5 dB steps.&lt;br/&gt;On the most left position the audio is muted.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
              <property name="minimum">
               <number>-80</number>
              </property>
              <property name="maximum">
-              <number>12</number>
+              <number>24</number>
              </property>
              <property name="singleStep">
               <number>1</number>

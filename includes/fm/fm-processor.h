@@ -118,6 +118,10 @@ private:
   void mapSpectrum(DSPCOMPLEX *, double *);
   void add_to_average(double *, double *);
   void extractLevels(double *, int32_t);
+  void sendSampletoOutput(DSPCOMPLEX);
+  void evaluatePeakLevel(const DSPCOMPLEX s);
+
+private:
   deviceHandler *myRig;
   RadioInterface *myRadioInterface;
   audioSink *theSink;
@@ -145,7 +149,6 @@ private:
   DSPCOMPLEX *spectrumBuffer_lf;
   double *displayBuffer;
   double *localBuffer;
-  void sendSampletoOutput(DSPCOMPLEX);
   DecimatingFIR *fmBandfilter;
   Oscillator *localOscillator;
   newConverter *theConverter;
@@ -168,6 +171,11 @@ private:
   int32_t myCount;
   int16_t Lgain;
   int16_t Rgain;
+
+  int32_t mPeakLevelCurSampleCnt{0};
+  int32_t mPeakLevelSampleMax{0x7FFFFFFF};
+  DSPFLOAT mAbsPeakLeft{0.0f};
+  DSPFLOAT mAbsPeakRight{0.0f};
 
   newConverter *audioDecimator;
   DSPCOMPLEX *audioOut;
@@ -224,8 +232,6 @@ private:
     DSPFLOAT pilot_Lock;
     bool pll_isLocked;
     DSPFLOAT quadRef;
-    DSPFLOAT accumulator;
-    int32_t count;
 
   public:
     pilotRecovery(int32_t Rate_in, DSPFLOAT omega, DSPFLOAT gain, SinCos * mySinCos)
@@ -269,13 +275,13 @@ private:
   };
 
   pilotRecovery *pilotRecover;
-
 signals:
   void setPLLisLocked(bool);
   void hfBufferLoaded();
   void lfBufferLoaded();
   void showStrength(float, float);
   void scanresult();
+  void showPeakLevel(const float, const float);
 };
 
 #endif

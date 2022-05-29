@@ -72,6 +72,7 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   Lgain                  = 20;
   Rgain                  = 20;
 
+  mPeakLevelSampleMax = workingRate / 10;  // workingRate is typ. 48000Ss -> so eval each 4800 samples for 100ms for peak level meter
   myRdsDecoder = NULL;
 
   this->localBuffer = new double[displaySize];
@@ -105,8 +106,7 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   this->fmModus        = FM_Mode::Stereo;
   this->selector       = S_STEREO;
   this->inputMode      = IandQ;
-  this->audioDecimator =
-    new newConverter(fmRate, workingRate, workingRate / 200);
+  this->audioDecimator = new newConverter(fmRate, workingRate, workingRate / 200);
   this->audioOut = new DSPCOMPLEX[audioDecimator->getOutputsize()];
   /*
    *	averagePeakLevel and audioGain are set
@@ -163,14 +163,12 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   dumping  = false;
   dumpFile = NULL;
 
-  connect(this, SIGNAL(hfBufferLoaded(void)), myRadioInterface,
-          SLOT(hfBufferLoaded(void)));
-  connect(this, SIGNAL(lfBufferLoaded(void)), myRadioInterface,
-          SLOT(lfBufferLoaded(void)));
-  connect(this, SIGNAL(showStrength(float,float)), myRadioInterface,
-          SLOT(showStrength(float,float)));
-  connect(this, SIGNAL(scanresult(void)), myRadioInterface,
-          SLOT(scanresult(void)));
+  connect(this, SIGNAL(hfBufferLoaded(void)), myRadioInterface, SLOT(hfBufferLoaded(void)));
+  connect(this, SIGNAL(lfBufferLoaded(void)), myRadioInterface, SLOT(lfBufferLoaded(void)));
+  connect(this, &fmProcessor::showPeakLevel, myRadioInterface, &RadioInterface::showPeakLevel);
+  connect(this, SIGNAL(showStrength(float,float)), myRadioInterface, SLOT(showStrength(float,float)));
+  connect(this, SIGNAL(scanresult(void)), myRadioInterface,SLOT(scanresult(void)));
+
   squelchValue     = 0;
   old_squelchValue = 0;
 
@@ -333,8 +331,8 @@ void fmProcessor::setVolume(int16_t iVolHalfDb)
 
 DSPCOMPLEX fmProcessor::audioGainCorrection(DSPCOMPLEX z)
 {
-  const DSPFLOAT left  = 10.0f * mVolumeFactor * mLeftChannel * real(z);
-  const DSPFLOAT right = 10.0f * mVolumeFactor * mRightChannel * imag(z);
+  const DSPFLOAT left  = 20.0f * mVolumeFactor * mLeftChannel * real(z);
+  const DSPFLOAT right = 20.0f * mVolumeFactor * mRightChannel * imag(z);
 
 #if 0
   {
@@ -515,8 +513,7 @@ void fmProcessor::run()
     //	the noise around it, it is better to decode mono
     for (i = 0; i < amount; i++)
     {
-      DSPCOMPLEX v =
-        DSPCOMPLEX(real(dataBuffer[i]) * Lgain, imag(dataBuffer[i]) * Rgain);
+      DSPCOMPLEX v = DSPCOMPLEX(real(dataBuffer[i]) * Lgain, imag(dataBuffer[i]) * Rgain);
       v = v * localOscillator->nextValue(lo_frequency);
       //
       //	first step: decimating (and filtering)
@@ -636,16 +633,17 @@ void fmProcessor::run()
         mono(demod, &result, &rdsData);
       }
 
-      //	"result" now contains the audio sample, either stereo or mono
-      result = audioGainCorrection(result);
-
       if (fmAudioFilter != nullptr)
       {
         result = fmAudioFilter->Pass(result);
       }
 
+      // "result" now contains the audio sample, either stereo or mono
+      result = audioGainCorrection(result);
+
       if (audioDecimator->convert(result, audioOut, &audioAmount))
       {
+        // here the sample rate is "workingRate" (typ. 48000Ss)
         for (k = 0; k < audioAmount; k++)
         {
           if (squelchOn)
@@ -656,6 +654,8 @@ void fmProcessor::run()
           {
             pcmSample = audioOut[k];
           }
+
+          evaluatePeakLevel(pcmSample);
           sendSampletoOutput(pcmSample);
         }
       }
@@ -670,11 +670,11 @@ void fmProcessor::run()
           cnt = 0;
         }
       }
-      if (++myCount > fmRate)
+
+      if (++myCount > fmRate) // each second ...
       {
         myCount = 0;
         emit showStrength(get_pilotStrength(), get_dcComponent());
-        ;
       }
     }
   }
@@ -761,6 +761,27 @@ void fmProcessor::setLFcutoff(int32_t Hz)
   if (Hz > 0)
   {
     fmAudioFilter = new LowPassFIR(55, Hz, fmRate);  // 11 is too less (55 is also arbitrary) for this high sample rate fmRate = 256000S/s
+  }
+}
+
+void fmProcessor::evaluatePeakLevel(const DSPCOMPLEX s)
+{
+  const DSPFLOAT absLeft  = std::abs(real(s));
+  const DSPFLOAT absRight = std::abs(imag(s));
+
+  if (absLeft  > mAbsPeakLeft)  mAbsPeakLeft  = absLeft;
+  if (absRight > mAbsPeakRight) mAbsPeakRight = absRight;
+
+  if (++mPeakLevelCurSampleCnt > mPeakLevelSampleMax)
+  {
+    mPeakLevelCurSampleCnt = 0;
+
+    const float leftDb  = (mAbsPeakLeft  > 0.0f ? 20.0f * std::log10(mAbsPeakLeft)  : -40.0f);
+    const float rightDb = (mAbsPeakRight > 0.0f ? 20.0f * std::log10(mAbsPeakRight) : -40.0f);
+
+    emit showPeakLevel(leftDb, rightDb);
+
+    mAbsPeakLeft = mAbsPeakRight = 0.0f;
   }
 }
 

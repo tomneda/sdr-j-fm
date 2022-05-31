@@ -1159,22 +1159,19 @@
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
+             <property name="scalePosition">
+              <enum>QwtThermo::TrailingScale</enum>
+             </property>
+             <property name="originMode">
+              <enum>QwtThermo::OriginMinimum</enum>
+             </property>
+             <property name="alarmEnabled">
+              <bool>true</bool>
+             </property>
             </widget>
            </item>
            <item>
             <widget class="QwtThermo" name="thermoPeakLevelRight">
-             <property name="baseSize">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="cursor">
-              <cursorShape>ArrowCursor</cursorShape>
-             </property>
-             <property name="mouseTracking">
-              <bool>false</bool>
-             </property>
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Right peak level in dBFS&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
@@ -1203,16 +1200,7 @@
               <enum>QwtThermo::OriginMinimum</enum>
              </property>
              <property name="alarmEnabled">
-              <bool>false</bool>
-             </property>
-             <property name="spacing">
-              <number>3</number>
-             </property>
-             <property name="borderWidth">
-              <number>2</number>
-             </property>
-             <property name="pipeWidth">
-              <number>10</number>
+              <bool>true</bool>
              </property>
             </widget>
            </item>

@@ -104,6 +104,11 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
   setupUi(this);
   fmSettings = Si;
 
+  thermoPeakLevelLeft->setFillBrush(Qt::darkBlue);
+  thermoPeakLevelRight->setFillBrush(Qt::darkBlue);
+  thermoPeakLevelLeft->setAlarmBrush(Qt::red);
+  thermoPeakLevelRight->setAlarmBrush(Qt::red);
+
   reset_afc();
 
   runMode     = ERunStates::IDLE;

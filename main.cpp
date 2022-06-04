@@ -132,6 +132,23 @@ int main(int argc, char **argv)
   QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
   QApplication a(argc, argv);
+
+#if 0
+  //QFile fileStyleSheet("./Adaptic.qss"); // rather good
+  QFile fileStyleSheet("./Combinear.qss"); // also rather good, even better
+  if (fileStyleSheet.open(QFile::ReadOnly | QFile::Text))
+  {
+    a.setStyleSheet(fileStyleSheet.readAll());
+    fileStyleSheet.close();
+  }
+#else
+  static const QString styleSheet =
+    //#include "./stylesheets/Adaptic.qss"
+    #include "./stylesheets/Combinear.qss"
+  ;
+  a.setStyleSheet(styleSheet);
+#endif
+
   MyRadioInterface = new RadioInterface(ISettings, stationList, outputRate);
   MyRadioInterface->show();
   a.exec();

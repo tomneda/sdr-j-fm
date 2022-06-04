@@ -108,6 +108,8 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
   thermoPeakLevelRight->setFillBrush(Qt::darkBlue);
   thermoPeakLevelLeft->setAlarmBrush(Qt::red);
   thermoPeakLevelRight->setAlarmBrush(Qt::red);
+  thermoPeakLevelLeft->setAlarmEnabled(true);
+  thermoPeakLevelRight->setAlarmEnabled(true);
 
   reset_afc();
 
@@ -1583,6 +1585,12 @@ void RadioInterface::showPeakLevel(const float iPeakLeft, const float iPeakRight
   //qInfo("PeakLeft %f, PeakRight %f", iPeakLeft, iPeakRight);
   thermoPeakLevelLeft->setValue(iPeakLeft);
   thermoPeakLevelRight->setValue(iPeakRight);
+
+  // simple overflow avoidance -> reduce volume slider about -0.5dB (one step)
+  if (iPeakLeft > 0.0f || iPeakRight > 0.0f)
+  {
+    volumeSlider->setValue(volumeSlider->value() - 1);
+  }
 }
 
 //

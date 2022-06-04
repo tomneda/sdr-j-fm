@@ -1186,14 +1186,6 @@
           <layout class="QGridLayout" name="gridLayout">
            <item row="0" column="0" colspan="2">
             <widget class="QPushButton" name="dumpButton">
-             <property name="font">
-              <font>
-               <family>Cantarell</family>
-               <pointsize>11</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dump the incoming data stream into a file. Touching the button will cause a menu to appear with which a file(name) may be selected. Touching the button while dumping will close the file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>

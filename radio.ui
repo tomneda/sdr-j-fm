@@ -3,6 +3,9 @@
  <author>jan</author>
  <class>sdr_j_fm</class>
  <widget class="QDialog" name="sdr_j_fm">
+  <property name="windowModality">
+   <enum>Qt::ApplicationModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,60 +14,11 @@
     <height>759</height>
    </rect>
   </property>
-  <property name="palette">
-   <palette>
-    <active>
-     <colorrole role="Window">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>255</red>
-        <green>255</green>
-        <blue>255</blue>
-       </color>
-      </brush>
-     </colorrole>
-    </active>
-    <inactive>
-     <colorrole role="Window">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>255</red>
-        <green>255</green>
-        <blue>255</blue>
-       </color>
-      </brush>
-     </colorrole>
-    </inactive>
-    <disabled>
-     <colorrole role="Window">
-      <brush brushstyle="SolidPattern">
-       <color alpha="255">
-        <red>255</red>
-        <green>255</green>
-        <blue>255</blue>
-       </color>
-      </brush>
-     </colorrole>
-    </disabled>
-   </palette>
-  </property>
-  <property name="font">
-   <font>
-    <weight>50</weight>
-    <bold>false</bold>
-   </font>
-  </property>
   <property name="windowTitle">
-   <string>sdr-j-fm</string>
+   <string>sdr_j_fm</string>
   </property>
   <property name="windowIconText">
    <string>QUIT</string>
-  </property>
-  <property name="windowOpacity">
-   <double>1.000000000000000</double>
-  </property>
-  <property name="autoFillBackground">
-   <bool>false</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_6">
    <item>
@@ -1207,7 +1161,7 @@
            <item>
             <widget class="QSlider" name="volumeSlider">
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Volume gain in dB.&lt;/p&gt;&lt;p&gt;The range is -39.5 to +12.0 dB in 0.5 dB steps.&lt;br/&gt;On the most left position the audio is muted.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Volume gain in dB.&lt;/p&gt;&lt;p&gt;The range is -39.5 to +12.0 dB in 0.5 dB steps.&lt;br/&gt;On the most left position the audio is muted.&lt;br/&gt;Slider moves automatically back if audio level is &amp;gt; 0 dBFS to avoid audio distortions&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="minimum">
               <number>-60</number>

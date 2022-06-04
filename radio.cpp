@@ -102,7 +102,10 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
   int     k;
 
   setupUi(this);
-  fmSettings = Si;
+
+  setWindowFlag(Qt::WindowContextHelpButtonHint, false);
+  setWindowFlag(Qt::WindowMinimizeButtonHint, true);
+  setWindowFlag(Qt::WindowMaximizeButtonHint, true);
 
   thermoPeakLevelLeft->setFillBrush(Qt::darkBlue);
   thermoPeakLevelRight->setFillBrush(Qt::darkBlue);
@@ -110,6 +113,8 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
   thermoPeakLevelRight->setAlarmBrush(Qt::red);
   thermoPeakLevelLeft->setAlarmEnabled(true);
   thermoPeakLevelRight->setAlarmEnabled(true);
+
+  fmSettings = Si;
 
   reset_afc();
 

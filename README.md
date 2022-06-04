@@ -4,9 +4,9 @@ I forked this from https://github.com/JvanKatwijk/sdr-j-fm, thanks Jan van Katwi
 
 I went on my work based on V2.0 (SHA1: 8e917ac).
 
-For setup procedure see the original link above.
+For Linux setup procedure see the original link above.
 
-I only could go on with this work under Linux (Xubuntu), I did not built any Windows packages yet.
+I could also setup a build system for Windows. I try to describe the setup procedure later here.
 
 As I only have a DabStick (RTLSDR) for testing, I build-in an autostart only for this device. Possibly, this has to be deactivated if you use another device:
 Remove the line
@@ -15,6 +15,7 @@ in radio.cpp for this.
 
 ## What is new?
 * Change color design of the spectrum for better readability (only a subjective thing, of course)
+* A stylesheet "Combinear" from https://qss-stock.devsecstudio.com/ is used.
 * Remove the vertical red line for the left base band spectrum as it delivers no extra information and hid the DC peak.
 * Make the MAX and AVG numbers in the spectrum views colored and give them names.
 * More meaningful text on the Squelch button whether the squelch is currently on or off.
@@ -25,6 +26,9 @@ in radio.cpp for this.
 * The pilot detection is used to automatically switch to Mono-mode if the pilot is not detected. This behavior is selectable in the GUI with the checkbox "Auto mono". 
 * When saving a frequency the RDS station name is used as a proposal.
 * I removed the automatic audio level control as its sense how this worked was not clear to me and it took too long till it was loud enough.
+* There are two new peak level meters (above left channel, below right channel) which show the fullscale level (dBFS) of the audio output.
+* A new volume slider can control the audio volume in 0.5dB steps (with -30dB .. 6dB gain). At most left position the audio is fully muted.
+* If the audio volume reaches more than 0dBFS then the volume slider is automatically shifted to a lower volume level.
 * There is an AFC (Automatic Frequency Control) functionality now with a switchable GUI element. It moves the frequency automatically to the center of the signal. It works fine so far but could maybe faster as a analog radio would do.
 * I increased the filter tap of the AF filter from 11 to 55 as with 11 there was no hearable effect (the 55 are also choosen by experiment)
 * The balance slider makes only one audio channel quiter but keeps the other channels loudness. So no audio overdriven may happen.

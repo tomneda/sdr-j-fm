@@ -325,7 +325,7 @@ void fmProcessor::setDeemphasis(int16_t v)
 void fmProcessor::setVolume(int16_t iVolHalfDb)
 {
   const float volDb = iVolHalfDb / 2.0f;
-  mVolumeFactor = (volDb < -39.5f ? 0.0f : std::pow(10.0f, volDb / 20.0f));
+  mVolumeFactor = (volDb < -29.5f ? 0.0f : std::pow(10.0f, volDb / 20.0f));
   //qInfo("iVolDb: %f -> VolFactor: %f", volDb, mVolumeFactor);
 }
 

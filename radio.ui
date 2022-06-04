@@ -1142,7 +1142,7 @@
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Left peak level in dBFS&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="lowerBound">
-              <double>-30.000000000000000</double>
+              <double>-21.000000000000000</double>
              </property>
              <property name="upperBound">
               <double>3.000000000000000</double>
@@ -1176,7 +1176,7 @@
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Right peak level in dBFS&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="lowerBound">
-              <double>-30.000000000000000</double>
+              <double>-21.000000000000000</double>
              </property>
              <property name="upperBound">
               <double>3.000000000000000</double>
@@ -1210,7 +1210,7 @@
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Volume gain in dB.&lt;/p&gt;&lt;p&gt;The range is -39.5 to +12.0 dB in 0.5 dB steps.&lt;br/&gt;On the most left position the audio is muted.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="minimum">
-              <number>-80</number>
+              <number>-60</number>
              </property>
              <property name="maximum">
               <number>24</number>

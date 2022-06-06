@@ -277,7 +277,7 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
   //
   //
   //	Display the version
-  QString v = QString(GITHASH).toUpper();
+  QString v = QString("Version SHA1: ") + QString(GITHASH).toUpper();
   //QString v = "sdrJ-FM -V";
   //v.append(CURRENT_VERSION);
   systemindicator->setText(v.toLatin1().data());
@@ -431,7 +431,7 @@ void RadioInterface::setStart()
   }
 
   connect(cbAutoMono, &QCheckBox::clicked, this, [this](bool isChecked){ myFMprocessor->set_auto_mono_mode(isChecked); });
-  connect(volumeSlider, &QSlider::valueChanged, this, [this](int iValue){ myFMprocessor->setVolume(iValue); });
+  connect(volumeSlider, &QSlider::valueChanged, this, &RadioInterface::setAudioGainSlider);
 
   volumeSlider->setValue(fmSettings->value("volumeHalfDb", -12).toInt());
 
@@ -1345,6 +1345,18 @@ void RadioInterface::setfmStereoBalanceSlider(int n)
     balanceDisplay->display(n);
   }
 }
+
+void RadioInterface::setAudioGainSlider(int n)
+{
+  if (myFMprocessor != nullptr)
+  {
+    const float gainDB = (n < -59 ? -99.9f : n / 2.0f);
+    myFMprocessor->setVolume(gainDB);
+    //audioGainDisplay->display(gainDB);
+    audioGainDisplay->display(QString("%1").arg(gainDB, 0, 'f', 1)); // allow one fix digit after decimal point
+  }
+}
+
 //	Deemphasis	= 50 usec (3183 Hz, Europe)
 //	Deemphasis	= 75 usec (2122 Hz US)
 void RadioInterface::setfmDeemphasis(const QString &s)

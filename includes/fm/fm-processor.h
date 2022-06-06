@@ -75,7 +75,7 @@ public:
   void setStereoPanorama(int16_t iStereoPan);
   void setSoundBalance(int16_t);
   void setDeemphasis(int16_t);
-  void setVolume(int16_t iVolHalfDb);
+  void setVolume(const float iVolGainDb);
   void setLFcutoff(int32_t);
   void startDumping(SNDFILE *);
   void stopDumping();

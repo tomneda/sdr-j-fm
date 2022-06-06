@@ -205,6 +205,7 @@ private slots:
   void setfmDeemphasis(const QString &);
   void setfmStereoPanoramaSlider(int);
   void setfmStereoBalanceSlider(int);
+  void setAudioGainSlider(int n);
   void setfmLFcutoff(const QString &);
 
   void autoIncrement_timeout();

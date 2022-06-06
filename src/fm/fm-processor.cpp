@@ -322,11 +322,9 @@ void fmProcessor::setDeemphasis(int16_t v)
   alpha = 1.0 / (DSPFLOAT(fmRate) / Tau + 1.0);
 }
 
-void fmProcessor::setVolume(int16_t iVolHalfDb)
+void fmProcessor::setVolume(const float iVolGainDb)
 {
-  const float volDb = iVolHalfDb / 2.0f;
-  mVolumeFactor = (volDb < -29.5f ? 0.0f : std::pow(10.0f, volDb / 20.0f));
-  //qInfo("iVolDb: %f -> VolFactor: %f", volDb, mVolumeFactor);
+  mVolumeFactor = std::pow(10.0f, iVolGainDb / 20.0f);
 }
 
 DSPCOMPLEX fmProcessor::audioGainCorrection(DSPCOMPLEX z)

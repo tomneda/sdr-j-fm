@@ -589,8 +589,70 @@
             </widget>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout">
-             <item>
+            <layout class="QGridLayout" name="gridLayout_2">
+             <item row="6" column="1">
+              <widget class="QLCDNumber" name="audioGainDisplay">
+               <property name="palette">
+                <palette>
+                 <active>
+                  <colorrole role="Window">
+                   <brush brushstyle="SolidPattern">
+                    <color alpha="255">
+                     <red>255</red>
+                     <green>255</green>
+                     <blue>0</blue>
+                    </color>
+                   </brush>
+                  </colorrole>
+                 </active>
+                 <inactive>
+                  <colorrole role="Window">
+                   <brush brushstyle="SolidPattern">
+                    <color alpha="255">
+                     <red>255</red>
+                     <green>255</green>
+                     <blue>0</blue>
+                    </color>
+                   </brush>
+                  </colorrole>
+                 </inactive>
+                 <disabled>
+                  <colorrole role="Window">
+                   <brush brushstyle="SolidPattern">
+                    <color alpha="255">
+                     <red>255</red>
+                     <green>255</green>
+                     <blue>0</blue>
+                    </color>
+                   </brush>
+                  </colorrole>
+                 </disabled>
+                </palette>
+               </property>
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Balance value for the audio channels.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="autoFillBackground">
+                <bool>false</bool>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <property name="lineWidth">
+                <number>2</number>
+               </property>
+               <property name="smallDecimalPoint">
+                <bool>true</bool>
+               </property>
+               <property name="digitCount">
+                <number>4</number>
+               </property>
+               <property name="segmentStyle">
+                <enum>QLCDNumber::Flat</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="0">
               <widget class="QSlider" name="fmStereoBalanceSlider">
                <property name="toolTip">
                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Balance slider: balance between the audiochannels left and right.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -609,7 +671,29 @@
                </property>
               </widget>
              </item>
-             <item>
+             <item row="6" column="0">
+              <widget class="QSlider" name="volumeSlider">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Volume gain in dB.&lt;/p&gt;&lt;p&gt;The range is -39.5 to +12.0 dB in 0.5 dB steps.&lt;br/&gt;On the most left position the audio is muted.&lt;br/&gt;Slider moves automatically back if audio level is &amp;gt; 0 dBFS to avoid audio distortions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="minimum">
+                <number>-60</number>
+               </property>
+               <property name="maximum">
+                <number>24</number>
+               </property>
+               <property name="singleStep">
+                <number>1</number>
+               </property>
+               <property name="value">
+                <number>-6</number>
+               </property>
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="1">
               <widget class="QLCDNumber" name="balanceDisplay">
                <property name="palette">
                 <palette>
@@ -660,6 +744,9 @@
                <property name="lineWidth">
                 <number>2</number>
                </property>
+               <property name="smallDecimalPoint">
+                <bool>true</bool>
+               </property>
                <property name="digitCount">
                 <number>4</number>
                </property>
@@ -668,27 +755,7 @@
                </property>
               </widget>
              </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_2">
-             <item>
-              <widget class="QSlider" name="IQbalanceSlider">
-               <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Balance the incoming I and Q parts of the samples.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-               <property name="minimum">
-                <number>-35</number>
-               </property>
-               <property name="maximum">
-                <number>35</number>
-               </property>
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-              </widget>
-             </item>
-             <item>
+             <item row="4" column="1">
               <widget class="QLCDNumber" name="IQBalanceDisplay">
                <property name="palette">
                 <palette>
@@ -739,6 +806,9 @@
                <property name="lineWidth">
                 <number>2</number>
                </property>
+               <property name="smallDecimalPoint">
+                <bool>true</bool>
+               </property>
                <property name="digitCount">
                 <number>4</number>
                </property>
@@ -747,6 +817,29 @@
                </property>
               </widget>
              </item>
+             <item row="4" column="0">
+              <widget class="QSlider" name="IQbalanceSlider">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Balance the incoming I and Q parts of the samples.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="minimum">
+                <number>-35</number>
+               </property>
+               <property name="maximum">
+                <number>35</number>
+               </property>
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_17">
+             <property name="sizeConstraint">
+              <enum>QLayout::SetDefaultConstraint</enum>
+             </property>
             </layout>
            </item>
           </layout>
@@ -1176,6 +1269,22 @@
             </widget>
            </item>
            <item>
+            <spacer name="verticalSpacer">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Preferred</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
             <widget class="QwtThermo" name="thermoPeakLevelLeft">
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Left peak level in dBFS&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -1240,28 +1349,6 @@
              </property>
              <property name="alarmEnabled">
               <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QSlider" name="volumeSlider">
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Volume gain in dB.&lt;/p&gt;&lt;p&gt;The range is -39.5 to +12.0 dB in 0.5 dB steps.&lt;br/&gt;On the most left position the audio is muted.&lt;br/&gt;Slider moves automatically back if audio level is &amp;gt; 0 dBFS to avoid audio distortions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="minimum">
-              <number>-60</number>
-             </property>
-             <property name="maximum">
-              <number>24</number>
-             </property>
-             <property name="singleStep">
-              <number>1</number>
-             </property>
-             <property name="value">
-              <number>-6</number>
-             </property>
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
              </property>
             </widget>
            </item>

@@ -576,7 +576,7 @@
                 <number>2</number>
                </property>
                <property name="digitCount">
-                <number>2</number>
+                <number>4</number>
                </property>
                <property name="segmentStyle">
                 <enum>QLCDNumber::Flat</enum>
@@ -655,7 +655,7 @@
                 <number>2</number>
                </property>
                <property name="digitCount">
-                <number>2</number>
+                <number>4</number>
                </property>
                <property name="segmentStyle">
                 <enum>QLCDNumber::Flat</enum>

@@ -345,6 +345,9 @@
                <property name="frameShape">
                 <enum>QFrame::NoFrame</enum>
                </property>
+               <property name="smallDecimalPoint">
+                <bool>true</bool>
+               </property>
                <property name="segmentStyle">
                 <enum>QLCDNumber::Flat</enum>
                </property>
@@ -400,6 +403,9 @@
                </property>
                <property name="lineWidth">
                 <number>2</number>
+               </property>
+               <property name="smallDecimalPoint">
+                <bool>true</bool>
                </property>
                <property name="digitCount">
                 <number>5</number>

@@ -1,4 +1,4 @@
-# A more sophisitcated FM receiver
+# A more sophisticated FM receiver
 
 I forked this from https://github.com/JvanKatwijk/sdr-j-fm, thanks Jan van Katwijk for this great work. 
 
@@ -12,6 +12,9 @@ As I only have a DabStick (RTLSDR) for testing, I build-in an autostart only for
 Remove the line
   `QTimer::singleShot(100, this, [this](){ setDevice("dabstick"); } );`
 in radio.cpp for this.
+
+## How it is looking now?
+![fm receiver](/fmreceiver.png?raw=true)
 
 ## What is new?
 * Change color design of the spectrum for better readability (only a subjective thing, of course)
@@ -33,9 +36,5 @@ in radio.cpp for this.
 * I increased the filter tap of the AF filter from 11 to 55 as with 11 there was no hearable effect (the 55 are also choosen by experiment)
 * The balance slider makes only one audio channel quiter but keeps the other channels loudness. So no audio overdriven may happen.
 * Instead of showing the version number the last commit SHA1 (first seven digits) is shown in the GUI.
+* There is an indicator added where the relative miss-tune of the carrier center can be seen.
 * And finally I did many code refinings to be better suitable to my kind of thinking and better understanding the code :-).
-
-
-## How is it looking now?
-![fm receiver](/fmreceiver.png?raw=true)
-

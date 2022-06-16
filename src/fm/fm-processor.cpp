@@ -75,49 +75,41 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   mPeakLevelSampleMax = workingRate / 5;  // workingRate is typ. 48000Ss -> so eval each 9600 samples for 200ms for peak level meter
   mpMyRdsDecoder = NULL;
 
-  this->mpLocalBuffer = new double[displaySize];
+  mpLocalBuffer = new double[displaySize];
   //	we trust that neither displaySize nor SpectrumSize are 0
   //
 
-  if ((spectrumSize & (spectrumSize - 1)) != 0)
-  {
-    this->mSpectrumSize = 4 * displaySize;
-  }
-  else
-  {
-    this->mSpectrumSize = spectrumSize;
-  }
+  mSpectrumSize = ((spectrumSize & (spectrumSize - 1)) != 0 ? 4 * displaySize : spectrumSize);
+  mpSpectrum_fft_hf   = new common_fft(mSpectrumSize);
+  mpSpectrumBuffer_hf = mpSpectrum_fft_hf->getVector();
+  mpSpectrum_fft_lf   = new common_fft(mSpectrumSize);
+  mpSpectrumBuffer_lf = mpSpectrum_fft_lf->getVector();
 
-  this->mpSpectrum_fft_hf   = new common_fft(this->mSpectrumSize);
-  this->mpSpectrumBuffer_hf = mpSpectrum_fft_hf->getVector();
-  this->mpSpectrum_fft_lf   = new common_fft(this->mSpectrumSize);
-  this->mpSpectrumBuffer_lf = mpSpectrum_fft_lf->getVector();
-
-  this->mpLocalOscillator = new Oscillator(inputRate);
-  this->mpMySinCos        = new SinCos(fmRate);
-  this->mLoFrequency      = 0;
-  this->mOmegaDemod       = 2 * M_PI / fmRate;
-  this->mFmBandwidth     = 0.95 * fmRate;
-  this->mFmFilterDegree  = 21;
-  this->mpFmFilter        = new LowPassFIR(21, 0.95 * fmRate / 2, fmRate);
-  this->mNewFilter       = false;
+  mpLocalOscillator = new Oscillator(inputRate);
+  mpMySinCos        = new SinCos(fmRate);
+  mLoFrequency      = 0;
+  mOmegaDemod       = 2 * M_PI / fmRate;
+  mFmBandwidth     = 0.95 * fmRate;
+  mFmFilterDegree  = 21;
+  mpFmFilter        = new LowPassFIR(21, 0.95 * fmRate / 2, fmRate);
+  mNewFilter       = false;
   /*
    *	default values, will be set through the user interface
    *	to their appropriate values
    */
-  this->mFmModus        = FM_Mode::Stereo;
-  this->mSelector       = S_STEREO;
-  this->mInputMode      = IandQ;
-  this->mpAudioDecimator = new newConverter(fmRate, workingRate, workingRate / 200);
-  this->mpAudioOut = new DSPCOMPLEX[mpAudioDecimator->getOutputsize()];
+  mFmModus        = FM_Mode::Stereo;
+  mSelector       = S_STEREO;
+  mInputMode      = IandQ;
+  mpAudioDecimator = new newConverter(fmRate, workingRate, workingRate / 200);
+  mpAudioOut = new DSPCOMPLEX[mpAudioDecimator->getOutputsize()];
   /*
    *	averagePeakLevel and audioGain are set
    *	prior to calling the processFM method
    */
   //this->peakLevel           = -100;
   //this->peakLevelcnt        = 0;
-  this->mMaxFreqDeviation  = 0.95 * (0.5 * fmRate);
-  this->mNormFreqDeviation = 0.6 * mMaxFreqDeviation;
+  mMaxFreqDeviation  = 0.95 * (0.5 * fmRate);
+  mNormFreqDeviation = 0.6 * mMaxFreqDeviation;
   //this->audioGain           = 0;
   //
   mNoiseLevel = 0;
@@ -293,7 +285,7 @@ void fmProcessor::setFMdecoder(int16_t d)
 
 void fmProcessor::setSoundMode(uint8_t selector)
 {
-  this->mSelector = selector;
+  mSelector = selector;
 }
 
 void fmProcessor::setStereoPanorama(int16_t iStereoPan)
@@ -305,7 +297,7 @@ void fmProcessor::setStereoPanorama(int16_t iStereoPan)
 void fmProcessor::setSoundBalance(int16_t balance)
 {
   // range: -100 <= balance <= +100
-  this->mBalance = balance;
+  mBalance = balance;
   //  leftChannel   = -(balance - 50.0) / 100.0;
   //  rightChannel  = (balance + 50.0) / 100.0;
   mLeftChannel  = (balance > 0 ? (100 - balance) / 100.0 : 1.0f);
@@ -543,7 +535,7 @@ void fmProcessor::run()
           float signal = getSignal(scanBuffer, 1024);
           float Noise  = getNoise(scanBuffer, 1024);
 
-          if (get_db(signal, 256) - get_db(Noise, 256) > this->mThresHold)
+          if (get_db(signal, 256) - get_db(Noise, 256) > mThresHold)
           {
             fprintf(stderr, "signal found %f %f\n", get_db(signal, 256), get_db(Noise, 256));
             emit scanresult();

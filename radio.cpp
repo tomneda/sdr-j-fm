@@ -1020,6 +1020,7 @@ void RadioInterface::setTuner(int32_t n)
     myFMprocessor->set_localOscillator(LOFrequency);
     myFMprocessor->resetRds();
 
+    // redraw LF frequency only with bigger frequency steps, AFC will trigger this too, else
     if (vfo != vfoLast || LOFrequency - loFrequencyLast >= KHz(100))
     {
       myFMprocessor->triggerDrawNewLfSpectrum(); // any change in frequency, draw new LF spectrum immediately without averaging

@@ -252,7 +252,7 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
     maxLoopFrequency = 110000;
   }
 
-  fm_increment->setValue(fmIncrement); //
+  fm_increment->setValue(fmIncrement);
   minimumSelect->setValue(KHz(minLoopFrequency) / MHz(1));
   maximumSelect->setValue(KHz(maxLoopFrequency) / MHz(1));
 
@@ -370,6 +370,7 @@ void RadioInterface::dumpControlState(QSettings *s)
   //
   s->setValue("streamOutSelector", streamOutSelector->currentText());
 
+  s->setValue("currentFreq", currentFreq);
   s->setValue("min_loop_frequency", minLoopFrequency);
   s->setValue("max_loop_frequency", maxLoopFrequency);
 
@@ -778,8 +779,11 @@ void RadioInterface::setDevice(const QString &s)
   //
   //	ask the new rig for the frequency
   fmRate      = mapRates(inputRate);
+
   currentFreq = myRig->defaultFrequency() + fmRate / 4;
+  currentFreq = fmSettings->value("currentFreq", currentFreq).toInt();
   Display(currentFreq);
+
   lcd_fmRate->display((int)this->fmRate);
   lcd_inputRate->display((int)this->inputRate);
   lcd_OutputRate->display((int)this->audioRate);

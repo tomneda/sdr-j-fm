@@ -967,6 +967,11 @@
                </property>
                <item>
                 <property name="text">
+                 <string>4500Hz</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
                  <string>6000Hz</string>
                 </property>
                </item>
@@ -1195,6 +1200,11 @@
                <property name="toolTip">
                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Filter, applied to the incoming raw data to isolate the FM signal from the noise around it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
+               <item>
+                <property name="text">
+                 <string>9kHz</string>
+                </property>
+               </item>
                <item>
                 <property name="text">
                  <string>65kHz</string>

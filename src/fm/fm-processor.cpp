@@ -329,8 +329,8 @@ void fmProcessor::setVolume(const float iVolGainDb)
 
 DSPCOMPLEX fmProcessor::audioGainCorrection(DSPCOMPLEX z)
 {
-  const DSPFLOAT left  = 20.0f * mVolumeFactor * mLeftChannel * real(z);
-  const DSPFLOAT right = 20.0f * mVolumeFactor * mRightChannel * imag(z);
+  const DSPFLOAT left  = mVolumeFactor * mLeftChannel * real(z);
+  const DSPFLOAT right = mVolumeFactor * mRightChannel * imag(z);
 
 #if 0
   {

@@ -31,6 +31,7 @@
 #include "fm-constants.h"
 #include "pllC.h"
 #include "sincos.h"
+#include "iir-filters.h"
 #include <vector>
 
 #define PLL_PILOT_GAIN 3000
@@ -57,6 +58,10 @@ private:
   DSPFLOAT Qmin1;
   DSPFLOAT Imin2;
   DSPFLOAT Qmin2;
+
+  HighPassIIR mAmHighpass;
+  LowPassIIR  mAmLowpass;
+  BandPassIIR mAmBandpass;
 
 public:
   fm_Demodulator(int32_t Rate_in, SinCos *mySinCos, DSPFLOAT K_FM);

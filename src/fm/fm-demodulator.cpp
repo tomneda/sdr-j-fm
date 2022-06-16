@@ -32,7 +32,8 @@ fm_Demodulator::TDecoderListNames fm_Demodulator::sIdx2DecoderName =
  "Compl. Baseb. Delay",
  "Mixed Demod",
  "PLL Decoder",
- "Real Baseb. Delay"
+ "Real Baseb. Delay",
+ "AM"
 };
 
 
@@ -45,7 +46,10 @@ fm_Demodulator::TDecoderListNames fm_Demodulator::sIdx2DecoderName =
 //	chapter 3.
 fm_Demodulator::fm_Demodulator (int32_t rateIn,
                                 SinCos  *mySinCos,
-                                DSPFLOAT K_FM)
+                                DSPFLOAT K_FM) :
+  mAmHighpass(20, 100, rateIn, S_CHEBYSHEV),
+  mAmLowpass(1, 1, rateIn, S_CHEBYSHEV),
+  mAmBandpass(20, 100, 4500, rateIn, S_CHEBYSHEV)
 {
   int32_t i;
 
@@ -104,8 +108,28 @@ DSPFLOAT fm_Demodulator::demodulate(DSPCOMPLEX z)
   DSPFLOAT res;
   DSPFLOAT I, Q;
 
-#define DCAlpha    0.0001
-//#define	DCAlpha	0.000001
+  if (selectedDecoder == 5) // AM
+  {
+    const DSPFLOAT zAbs = abs(z) / 100;
+
+    //const float alpha = (zAbs > fm_afc ? 0.0001f : 0.0001f);
+    constexpr float alpha = 0.001f;
+    fm_afc = (1.0f - alpha) * fm_afc + alpha * zAbs;
+
+    //fm_afc = mAmLowpass.Pass(zAbs);
+    //res = mAmHighpass.Pass(zAbs);
+    //return res / abs(fm_afc + 0.01);
+    constexpr float gainLimit = 0.01f;
+    //res = (zAbs - fm_afc) / (fm_afc < gainLimit ? gainLimit : fm_afc);
+    res = (zAbs - fm_afc) / (fm_afc < gainLimit ? gainLimit : fm_afc);
+    constexpr float audioLimit = 1.0f;
+    if      (res >  audioLimit) res =  audioLimit;
+    else if (res < -audioLimit) res = -audioLimit;
+    //res = mAmBandpass.Pass(res);
+    return res;
+  }
+
+  constexpr DSPFLOAT DCAlpha = 0.0001;
 
   if (abs(z) <= 0.001)
   {
@@ -150,7 +174,7 @@ DSPFLOAT fm_Demodulator::demodulate(DSPCOMPLEX z)
   }
 
   fm_afc = (1 - DCAlpha) * fm_afc + DCAlpha * res;
-  res = (res - fm_afc) * fm_cvt / K_FM;
+  res = 20.0f * (res - fm_afc) * fm_cvt / K_FM;
 
   // and shift ...
   Imin1 = I;

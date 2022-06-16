@@ -124,33 +124,33 @@ DSPFLOAT fm_Demodulator::demodulate(DSPCOMPLEX z)
     [[fallthrough]];
 
   case 0: // DifferenceBased
-    res    = Imin1 * (Q - Qmin2) - Qmin1 * (I - Imin2);
+    res    = -(Imin1 * (Q - Qmin2) - Qmin1 * (I - Imin2));
     res   /= Imin1 * Imin1 + Qmin1 * Qmin1;
     Imin2  = Imin1;
     Qmin2  = Qmin1;
     break;
 
   case 1: // ComplexBasebandDelay
-    res    = myAtan.argX(z * DSPCOMPLEX(Imin1, -Qmin1));
+    res = -myAtan.argX(z * DSPCOMPLEX(Imin1, -Qmin1));
     break;
 
   case 2: // MixedDemodulator
-    res = myAtan.atan2(Q * Imin1 - I * Qmin1, I * Imin1 + Q * Qmin1);
+    res = -myAtan.atan2(Q * Imin1 - I * Qmin1, I * Imin1 + Q * Qmin1);
     break;
 
   case 3: // PllDecoder
     myfm_pll->do_pll(z);
-    res = -myfm_pll->getPhaseIncr(); // minus to have same DC as the other demodulatiors (for correct AFC)
+    res = myfm_pll->getPhaseIncr();
     break;
 
   case 4: // RealBasebandDelay
     res = (Imin1 * Q - Qmin1 * I + 1.0) / 2.0;
-    res = Arcsine [(int)(res * ArcsineSize)];
+    res = -Arcsine [(int)(res * ArcsineSize)];
     break;
   }
 
   fm_afc = (1 - DCAlpha) * fm_afc + DCAlpha * res;
-  res = (res - fm_afc) * fm_cvt / K_FM;
+  res = 20.0f * (res - fm_afc) * fm_cvt / K_FM;
 
   // and shift ...
   Imin1 = I;

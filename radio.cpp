@@ -977,19 +977,20 @@ void RadioInterface::wheelEvent(QWheelEvent *e)
 //
 void RadioInterface::setTuner(int32_t n)
 {
-  int32_t vfo;
-
   //	if ((n < Mhz (60)) || (n > Mhz (420)))
   //	   return Khz (94700);
   //	as long as the requested frequency fits within the current
   //	range - i.e. the full width required for fm demodulation fits -
   //	the vfo remains the same, while the LO is adapted.
-  vfo = myRig->getVFOFrequency();
+  int32_t vfo = myRig->getVFOFrequency();
+  const int32_t vfoLast = vfo;
+
   if (ExtioLock)
   {
     currentFreq = vfo;
     return;
   }
+
   if (abs(n - vfo) > inputRate / 2 - fmRate / 2)
   {
     myRig->setVFOFrequency(n);
@@ -1000,8 +1001,10 @@ void RadioInterface::setTuner(int32_t n)
       myFMprocessor->triggerDrawNewHfSpectrum(); // as VFO frequency changed, draw new HF spectrum immediately without averaging
     }
   }
+
+  const int32_t loFrequencyLast = LOFrequency;
   LOFrequency = n - vfo;
-  //
+
   //	constrain LOFrequency, since that is used as an index in a table
   if (LOFrequency > inputRate / 2)
   {
@@ -1011,11 +1014,16 @@ void RadioInterface::setTuner(int32_t n)
   {
     LOFrequency = -inputRate / 2;
   }
+
   if (myFMprocessor != nullptr)
   {
     myFMprocessor->set_localOscillator(LOFrequency);
-    myFMprocessor->triggerDrawNewLfSpectrum(); // any change in frequency, draw new LF spectrum immediately without averaging
     myFMprocessor->resetRds();
+
+    if (vfo != vfoLast || LOFrequency - loFrequencyLast >= KHz(100))
+    {
+      myFMprocessor->triggerDrawNewLfSpectrum(); // any change in frequency, draw new LF spectrum immediately without averaging
+    }
   }
   Display(vfo + LOFrequency);
   currentFreq = vfo + LOFrequency;

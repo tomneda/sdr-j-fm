@@ -124,7 +124,7 @@ private:
 
   int32_t mapIncrement(int32_t);
   int32_t IncrementInterval(int16_t);
-  int32_t setTuner(int32_t);
+  void setTuner(int32_t);
   void Display(int32_t);
   QTimer *autoIncrementTimer;
   int16_t IncrementIndex;

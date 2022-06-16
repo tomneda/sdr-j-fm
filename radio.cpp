@@ -795,8 +795,7 @@ void RadioInterface::setDevice(const QString &s)
   {
     //	and for the extio:
     //	The following signals originate from the Winrad Extio interface
-    connect(myRig, SIGNAL(set_ExtFrequency(int)), this,
-            SLOT(set_ExtFrequency(int)));
+    connect(myRig, SIGNAL(set_ExtFrequency(int)), this, SLOT(set_ExtFrequency(int)));
     connect(myRig, SIGNAL(set_ExtLO(int)), this, SLOT(set_ExtLO(int)));
     connect(myRig, SIGNAL(set_lockLO()), this, SLOT(set_lockLO()));
     connect(myRig, SIGNAL(set_unlockLO()), this, SLOT(set_unlockLO()));
@@ -815,6 +814,7 @@ void RadioInterface::make_newProcessor()
                                   workingRate, audioRate, displaySize,
                                   spectrumSize, averageCount, repeatRate,
                                   hfBuffer, lfBuffer, filterDepth, thresHold);
+
   lcd_fmRate->display((int)this->fmRate);
   lcd_inputRate->display((int)this->inputRate);
   lcd_OutputRate->display((int)this->audioRate);
@@ -949,7 +949,7 @@ void RadioInterface::IncrementFrequency(int32_t n)
 
   stopIncrementing();
   vfoFreq     = myRig->getVFOFrequency();
-  currentFreq = setTuner(vfoFreq + LOFrequency + n);
+  setTuner(vfoFreq + LOFrequency + n);
 }
 //	AdjustFrequency is called whenever someone clicks
 //	with the button on the screen. The amount
@@ -976,7 +976,7 @@ void RadioInterface::wheelEvent(QWheelEvent *e)
 //
 //	The generic setTuner.
 //
-int32_t RadioInterface::setTuner(int32_t n)
+void RadioInterface::setTuner(int32_t n)
 {
   int32_t vfo;
 
@@ -988,7 +988,8 @@ int32_t RadioInterface::setTuner(int32_t n)
   vfo = myRig->getVFOFrequency();
   if (ExtioLock)
   {
-    return vfo;
+    currentFreq = vfo;
+    return;
   }
   if (abs(n - vfo) > inputRate / 2 - fmRate / 2)
   {
@@ -1012,7 +1013,7 @@ int32_t RadioInterface::setTuner(int32_t n)
     myFMprocessor->resetRds();
   }
   Display(vfo + LOFrequency);
-  return vfo + LOFrequency;
+  currentFreq = vfo + LOFrequency;
 }
 //
 //===== code for auto increment/decrement
@@ -1091,7 +1092,7 @@ void RadioInterface::autoIncrement_timeout()
     frequency = low;
   }
 
-  currentFreq = setTuner(frequency);
+  setTuner(frequency);
   autoIncrementTimer->start(IncrementInterval(IncrementIndex));
   if (myFMprocessor != nullptr)
   {
@@ -1186,13 +1187,13 @@ void RadioInterface::set_maximum(int f)
 void RadioInterface::IncrementButton()
 {
   stopIncrementing();
-  currentFreq = setTuner(currentFreq + Khz(fmIncrement));
+  setTuner(currentFreq + Khz(fmIncrement));
 }
 
 void RadioInterface::DecrementButton()
 {
   stopIncrementing();
-  currentFreq = setTuner(currentFreq - Khz(fmIncrement));
+  setTuner(currentFreq - Khz(fmIncrement));
 }
 //
 void RadioInterface::updateTimeDisplay()
@@ -1676,7 +1677,7 @@ void RadioInterface::showStrength(float the_pilotStrength, float the_dcComponent
 
     if (absAfcCurrOffFreq > 3) // avoid re-tunings of HW when only a residual frequency offset remains
     {
-      currentFreq = setTuner(newFreq);
+      setTuner(newFreq);
     }
   }
 
@@ -2085,7 +2086,7 @@ void RadioInterface::handle_freqButton()
 void RadioInterface::newFrequency(int f)
 {
   stopIncrementing();
-  currentFreq = setTuner(f);
+  setTuner(f);
 }
 
 void RadioInterface::set_freqSave()

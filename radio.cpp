@@ -349,7 +349,6 @@ void RadioInterface::dumpControlState(QSettings *s)
   s->setValue("spectrumAmplitudeSlider_hf", spectrumAmplitudeSlider_hf->value());
   s->setValue("spectrumAmplitudeSlider_lf", spectrumAmplitudeSlider_lf->value());
   s->setValue("IQbalanceSlider", IQbalanceSlider->value());
-  //s->setValue("inputModeSelect", inputModeSelect->currentText());
   s->setValue("afc", cbAfc->checkState());
 
   //	now setting the parameters for the fm decoder
@@ -431,7 +430,7 @@ void RadioInterface::setStart()
     connect(fmDecoder, qOverload<int>(&QComboBox::currentIndexChanged), this, &RadioInterface::setfmDecoder);
   }
 
-  connect(cbAutoMono, &QCheckBox::clicked, this, [this](bool isChecked){ myFMprocessor->set_auto_mono_mode(isChecked); });
+  connect(cbAutoMono, &QCheckBox::clicked, this, [this](bool isChecked){ myFMprocessor->setAutoMonoMode(isChecked); });
   connect(volumeSlider, &QSlider::valueChanged, this, &RadioInterface::setAudioGainSlider);
 
   volumeSlider->setValue(fmSettings->value("volumeHalfDb", -12).toInt());
@@ -995,6 +994,11 @@ void RadioInterface::setTuner(int32_t n)
   {
     myRig->setVFOFrequency(n);
     vfo = myRig->getVFOFrequency();
+
+    if (myFMprocessor != nullptr)
+    {
+      myFMprocessor->triggerDrawNewHfSpectrum(); // as VFO frequency changed, draw new HF spectrum immediately without averaging
+    }
   }
   LOFrequency = n - vfo;
   //
@@ -1010,6 +1014,7 @@ void RadioInterface::setTuner(int32_t n)
   if (myFMprocessor != nullptr)
   {
     myFMprocessor->set_localOscillator(LOFrequency);
+    myFMprocessor->triggerDrawNewLfSpectrum(); // any change in frequency, draw new LF spectrum immediately without averaging
     myFMprocessor->resetRds();
   }
   Display(vfo + LOFrequency);
@@ -1067,20 +1072,16 @@ void RadioInterface::set_incrementFlag(int16_t incr)
 //
 void RadioInterface::autoIncrement_timeout()
 {
-  int32_t amount;
-  int32_t frequency;
-  int32_t low, high;
-
-  low    = KHz(minLoopFrequency);
-  high   = KHz(maxLoopFrequency);
-  amount = fmIncrement;
+  const int32_t low  = KHz(minLoopFrequency);
+  const int32_t high = KHz(maxLoopFrequency);
+  int32_t amount = fmIncrement;
 
   if (IncrementIndex < 0)
   {
     amount = -amount;
   }
-  //
-  frequency = currentFreq + KHz(amount);
+
+  int32_t frequency = currentFreq + KHz(amount);
 
   if ((IncrementIndex < 0) && !frequencyInBounds(frequency, low, high))
   {
@@ -1093,7 +1094,9 @@ void RadioInterface::autoIncrement_timeout()
   }
 
   setTuner(frequency);
+
   autoIncrementTimer->start(IncrementInterval(IncrementIndex));
+
   if (myFMprocessor != nullptr)
   {
     myFMprocessor->startScanning();
@@ -1283,42 +1286,24 @@ void RadioInterface::set_audioDump()
   our_audioSink->startDumping(audiofilePointer);
 }
 
-/*
- *	there is a tremendous amount of signal/slot connections
- *	The local connects, knobs, sliders and displays,
- *	are connected here.
- */
 void RadioInterface::localConnects()
 {
-  //	connect (startButton, SIGNAL (clicked ()),
-  //	              this, SLOT (setStart ()));
   connect(pauseButton, SIGNAL(clicked()), this, SLOT(clickPause()));
-  connect(streamOutSelector, SIGNAL(activated(int)), this,
-          SLOT(setStreamOutSelector(int)));
-  connect(deviceSelector, SIGNAL(activated(const QString&)), this,
-          SLOT(setDevice(const QString&)));
+  connect(streamOutSelector, SIGNAL(activated(int)), this, SLOT(setStreamOutSelector(int)));
+  connect(deviceSelector, SIGNAL(activated(const QString&)), this, SLOT(setDevice(const QString&)));
   connect(dumpButton, SIGNAL(clicked()), this, SLOT(set_dumping()));
   connect(audioDump, SIGNAL(clicked()), this, SLOT(set_audioDump()));
 
-  connect(squelchButton, SIGNAL(clicked()), this,
-          SLOT(set_squelchMode()));
-  connect(squelchSlider, SIGNAL(valueChanged(int)), this,
-          SLOT(set_squelchValue(int)));
+  connect(squelchButton, SIGNAL(clicked()), this, SLOT(set_squelchMode()));
+  connect(squelchSlider, SIGNAL(valueChanged(int)), this, SLOT(set_squelchValue(int)));
 
-  connect(IQbalanceSlider, SIGNAL(valueChanged(int)), this,
-          SLOT(setIQBalance(int)));
-  /*
-   *	Mode setters
-   */
-  //	connect (inputModeSelect, SIGNAL (activated(const QString&) ),
-  //	              this, SLOT (setInputMode (const QString&) ) );
+  connect(IQbalanceSlider, SIGNAL(valueChanged(int)), this, SLOT(setIQBalance(int)));
 
   connect(fc_plus, SIGNAL(clicked()), this, SLOT(autoIncrementButton()));
   connect(fc_minus, SIGNAL(clicked()), this, SLOT(autoDecrementButton()));
   connect(f_plus, SIGNAL(clicked()), this, SLOT(IncrementButton()));
   connect(f_minus, SIGNAL(clicked()), this, SLOT(DecrementButton()));
-  //
-  //	fm specific buttons and sliders
+
   connect(fmChannelSelect, SIGNAL(activated(const QString&)), this, SLOT(setfmChannelSelector(const QString&)));
   connect(logging, SIGNAL(activated(const QString&)), this, SLOT(setLogging(const QString&)));
   connect(logSaving, SIGNAL(clicked()), this, SLOT(setLogsaving()));
@@ -1331,7 +1316,6 @@ void RadioInterface::localConnects()
   connect(fmStereoBalanceSlider, SIGNAL(valueChanged(int)), this, SLOT(setfmStereoBalanceSlider(int)));
   connect(fmDeemphasisSelector, SIGNAL(activated(const QString&)), this, SLOT(setfmDeemphasis(const QString&)));
   connect(fmLFcutoff, SIGNAL(activated(const QString&)), this, SLOT(setfmLFcutoff(const QString&)));
-  //
 }
 
 void RadioInterface::setfmStereoPanoramaSlider(int n)
@@ -1572,7 +1556,6 @@ inline int32_t numberofDigits(int32_t f)
 
 void RadioInterface::Display(int32_t freq)
 {
-  lcd_Frequency->setDigitCount(6);
   lcd_Frequency->display((freq + KHz(1)/2) / KHz(1));
 }
 
@@ -1918,10 +1901,8 @@ void RadioInterface::setup_HFScope()
   hfScope    = new Scope(hfscope, this->displaySize, this->rasterSize);
   HFviewMode = SPECTRUM_MODE;
   hfScope->SelectView(SPECTRUM_MODE);
-  connect(hfScope, SIGNAL(clickedwithLeft(int)), this,
-          SLOT(AdjustFrequency(int)));
-  connect(hfScope, SIGNAL(clickedwithRight(int)), this,
-          SLOT(setHFplotterView(int)));
+  connect(hfScope, SIGNAL(clickedwithLeft(int)), this, SLOT(AdjustFrequency(int)));
+  connect(hfScope, SIGNAL(clickedwithRight(int)), this, SLOT(setHFplotterView(int)));
 }
 
 void RadioInterface::setup_LFScope()
@@ -2050,7 +2031,7 @@ int32_t RadioInterface::mapRates(int32_t inputRate)
 
 //	In case selection of a device did not work out for whatever
 //	reason, the device selector is reset to "no device"
-//	Qt will trigger on the chgange of value in the deviceSelector
+//	Qt will trigger on the change of value in the deviceSelector
 //	which will cause selectdevice to be called again (while we
 //	are in the middle, so we first disconnect the selector
 //	from the slot. Obviously, after setting the index of
@@ -2058,8 +2039,7 @@ int32_t RadioInterface::mapRates(int32_t inputRate)
 
 void RadioInterface::resetSelector()
 {
-  disconnect(deviceSelector, SIGNAL(activated(const QString&)), this,
-             SLOT(setDevice(const QString&)));
+  disconnect(deviceSelector, SIGNAL(activated(const QString&)), this, SLOT(setDevice(const QString&)));
   //int k = deviceSelector->findText(QString("no device"));
   int k = deviceSelector->findText(QString("dabstick"));
 
@@ -2067,8 +2047,8 @@ void RadioInterface::resetSelector()
   {
     deviceSelector->setCurrentIndex(k);
   }
-  connect(deviceSelector, SIGNAL(activated(const QString&)), this,
-          SLOT(setDevice(const QString&)));
+
+  connect(deviceSelector, SIGNAL(activated(const QString&)), this, SLOT(setDevice(const QString&)));
 }
 
 void RadioInterface::handle_freqButton()

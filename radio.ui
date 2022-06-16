@@ -1481,7 +1481,7 @@
               <number>2</number>
              </property>
              <property name="digitCount">
-              <number>8</number>
+              <number>6</number>
              </property>
              <property name="segmentStyle">
               <enum>QLCDNumber::Flat</enum>
@@ -1850,32 +1850,6 @@
              </property>
             </widget>
            </item>
-           <item row="6" column="0">
-            <widget class="QLabel" name="systemindicator">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Last GIT commit SHA1&lt;/p&gt;&lt;p&gt;Copyright (C) 2016, Jan van Katwijk (J.vanKatwijk@gmail.com), Lazy Chair Programming&lt;/p&gt;&lt;p&gt;sdr-j-fm is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="frameShape">
-              <enum>QFrame::Panel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
-             </property>
-             <property name="lineWidth">
-              <number>2</number>
-             </property>
-             <property name="text">
-              <string>fm software</string>
-             </property>
-            </widget>
-           </item>
            <item row="6" column="5">
             <widget class="QLabel" name="label_11">
              <property name="text">
@@ -1930,6 +1904,32 @@
              </property>
              <property name="segmentStyle">
               <enum>QLCDNumber::Flat</enum>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="0" colspan="4">
+            <widget class="QLabel" name="systemindicator">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Last GIT commit SHA1&lt;/p&gt;&lt;p&gt;Copyright (C) 2016, Jan van Katwijk (J.vanKatwijk@gmail.com), Lazy Chair Programming&lt;/p&gt;&lt;p&gt;sdr-j-fm is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::Panel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <property name="lineWidth">
+              <number>2</number>
+             </property>
+             <property name="text">
+              <string>fm software</string>
              </property>
             </widget>
            </item>

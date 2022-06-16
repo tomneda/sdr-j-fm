@@ -90,7 +90,9 @@ public:
   void setInputMode(uint8_t);
   bool ok();
   bool isPilotLocked(float & oLockStrength) const;
-  void set_auto_mono_mode(const bool iAutoMonoMode) { mAutoMono = iAutoMonoMode; }
+  void setAutoMonoMode(const bool iAutoMonoMode) { mAutoMono = iAutoMonoMode; }
+  void triggerDrawNewHfSpectrum() { mFillAverageHfBuffer = true; }
+  void triggerDrawNewLfSpectrum() { mFillAverageLfBuffer = true; }
 
   DSPFLOAT get_pilotStrength();
   DSPFLOAT get_rdsStrength();
@@ -116,7 +118,8 @@ public:
 private:
   void run() override;
   void mapSpectrum(const DSPCOMPLEX * const, double * const);
-  void add_to_average(double *, double *);
+  void fill_average_buffer(const double * const, double * const);
+  void add_to_average(const double * const, double * const);
   void extractLevels(double *, int32_t);
   void sendSampletoOutput(DSPCOMPLEX);
   void evaluatePeakLevel(const DSPCOMPLEX s);
@@ -132,6 +135,8 @@ private:
   int32_t mDisplaySize;
   int32_t mAverageCount;
   int32_t mRepeatRate;
+  bool mFillAverageHfBuffer{ true };
+  bool mFillAverageLfBuffer{ true };
   RingBuffer<double> *mpHfBuffer;
   RingBuffer<double> *mpLfBuffer;
   int16_t mFilterDepth;

@@ -487,7 +487,15 @@ void fmProcessor::run()
 //      }
 //      else
       {
-        add_to_average(Y_Values, displayBuffer_hf);
+        if (mFillAverageHfBuffer)
+        {
+          fill_average_buffer(Y_Values, displayBuffer_hf);
+          mFillAverageHfBuffer = false;
+        }
+        else
+        {
+          add_to_average(Y_Values, displayBuffer_hf);
+        }
       }
 
       mpHfBuffer->putDataIntoBuffer(displayBuffer_hf, mDisplaySize);
@@ -587,7 +595,17 @@ void fmProcessor::run()
         double Y_Values[mDisplaySize];
         mpSpectrum_fft_lf->do_FFT();
         mapSpectrum(mpSpectrumBuffer_lf, Y_Values);
-        add_to_average(Y_Values, displayBuffer_lf);
+
+        if (mFillAverageLfBuffer)
+        {
+          fill_average_buffer(Y_Values, displayBuffer_lf);
+          mFillAverageLfBuffer = false;
+        }
+        else
+        {
+          add_to_average(Y_Values, displayBuffer_lf);
+        }
+
         extractLevels(displayBuffer_lf, mFmRate);
         mpLfBuffer->putDataIntoBuffer(displayBuffer_lf, mDisplaySize);
         lfCount = 0;
@@ -915,11 +933,17 @@ void fmProcessor::mapSpectrum(const DSPCOMPLEX * const in, double * const out)
   }
 }
 
-void fmProcessor::add_to_average(double *in, double *buffer)
+void fmProcessor::fill_average_buffer(const double * const in, double * const buffer)
 {
-  int i;
+  for (int32_t i = 0; i < mDisplaySize; i++)
+  {
+    buffer[i] = in[i];
+  }
+}
 
-  for (i = 0; i < mDisplaySize; i++)
+void fmProcessor::add_to_average(const double * const in, double * const buffer)
+{
+  for (int32_t i = 0; i < mDisplaySize; i++)
   {
     buffer[i] = 1.0 / mAverageCount * in[i] + (mAverageCount - 1.0) / mAverageCount * buffer[i];
   }

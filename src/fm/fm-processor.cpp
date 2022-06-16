@@ -50,134 +50,136 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
                          RingBuffer<double> *lfBuffer, int16_t filterDepth,
                          int16_t thresHold)
 {
-  running                = false;
-  this->myRig            = vi;
-  this->myRadioInterface = RI;
-  this->theSink          = mySink;
-  this->inputRate        = inputRate;
-  this->fmRate           = fmRate;
-  this->decimatingScale  = inputRate / fmRate;
-  this->workingRate      = workingRate;
-  this->audioRate        = audioRate;
-  this->displaySize      = displaySize;
-  this->averageCount     = averageCount;
-  this->repeatRate       = repeatRate;
-  this->hfBuffer         = hfBuffer;
-  this->lfBuffer         = lfBuffer;
-  this->filterDepth      = filterDepth;
-  this->thresHold        = thresHold;
-  this->freezer          = 0;
-  this->squelchOn        = false;
-  this->scanning         = false;
-  Lgain                  = 20;
-  Rgain                  = 20;
+  mRunning                = false;
+  this->mMyRig            = vi;
+  this->mMyRadioInterface = RI;
+  this->mAudioSink          = mySink;
+  this->mInputRate        = inputRate;
+  this->mFmRate           = fmRate;
+  this->mDecimatingScale  = inputRate / fmRate;
+  this->mWorkingRate      = workingRate;
+  this->mAudioRate        = audioRate;
+  this->mDisplaySize      = displaySize;
+  this->mAverageCount     = averageCount;
+  this->mRepeatRate       = repeatRate;
+  this->mpHfBuffer         = hfBuffer;
+  this->mpLfBuffer         = lfBuffer;
+  this->mFilterDepth      = filterDepth;
+  this->mThresHold        = thresHold;
+  //this->freezer          = 0;
+  this->mSquelchOn        = false;
+  this->mScanning         = false;
+  mLgain                  = 20;
+  mRgain                  = 20;
 
   mPeakLevelSampleMax = workingRate / 5;  // workingRate is typ. 48000Ss -> so eval each 9600 samples for 200ms for peak level meter
-  myRdsDecoder = NULL;
+  mpMyRdsDecoder = NULL;
 
-  this->localBuffer = new double[displaySize];
+  this->mpLocalBuffer = new double[displaySize];
   //	we trust that neither displaySize nor SpectrumSize are 0
   //
+
   if ((spectrumSize & (spectrumSize - 1)) != 0)
   {
-    this->spectrumSize = 4 * displaySize;
+    this->mSpectrumSize = 4 * displaySize;
   }
   else
   {
-    this->spectrumSize = spectrumSize;
+    this->mSpectrumSize = spectrumSize;
   }
-  this->spectrum_fft_hf   = new common_fft(this->spectrumSize);
-  this->spectrumBuffer_hf = spectrum_fft_hf->getVector();
-  this->spectrum_fft_lf   = new common_fft(this->spectrumSize);
-  this->spectrumBuffer_lf = spectrum_fft_lf->getVector();
 
-  this->localOscillator = new Oscillator(inputRate);
-  this->mySinCos        = new SinCos(fmRate);
-  this->lo_frequency    = 0;
-  this->omega_demod     = 2 * M_PI / fmRate;
-  this->fmBandwidth     = 0.95 * fmRate;
-  this->fmFilterDegree  = 21;
-  this->fmFilter        = new LowPassFIR(21, 0.95 * fmRate / 2, fmRate);
-  this->newFilter       = false;
+  this->mpSpectrum_fft_hf   = new common_fft(this->mSpectrumSize);
+  this->mpSpectrumBuffer_hf = mpSpectrum_fft_hf->getVector();
+  this->mpSpectrum_fft_lf   = new common_fft(this->mSpectrumSize);
+  this->mpSpectrumBuffer_lf = mpSpectrum_fft_lf->getVector();
+
+  this->mpLocalOscillator = new Oscillator(inputRate);
+  this->mpMySinCos        = new SinCos(fmRate);
+  this->mLoFrequency      = 0;
+  this->mOmegaDemod       = 2 * M_PI / fmRate;
+  this->mFmBandwidth     = 0.95 * fmRate;
+  this->mFmFilterDegree  = 21;
+  this->mpFmFilter        = new LowPassFIR(21, 0.95 * fmRate / 2, fmRate);
+  this->mNewFilter       = false;
   /*
    *	default values, will be set through the user interface
    *	to their appropriate values
    */
-  this->fmModus        = FM_Mode::Stereo;
-  this->selector       = S_STEREO;
-  this->inputMode      = IandQ;
-  this->audioDecimator = new newConverter(fmRate, workingRate, workingRate / 200);
-  this->audioOut = new DSPCOMPLEX[audioDecimator->getOutputsize()];
+  this->mFmModus        = FM_Mode::Stereo;
+  this->mSelector       = S_STEREO;
+  this->mInputMode      = IandQ;
+  this->mpAudioDecimator = new newConverter(fmRate, workingRate, workingRate / 200);
+  this->mpAudioOut = new DSPCOMPLEX[mpAudioDecimator->getOutputsize()];
   /*
    *	averagePeakLevel and audioGain are set
    *	prior to calling the processFM method
    */
   //this->peakLevel           = -100;
   //this->peakLevelcnt        = 0;
-  this->max_freq_deviation  = 0.95 * (0.5 * fmRate);
-  this->norm_freq_deviation = 0.6 * max_freq_deviation;
+  this->mMaxFreqDeviation  = 0.95 * (0.5 * fmRate);
+  this->mNormFreqDeviation = 0.6 * mMaxFreqDeviation;
   //this->audioGain           = 0;
   //
-  noiseLevel = 0;
-  pilotLevel = 0;
-  rdsLevel   = 0;
+  mNoiseLevel = 0;
+  mPilotLevel = 0;
+  mRdsLevel   = 0;
   //	Since data is coming with a pretty high rate, we need to filter
   //	and decimate in an efficient way. We have an optimized
   //	decimating filter (optimized or not, it takes quite some
   //	cycles when entering with high rates)
-  fmBandfilter = new DecimatingFIR(15 * decimatingScale, fmRate / 2, inputRate, decimatingScale);
+  mpFmBandfilter = new DecimatingFIR(15 * mDecimatingScale, fmRate / 2, inputRate, mDecimatingScale);
 
   //	to isolate the pilot signal, we need a reasonable
   //	filter. The filtered signal is beautified by a pll
-  pilotBandFilter = new fftFilter(FFT_SIZE, PILOTFILTER_SIZE);
-  pilotBandFilter->setBand(PILOT_FREQUENCY - PILOT_WIDTH / 2, PILOT_FREQUENCY + PILOT_WIDTH / 2, fmRate);
-  pilotRecover = new pilotRecovery(fmRate, OMEGA_PILOT, 25 * omega_demod, mySinCos);
-  pilotDelay = (FFT_SIZE - PILOTFILTER_SIZE) * OMEGA_PILOT;
+  mpPilotBandFilter = new fftFilter(FFT_SIZE, PILOTFILTER_SIZE);
+  mpPilotBandFilter->setBand(PILOT_FREQUENCY - PILOT_WIDTH / 2, PILOT_FREQUENCY + PILOT_WIDTH / 2, fmRate);
+  mpPilotRecover = new pilotRecovery(fmRate, OMEGA_PILOT, 25 * mOmegaDemod, mpMySinCos);
+  mPilotDelay = (FFT_SIZE - PILOTFILTER_SIZE) * OMEGA_PILOT;
 
-  rdsLowPassFilter = new fftFilter(FFT_SIZE, RDSLOWPASS_SIZE);
-  rdsLowPassFilter->setLowPass(RDS_WIDTH, fmRate);
+  mpRdsLowPassFilter = new fftFilter(FFT_SIZE, RDSLOWPASS_SIZE);
+  mpRdsLowPassFilter->setLowPass(RDS_WIDTH, fmRate);
   //
   //	the constant K_FM is still subject to many questions
   DSPFLOAT F_G     = 0.65 * fmRate / 2;// highest freq in message
   DSPFLOAT Delta_F = 0.95 * fmRate / 2;//
   DSPFLOAT B_FM    = 2 * (Delta_F + F_G);
 
-  K_FM           = B_FM * M_PI / F_G;
-  TheDemodulator = new fm_Demodulator(fmRate, mySinCos, K_FM);
-  fmAudioFilter  = NULL;
+  mK_FM           = B_FM * M_PI / F_G;
+  mpTheDemodulator = new fm_Demodulator(fmRate, mpMySinCos, mK_FM);
+  mpFmAudioFilter  = NULL;
   //
   //	In the case of mono we do not assume a pilot
   //	to be available. We borrow the approach from CuteSDR
-  rdsHilbertFilter =
+  mpRdsHilbertFilter =
     new HilbertFilter(HILBERT_SIZE, (DSPFLOAT)RDS_FREQUENCY / fmRate, fmRate);
-  rdsBandFilter = new fftFilter(FFT_SIZE, RDSBANDFILTER_SIZE);
-  rdsBandFilter->setSimple(RDS_FREQUENCY - RDS_WIDTH / 2,
+  mpRdsBandFilter = new fftFilter(FFT_SIZE, RDSBANDFILTER_SIZE);
+  mpRdsBandFilter->setSimple(RDS_FREQUENCY - RDS_WIDTH / 2,
                            RDS_FREQUENCY + RDS_WIDTH / 2, fmRate);
-  rds_plldecoder = new pllC(fmRate, RDS_FREQUENCY, RDS_FREQUENCY - 50,
-                            RDS_FREQUENCY + 50, 200, mySinCos);
+  mpRds_plldecoder = new pllC(fmRate, RDS_FREQUENCY, RDS_FREQUENCY - 50,
+                            RDS_FREQUENCY + 50, 200, mpMySinCos);
 
   //	for the deemphasis we use an in-line filter with
-  xkm1     = 0;
-  ykm1     = 0;
-  alpha    = 1.0 / (fmRate / (1000000.0 / 50.0 + 1));
-  dumping  = false;
-  dumpFile = NULL;
+  mXkm1     = 0;
+  mYkml     = 0;
+  mAlpha    = 1.0 / (fmRate / (1000000.0 / 50.0 + 1));
+  mDumping  = false;
+  mpDumpFile = NULL;
 
-  connect(this, SIGNAL(hfBufferLoaded(void)), myRadioInterface, SLOT(hfBufferLoaded(void)));
-  connect(this, SIGNAL(lfBufferLoaded(void)), myRadioInterface, SLOT(lfBufferLoaded(void)));
-  connect(this, &fmProcessor::showPeakLevel, myRadioInterface, &RadioInterface::showPeakLevel);
-  connect(this, SIGNAL(showStrength(float,float)), myRadioInterface, SLOT(showStrength(float,float)));
-  connect(this, SIGNAL(scanresult(void)), myRadioInterface,SLOT(scanresult(void)));
+  connect(this, SIGNAL(hfBufferLoaded(void)), mMyRadioInterface, SLOT(hfBufferLoaded(void)));
+  connect(this, SIGNAL(lfBufferLoaded(void)), mMyRadioInterface, SLOT(lfBufferLoaded(void)));
+  connect(this, &fmProcessor::showPeakLevel, mMyRadioInterface, &RadioInterface::showPeakLevel);
+  connect(this, SIGNAL(showStrength(float,float)), mMyRadioInterface, SLOT(showStrength(float,float)));
+  connect(this, SIGNAL(scanresult(void)), mMyRadioInterface,SLOT(scanresult(void)));
 
-  squelchValue     = 0;
-  old_squelchValue = 0;
+  mSquelchValue     = 0;
+  mOldSquelchValue = 0;
 
-  theConverter = NULL;
+  mpTheConverter = NULL;
   if (audioRate != workingRate)
   {
-    theConverter = new newConverter(workingRate, audioRate, workingRate / 20);
+    mpTheConverter = new newConverter(workingRate, audioRate, workingRate / 20);
   }
-  myCount = 0;
+  mMyCount = 0;
 }
 
 fmProcessor::~fmProcessor()
@@ -194,17 +196,17 @@ fmProcessor::~fmProcessor()
   //	delete	mySinCos;
   //	delete	spectrum_fft_hf;
   //	delete	spectrum_fft_lf;
-  if (fmAudioFilter != NULL)
+  if (mpFmAudioFilter != NULL)
   {
-    delete fmAudioFilter;
+    delete mpFmAudioFilter;
   }
 }
 
 void fmProcessor::stop()
 {
-  if (running)
+  if (mRunning)
   {
-    running = false;
+    mRunning = false;
     while (!isFinished())
     {
       usleep(100);
@@ -214,54 +216,54 @@ void fmProcessor::stop()
 
 DSPFLOAT fmProcessor::get_pilotStrength()
 {
-  if (running)
+  if (mRunning)
   {
     // get_db(0, 128) == 42.14dB
-    return get_db(pilotLevel, 128) - get_db(0, 128);
+    return get_db(mPilotLevel, 128) - get_db(0, 128);
   }
   return 0.0;
 }
 
 DSPFLOAT fmProcessor::get_rdsStrength()
 {
-  if (running)
+  if (mRunning)
   {
-    return get_db(rdsLevel, 128) - get_db(0, 128);
+    return get_db(mRdsLevel, 128) - get_db(0, 128);
   }
   return 0.0;
 }
 
 DSPFLOAT fmProcessor::get_noiseStrength()
 {
-  if (running)
+  if (mRunning)
   {
-    return get_db(noiseLevel, 128) - get_db(0, 128);
+    return get_db(mNoiseLevel, 128) - get_db(0, 128);
   }
   return 0.0;
 }
 
 void fmProcessor::set_squelchValue(int16_t n)
 {
-  squelchValue = n;
+  mSquelchValue = n;
 }
 
 DSPFLOAT fmProcessor::get_dcComponent()
 {
-  if (running)
+  if (mRunning)
   {
-    return TheDemodulator->get_DcComponent();
+    return mpTheDemodulator->get_DcComponent();
   }
   return 0.0;
 }
 
 fm_Demodulator::TDecoderListNames & fmProcessor::listNameofDecoder()
 {
-  return TheDemodulator->listNameofDecoder();
+  return mpTheDemodulator->listNameofDecoder();
 }
 
 const char *fmProcessor::nameofDecoder()
 {
-  return TheDemodulator->nameofDecoder();
+  return mpTheDemodulator->nameofDecoder();
 }
 //
 //	changing a filter is in two steps: here we set a marker,
@@ -269,29 +271,29 @@ const char *fmProcessor::nameofDecoder()
 //	the processor
 void fmProcessor::setBandwidth(int32_t b)
 {
-  fmBandwidth = b;
-  newFilter   = true;
+  mFmBandwidth = b;
+  mNewFilter   = true;
 }
 
 void fmProcessor::setBandfilterDegree(int32_t d)
 {
-  fmFilterDegree = d;
-  newFilter      = true;
+  mFmFilterDegree = d;
+  mNewFilter      = true;
 }
 
 void fmProcessor::setfmMode(FM_Mode m)
 {
-  fmModus = m;
+  mFmModus = m;
 }
 
 void fmProcessor::setFMdecoder(int16_t d)
 {
-  TheDemodulator->setDecoder(d);
+  mpTheDemodulator->setDecoder(d);
 }
 
 void fmProcessor::setSoundMode(uint8_t selector)
 {
-  this->selector = selector;
+  this->mSelector = selector;
 }
 
 void fmProcessor::setStereoPanorama(int16_t iStereoPan)
@@ -319,7 +321,7 @@ void fmProcessor::setDeemphasis(int16_t v)
   DSPFLOAT Tau;
 
   Tau   = 1000000.0 / v;
-  alpha = 1.0 / (DSPFLOAT(fmRate) / Tau + 1.0);
+  mAlpha = 1.0 / (DSPFLOAT(mFmRate) / Tau + 1.0);
 }
 
 void fmProcessor::setVolume(const float iVolGainDb)
@@ -370,34 +372,34 @@ DSPCOMPLEX fmProcessor::audioGainCorrection(DSPCOMPLEX z)
 
 void fmProcessor::startDumping(SNDFILE *f)
 {
-  if (dumping)
+  if (mDumping)
   {
     return;
   }
   //	do not change the order here, another thread might get confused
-  dumpFile = f;
-  dumping  = true;
+  mpDumpFile = f;
+  mDumping  = true;
 }
 
 void fmProcessor::stopDumping(void)
 {
-  dumping = false;
+  mDumping = false;
 }
 
 void fmProcessor::setAttenuation(int16_t l, int16_t r)
 {
-  Lgain = l;
-  Rgain = r;
+  mLgain = l;
+  mRgain = r;
 }
 
 void fmProcessor::startScanning(void)
 {
-  scanning = true;
+  mScanning = true;
 }
 
 void fmProcessor::stopScanning(void)
 {
-  scanning = false;
+  mScanning = false;
 }
 
 //
@@ -410,14 +412,12 @@ void fmProcessor::run()
   DSPFLOAT      rdsData;
   const int32_t bufferSize = 2 * 8192;
   DSPCOMPLEX    dataBuffer[bufferSize];
-  double        displayBuffer_hf[displaySize];
-  double        displayBuffer_lf[displaySize];
-  int32_t       i, k;
+  double        displayBuffer_hf[mDisplaySize];
+  double        displayBuffer_lf[mDisplaySize];
   DSPCOMPLEX    pcmSample;
   int32_t       hfCount = 0;
   int32_t       lfCount = 0;
-  int32_t       aa, amount;
-  squelch       mySquelch(1, workingRate / 10, workingRate / 20, workingRate);
+  squelch       mySquelch(1, mWorkingRate / 10, mWorkingRate / 20, mWorkingRate);
   int32_t       audioAmount;
   //float         audioGainAverage = 0;
   int32_t       scanPointer      = 0;
@@ -426,124 +426,129 @@ void fmProcessor::run()
   int           localP           = 0;
 
 #define RDS_DECIMATOR    8
-  myRdsDecoder =
-    new rdsDecoder(myRadioInterface, fmRate / RDS_DECIMATOR, mySinCos);
+  mpMyRdsDecoder = new rdsDecoder(mMyRadioInterface, mFmRate / RDS_DECIMATOR, mpMySinCos);
 
-  running = true; // will be set from the outside
-  while (running)
+  mRunning = true; // will be set from the outside
+
+  while (mRunning)
   {
-    while (running && (myRig->Samples() < bufferSize))
+    while (mRunning && (mMyRig->Samples() < bufferSize))
     {
       msleep(1); // should be enough
     }
 
-    if (!running)
+    if (!mRunning)
     {
       break;
     }
 
     //	First: update according to potentially changed settings
-    if (newFilter && (fmBandwidth < 0.95 * fmRate))
+    if (mNewFilter && (mFmBandwidth < 0.95 * mFmRate))
     {
-      delete fmFilter;
-      fmFilter = new LowPassFIR(fmFilterDegree, fmBandwidth / 2, fmRate);
+      delete mpFmFilter;
+      mpFmFilter = new LowPassFIR(mFmFilterDegree, mFmBandwidth / 2, mFmRate);
     }
-    newFilter = false;
+    mNewFilter = false;
 
-    if (squelchValue != old_squelchValue)
+    if (mSquelchValue != mOldSquelchValue)
     {
-      mySquelch.setSquelchLevel(squelchValue);
-      old_squelchValue = squelchValue;
+      mySquelch.setSquelchLevel(mSquelchValue);
+      mOldSquelchValue = mSquelchValue;
     }
 
-    amount = myRig->getSamples(dataBuffer, bufferSize, inputMode);
-    aa     = amount >= spectrumSize ? spectrumSize : amount;
+    const int32_t amount = mMyRig->getSamples(dataBuffer, bufferSize, mInputMode);
+    const int32_t aa = (amount >= mSpectrumSize ? mSpectrumSize : amount);
+
     //	for the HFscope
-    if (++hfCount > (inputRate / bufferSize) / repeatRate)
+    if (++hfCount > (mInputRate / bufferSize) / mRepeatRate)
     {
-      double Y_Values[displaySize];
-      for (i = 0; i < aa; i++)
+      double Y_Values[mDisplaySize];
+
+      for (int32_t i = 0; i < aa; i++)
       {
-        spectrumBuffer_hf[i] = dataBuffer[i];
-      }
-      for (i = aa; i < spectrumSize; i++)
-      {
-        spectrumBuffer_hf[i] = 0;
+        mpSpectrumBuffer_hf[i] = dataBuffer[i];
       }
 
-      spectrum_fft_hf->do_FFT();
-      mapSpectrum(spectrumBuffer_hf, Y_Values);
-
-      if (freezer > 0)
+      for (int32_t i = aa; i < mSpectrumSize; i++)
       {
-        for (i = 0; i < displaySize; i++)
-        {
-          displayBuffer_hf[i] = 1.0 / freezer * Y_Values[i] +
-                                (freezer - 1.0) / freezer * displayBuffer_hf[i];
-        }
-        freezer++;
+        mpSpectrumBuffer_hf[i] = 0;
       }
-      else
+
+      mpSpectrum_fft_hf->do_FFT();
+      mapSpectrum(mpSpectrumBuffer_hf, Y_Values);
+
+//      if (freezer > 0)
+//      {
+//        for (int32_t i = 0; i < displaySize; i++)
+//        {
+//          displayBuffer_hf[i] = 1.0 / freezer * Y_Values[i] +
+//                                (freezer - 1.0) / freezer * displayBuffer_hf[i];
+//        }
+//        freezer++;
+//      }
+//      else
       {
         add_to_average(Y_Values, displayBuffer_hf);
       }
 
-      hfBuffer->putDataIntoBuffer(displayBuffer_hf, displaySize);
+      mpHfBuffer->putDataIntoBuffer(displayBuffer_hf, mDisplaySize);
       hfCount = 0;
-      //
-      //	and signal the GUI thread that we have data
+
+      // and signal the GUI thread that we have data
       emit hfBufferLoaded();
     }
-    //
-    if (dumping)
+
+    if (mDumping)
     {
       float dumpBuffer[2 * amount];
-      for (i = 0; i < amount; i++)
+
+      for (int32_t i = 0; i < amount; i++)
       {
         dumpBuffer[2 * i]     = real(dataBuffer[i]);
         dumpBuffer[2 * i + 1] = imag(dataBuffer[i]);
       }
-      sf_writef_float(dumpFile, dumpBuffer, amount);
+      sf_writef_float(mpDumpFile, dumpBuffer, amount);
     }
     //	Here we really start
 
     //	We assume that if/when the pilot is no more than 3 db's above
     //	the noise around it, it is better to decode mono
-    for (i = 0; i < amount; i++)
+    for (int32_t i = 0; i < amount; i++)
     {
-      DSPCOMPLEX v = DSPCOMPLEX(real(dataBuffer[i]) * Lgain, imag(dataBuffer[i]) * Rgain);
-      v = v * localOscillator->nextValue(lo_frequency);
+      DSPCOMPLEX v = DSPCOMPLEX(real(dataBuffer[i]) * mLgain, imag(dataBuffer[i]) *mRgain);
+      v = v * mpLocalOscillator->nextValue(mLoFrequency);
       //
       //	first step: decimating (and filtering)
-      if ((decimatingScale > 1) && !fmBandfilter->Pass(v, &v))
+      if ((mDecimatingScale > 1) && !mpFmBandfilter->Pass(v, &v))
       {
         continue;
       }
 
       //	second step: if we are scanning, do the scan
-      if (scanning)
+      if (mScanning)
       {
         scanBuffer[scanPointer++] = v;
+
         if (scanPointer >= 1024)
         {
           scanPointer = 0;
           scan_fft->do_FFT();
           float signal = getSignal(scanBuffer, 1024);
           float Noise  = getNoise(scanBuffer, 1024);
-          if (get_db(signal, 256) - get_db(Noise, 256) > this->thresHold)
+
+          if (get_db(signal, 256) - get_db(Noise, 256) > this->mThresHold)
           {
-            fprintf(stderr, "signal found %f %f\n", get_db(signal, 256),
-                    get_db(Noise, 256));
-            scanresult();
+            fprintf(stderr, "signal found %f %f\n", get_db(signal, 256), get_db(Noise, 256));
+            emit scanresult();
           }
         }
         continue; // no signal processing!!!!
       }
 
       //	third step: if requested, apply filtering
-      if (fmBandwidth < 0.95 * fmRate)
+      if (mFmBandwidth < 0.95 * mFmRate)
       {
-        v = fmFilter->Pass(v);
+        v = mpFmFilter->Pass(v);
       }
       //	Now we have the signal ready for decoding
       //	keep track of the peaklevel, we take segments
@@ -569,40 +574,40 @@ void fmProcessor::run()
 //        peakLevel = -100;
 //      }
 
-      DSPFLOAT demod = TheDemodulator->demodulate(v);
+      DSPFLOAT demod = mpTheDemodulator->demodulate(v);
 
-      spectrumBuffer_lf[localP++] = demod;
+      mpSpectrumBuffer_lf[localP++] = demod;
 
-      if (localP >= spectrumSize)
+      if (localP >= mSpectrumSize)
       {
         localP = 0;
       }
 
-      if (++lfCount > fmRate / repeatRate)
+      if (++lfCount > mFmRate / mRepeatRate)
       {
-        double Y_Values[displaySize];
-        spectrum_fft_lf->do_FFT();
-        mapSpectrum(spectrumBuffer_lf, Y_Values);
+        double Y_Values[mDisplaySize];
+        mpSpectrum_fft_lf->do_FFT();
+        mapSpectrum(mpSpectrumBuffer_lf, Y_Values);
         add_to_average(Y_Values, displayBuffer_lf);
-        extractLevels(displayBuffer_lf, fmRate);
-        lfBuffer->putDataIntoBuffer(displayBuffer_lf, displaySize);
+        extractLevels(displayBuffer_lf, mFmRate);
+        mpLfBuffer->putDataIntoBuffer(displayBuffer_lf, mDisplaySize);
         lfCount = 0;
         //	and signal the GUI thread that we have data
         emit lfBufferLoaded();
       }
 
-      if (fmModus != FM_Mode::Mono)
+      if (mFmModus != FM_Mode::Mono)
       {
         stereo(demod, &result, &rdsData);
 
         const DSPFLOAT sumLR  = real(result);
         const DSPFLOAT diffLR = imag(result);
-        const DSPFLOAT diffLRWeightend = diffLR * (fmModus == FM_Mode::StereoPano ? mPanorama : 1.0f);
+        const DSPFLOAT diffLRWeightend = diffLR * (mFmModus == FM_Mode::StereoPano ? mPanorama : 1.0f);
 
         const DSPFLOAT left  = sumLR + diffLRWeightend;  // 2L = (L+R) + (L-R)
         const DSPFLOAT right = sumLR - diffLRWeightend;  // 2R = (L+R) - (L-R)
 
-        switch (selector)
+        switch (mSelector)
         {
         default:
         case S_STEREO:
@@ -631,26 +636,26 @@ void fmProcessor::run()
         mono(demod, &result, &rdsData);
       }
 
-      if (fmAudioFilter != nullptr)
+      if (mpFmAudioFilter != nullptr)
       {
-        result = fmAudioFilter->Pass(result);
+        result = mpFmAudioFilter->Pass(result);
       }
 
       // "result" now contains the audio sample, either stereo or mono
       result = audioGainCorrection(result);
 
-      if (audioDecimator->convert(result, audioOut, &audioAmount))
+      if (mpAudioDecimator->convert(result, mpAudioOut, &audioAmount))
       {
         // here the sample rate is "workingRate" (typ. 48000Ss)
-        for (k = 0; k < audioAmount; k++)
+        for (int32_t k = 0; k < audioAmount; k++)
         {
-          if (squelchOn)
+          if (mSquelchOn)
           {
-            pcmSample = mySquelch.do_squelch(audioOut[k]);
+            pcmSample = mySquelch.do_squelch(mpAudioOut[k]);
           }
           else
           {
-            pcmSample = audioOut[k];
+            pcmSample = mpAudioOut[k];
           }
 
           evaluatePeakLevel(pcmSample);
@@ -658,20 +663,21 @@ void fmProcessor::run()
         }
       }
 
-      if ((rdsModus != rdsDecoder::NO_RDS))
+      if ((mRdsModus != rdsDecoder::NO_RDS))
       {
-        DSPFLOAT   mag;
         static int cnt = 0;
+
         if (++cnt >= RDS_DECIMATOR)
         {
-          myRdsDecoder->doDecode(rdsData, &mag, (rdsDecoder::RdsMode)1);
+          DSPFLOAT mag;
+          mpMyRdsDecoder->doDecode(rdsData, &mag, (rdsDecoder::RdsMode)1);
           cnt = 0;
         }
       }
 
-      if (++myCount > fmRate) // each second ...
+      if (++mMyCount > mFmRate) // each second ...
       {
-        myCount = 0;
+        mMyCount = 0;
         emit showStrength(get_pilotStrength(), get_dcComponent());
       }
     }
@@ -684,19 +690,19 @@ void fmProcessor::mono(float demod, DSPCOMPLEX *audioOut, DSPFLOAT *rdsValue)
   DSPCOMPLEX rdsBase;
 
   //	deemphasize
-  Re        = xkm1 = (demod - xkm1) * alpha + xkm1;
-  Im        = ykm1 = (demod - ykm1) * alpha + ykm1;
+  Re        = mXkm1 = (demod - mXkm1) * mAlpha + mXkm1;
+  Im        = mYkml = (demod - mYkml) * mAlpha + mYkml;
   *audioOut = DSPCOMPLEX(Re, Im);
   //
   //	fully inspired by cuteSDR, we try to decode the rds stream
   //	by simply am decoding it (after creating a decent complex
   //	signal by Hilbert filtering)
   rdsBase = DSPCOMPLEX(5 * demod, 5 * demod);
-  rdsBase = rdsHilbertFilter->Pass(rdsBandFilter->Pass(rdsBase));
-  rds_plldecoder->do_pll(rdsBase);
-  DSPFLOAT rdsDelay = imag(rds_plldecoder->getDelay());
+  rdsBase = mpRdsHilbertFilter->Pass(mpRdsBandFilter->Pass(rdsBase));
+  mpRds_plldecoder->do_pll(rdsBase);
+  DSPFLOAT rdsDelay = imag(mpRds_plldecoder->getDelay());
 
-  *rdsValue = rdsLowPassFilter->Pass(5 * rdsDelay);
+  *rdsValue = mpRdsLowPassFilter->Pass(5 * rdsDelay);
 }
 
 void fmProcessor::stereo(float demod, DSPCOMPLEX *audioOut,
@@ -715,26 +721,26 @@ void fmProcessor::stereo(float demod, DSPCOMPLEX *audioOut,
   /*
    *	get the phase for the "carrier to be inserted" right
    */
-  pilot             = pilotBandFilter->Pass(5 * pilot);
-  currentPilotPhase = pilotRecover->getPilotPhase(5 * pilot);
+  pilot             = mpPilotBandFilter->Pass(5 * pilot);
+  currentPilotPhase = mpPilotRecover->getPilotPhase(5 * pilot);
   /*
    *	Now we have the right - i.e. synchronized - signal to work with
    */
-  PhaseforLRDiff = 2 * (currentPilotPhase + pilotDelay);
-  PhaseforRds    = 3 * (currentPilotPhase + pilotDelay);
+  PhaseforLRDiff = 2 * (currentPilotPhase + mPilotDelay);
+  PhaseforRds    = 3 * (currentPilotPhase + mPilotDelay);
   //
   //	Due to filtering the real amplitude of the LRDiff might have
   //	to be adjusted, we guess
-  LRDiff = 2.0 * mySinCos->getCos(PhaseforLRDiff) * LRDiff;
-  DSPFLOAT MixerValue = mySinCos->getCos(PhaseforRds);
+  LRDiff = 2.0 * mpMySinCos->getCos(PhaseforLRDiff) * LRDiff;
+  DSPFLOAT MixerValue = mpMySinCos->getCos(PhaseforRds);
 
-  *rdsValue = 5 * rdsLowPassFilter->Pass(MixerValue * demod);
+  *rdsValue = 5 * mpRdsLowPassFilter->Pass(MixerValue * demod);
 
   //	apply deemphasis
-  LRPlus    = xkm1 = (LRPlus - xkm1) * alpha + xkm1;
-  LRDiff    = ykm1 = (LRDiff - ykm1) * alpha + ykm1;
+  LRPlus    = mXkm1 = (LRPlus - mXkm1) * mAlpha + mXkm1;
+  LRDiff    = mYkml = (LRDiff - mYkml) * mAlpha + mYkml;
 
-  if (pilotRecover->isLocked() || mAutoMono == false)
+  if (mpPilotRecover->isLocked() || mAutoMono == false)
   {
     *audioOut = DSPCOMPLEX(LRPlus, LRDiff);
   }
@@ -750,15 +756,15 @@ void fmProcessor::stereo(float demod, DSPCOMPLEX *audioOut,
 //
 void fmProcessor::setLFcutoff(int32_t Hz)
 {
-  LowPassFIR *tempFmAudioFilter = fmAudioFilter;
+  LowPassFIR *tempFmAudioFilter = mpFmAudioFilter;
 
-  fmAudioFilter = nullptr; // set to null first due to other thread is using pointer while deletion
+  mpFmAudioFilter = nullptr; // set to null first due to other thread is using pointer while deletion
 
   delete tempFmAudioFilter;
 
   if (Hz > 0)
   {
-    fmAudioFilter = new LowPassFIR(55, Hz, fmRate);  // 11 is too less (55 is also arbitrary) for this high sample rate fmRate = 256000S/s
+    mpFmAudioFilter = new LowPassFIR(55, Hz, mFmRate);  // 11 is too less (55 is also arbitrary) for this high sample rate fmRate = 256000S/s
   }
 }
 
@@ -785,19 +791,19 @@ void fmProcessor::evaluatePeakLevel(const DSPCOMPLEX s)
 
 void fmProcessor::sendSampletoOutput(DSPCOMPLEX s)
 {
-  if (audioRate == workingRate)
+  if (mAudioRate == mWorkingRate)
   {
-    theSink->putSample(s);
+    mAudioSink->putSample(s);
   }
   else
   {
-    DSPCOMPLEX out[theConverter->getOutputsize()];
+    DSPCOMPLEX out[mpTheConverter->getOutputsize()];
     int32_t    amount;
-    if (theConverter->convert(s, out, &amount))
+    if (mpTheConverter->convert(s, out, &amount))
     {
       for (int32_t i = 0; i < amount; i++)
       {
-        theSink->putSample(out[i]);
+        mAudioSink->putSample(out[i]);
       }
     }
   }
@@ -805,34 +811,34 @@ void fmProcessor::sendSampletoOutput(DSPCOMPLEX s)
 
 void fmProcessor::setfmRdsSelector(int8_t m)
 {
-  rdsModus = m;
+  mRdsModus = m;
 }
 
 void fmProcessor::resetRds()
 {
-  if (myRdsDecoder == NULL)
+  if (mpMyRdsDecoder == NULL)
   {
     return;
   }
-  myRdsDecoder->reset();
+  mpMyRdsDecoder->reset();
 }
 
 void fmProcessor::set_localOscillator(int32_t lo)
 {
-  lo_frequency = lo;
+  mLoFrequency = lo;
 }
 
 bool fmProcessor::ok()
 {
-  return running;
+  return mRunning;
 }
 
 bool fmProcessor::isPilotLocked(float & oLockStrength) const
 {
-  if (fmModus != FM_Mode::Mono && pilotRecover)
+  if (mFmModus != FM_Mode::Mono && mpPilotRecover)
   {
-    oLockStrength = pilotRecover->getLockedStrength();
-    return pilotRecover->isLocked();
+    oLockStrength = mpPilotRecover->getLockedStrength();
+    return mpPilotRecover->isLocked();
   }
   else
   {
@@ -841,19 +847,19 @@ bool fmProcessor::isPilotLocked(float & oLockStrength) const
   }
 }
 
-void fmProcessor::setFreezer(bool b)
-{
-  freezer = b ? 10 : 0;
-}
+//void fmProcessor::setFreezer(bool b)
+//{
+//  freezer = (b ? 10 : 0);
+//}
 
 void fmProcessor::set_squelchMode(bool b)
 {
-  squelchOn = b;
+  mSquelchOn = b;
 }
 
 void fmProcessor::setInputMode(uint8_t m)
 {
-  inputMode = m;
+  mInputMode = m;
 }
 
 DSPFLOAT fmProcessor::getSignal(DSPCOMPLEX *v, int32_t size)
@@ -892,19 +898,19 @@ void fmProcessor::mapSpectrum(DSPCOMPLEX *in, double *out)
 {
   int i, j;
 
-  for (i = 0; i < displaySize / 2; i++)
+  for (i = 0; i < mDisplaySize / 2; i++)
   {
-    int16_t factor = spectrumSize / displaySize;
+    int16_t factor = mSpectrumSize / mDisplaySize;
     double  f      = 0;
     for (j = 0; j < factor; j++)
     {
       f += abs(in[i * factor + j]);
     }
-    out[displaySize / 2 + i] = f / factor;
+    out[mDisplaySize / 2 + i] = f / factor;
     f                        = 0;
     for (j = 0; j < factor; j++)
     {
-      f += abs(in[spectrumSize / 2 + factor * i + j]);
+      f += abs(in[mSpectrumSize / 2 + factor * i + j]);
     }
     out[i] = f / factor;
   }
@@ -914,21 +920,21 @@ void fmProcessor::add_to_average(double *in, double *buffer)
 {
   int i;
 
-  for (i = 0; i < displaySize; i++)
+  for (i = 0; i < mDisplaySize; i++)
   {
-    buffer[i] = 1.0 / averageCount * in[i] +
-                (averageCount - 1.0) / averageCount * buffer[i];
+    buffer[i] = 1.0 / mAverageCount * in[i] +
+                (mAverageCount - 1.0) / mAverageCount * buffer[i];
   }
 }
 
 void fmProcessor::extractLevels(double *in, int32_t range)
 {
-  float binWidth    = (float)range / displaySize;
-  int   pilotOffset = displaySize / 2 - 19000 / binWidth;
-  int   rdsOffset   = displaySize / 2 - 57000 / binWidth;
-  int   noiseOffset = displaySize / 2 - 70000 / binWidth;
+  float binWidth    = (float)range / mDisplaySize;
+  int   pilotOffset = mDisplaySize / 2 - 19000 / binWidth;
+  int   rdsOffset   = mDisplaySize / 2 - 57000 / binWidth;
+  int   noiseOffset = mDisplaySize / 2 - 70000 / binWidth;
   int   i;
-  int   a = myRig->bitDepth() - 1;
+  int   a = mMyRig->bitDepth() - 1;
   int   b = 1;
 
   while (--a > 0)
@@ -946,7 +952,7 @@ void fmProcessor::extractLevels(double *in, int32_t range)
   {
     temp2 += in[pilotOffset - 1 + i];
   }
-  noiseLevel = 0.95 * noiseLevel + 0.05 * temp1 / 7;
-  pilotLevel = 0.95 * pilotLevel + 0.05 * temp2 / 3;
-  rdsLevel   = 0.95 * rdsLevel   + 0.05 * temp3 / 7;
+  mNoiseLevel = 0.95 * mNoiseLevel + 0.05 * temp1 / 7;
+  mPilotLevel = 0.95 * mPilotLevel + 0.05 * temp2 / 3;
+  mRdsLevel   = 0.95 * mRdsLevel   + 0.05 * temp3 / 7;
 }

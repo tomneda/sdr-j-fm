@@ -122,103 +122,108 @@ private:
   void evaluatePeakLevel(const DSPCOMPLEX s);
 
 private:
-  deviceHandler *myRig;
-  RadioInterface *myRadioInterface;
-  audioSink *theSink;
-  int32_t inputRate;
-  int32_t fmRate;
-  int32_t workingRate;
-  int32_t audioRate;
-  int32_t displaySize;
-  int32_t averageCount;
-  int32_t repeatRate;
-  RingBuffer<double> *hfBuffer;
-  RingBuffer<double> *lfBuffer;
-  int16_t filterDepth;
-  uint8_t inputMode;
-  int32_t freezer;
-  bool scanning;
-  int16_t thresHold;
+  deviceHandler *mMyRig;
+  RadioInterface *mMyRadioInterface;
+  audioSink *mAudioSink;
+  int32_t mInputRate;
+  int32_t mFmRate;
+  int32_t mWorkingRate;
+  int32_t mAudioRate;
+  int32_t mDisplaySize;
+  int32_t mAverageCount;
+  int32_t mRepeatRate;
+  RingBuffer<double> *mpHfBuffer;
+  RingBuffer<double> *mpLfBuffer;
+  int16_t mFilterDepth;
+  uint8_t mInputMode;
+  //int32_t freezer;
+  bool mScanning;
+  int16_t mThresHold;
+
   DSPFLOAT getSignal(DSPCOMPLEX *, int32_t);
   DSPFLOAT getNoise(DSPCOMPLEX *, int32_t);
-  bool squelchOn;
-  int32_t spectrumSize;
-  common_fft *spectrum_fft_hf;
-  common_fft *spectrum_fft_lf;
-  DSPCOMPLEX *spectrumBuffer_hf;
-  DSPCOMPLEX *spectrumBuffer_lf;
-  double *displayBuffer;
-  double *localBuffer;
-  DecimatingFIR *fmBandfilter;
-  Oscillator *localOscillator;
-  newConverter *theConverter;
-  int32_t lo_frequency;
-  bool running;
-  SinCos *mySinCos;
-  LowPassFIR *fmFilter;
-  int32_t fmBandwidth;
-  int32_t fmFilterDegree;
-  bool newFilter;
+
+  bool mSquelchOn;
+  int32_t mSpectrumSize;
+  common_fft *mpSpectrum_fft_hf;
+  common_fft *mpSpectrum_fft_lf;
+  DSPCOMPLEX *mpSpectrumBuffer_hf;
+  DSPCOMPLEX *mpSpectrumBuffer_lf;
+  //double *mpDisplayBuffer;
+  double *mpLocalBuffer;
+  DecimatingFIR *mpFmBandfilter;
+  Oscillator *mpLocalOscillator;
+  newConverter *mpTheConverter;
+  int32_t mLoFrequency;
+  bool mRunning;
+  SinCos *mpMySinCos;
+  LowPassFIR *mpFmFilter;
+  int32_t mFmBandwidth;
+  int32_t mFmFilterDegree;
+  bool mNewFilter;
   bool mAutoMono{true};
 
-  int16_t old_squelchValue;
-  int16_t squelchValue;
+  int16_t mOldSquelchValue;
+  int16_t mSquelchValue;
 
-  bool dumping;
-  SNDFILE *dumpFile;
-  int32_t decimatingScale;
+  bool mDumping;
+  SNDFILE *mpDumpFile;
+  int32_t mDecimatingScale;
 
-  int32_t myCount;
-  int16_t Lgain;
-  int16_t Rgain;
+  int32_t mMyCount;
+  int16_t mLgain;
+  int16_t mRgain;
 
   int32_t mPeakLevelCurSampleCnt{0};
   int32_t mPeakLevelSampleMax{0x7FFFFFFF};
   DSPFLOAT mAbsPeakLeft{0.0f};
   DSPFLOAT mAbsPeakRight{0.0f};
 
-  newConverter *audioDecimator;
-  DSPCOMPLEX *audioOut;
-  rdsDecoder *myRdsDecoder;
+  newConverter *mpAudioDecimator;
+  DSPCOMPLEX *mpAudioOut;
+  rdsDecoder *mpMyRdsDecoder;
 
   void stereo(float, DSPCOMPLEX *, DSPFLOAT *);
   void mono(float, DSPCOMPLEX *, DSPFLOAT *);
-  fftFilter *pilotBandFilter;
-  fftFilter *rdsBandFilter;
-  fftFilter *rdsLowPassFilter;
-  HilbertFilter *rdsHilbertFilter;
 
-  DSPFLOAT pilotDelay;
+  fftFilter *mpPilotBandFilter;
+  fftFilter *mpRdsBandFilter;
+  fftFilter *mpRdsLowPassFilter;
+  HilbertFilter *mpRdsHilbertFilter;
+
+  DSPFLOAT mPilotDelay;
+
   DSPCOMPLEX audioGainCorrection(DSPCOMPLEX);
+
   DSPFLOAT mVolumeFactor{0.5f};
   //DSPFLOAT audioGain;
-  int32_t max_freq_deviation;
-  int32_t norm_freq_deviation;
-  DSPFLOAT omega_demod;
-  LowPassFIR *fmAudioFilter;
+  int32_t mMaxFreqDeviation;
+  int32_t mNormFreqDeviation;
+  DSPFLOAT mOmegaDemod;
+  LowPassFIR *mpFmAudioFilter;
 
   DSPFLOAT mPanorama{1.0f};
   int16_t mBalance{0};
   DSPFLOAT mLeftChannel{1.0f};   // -(balance - 50.0) / 100.0;;
   DSPFLOAT mRightChannel{1.0f};  // (balance + 50.0) / 100.0;;
-  FM_Mode fmModus;
-  uint8_t selector;
+  FM_Mode mFmModus;
+  uint8_t mSelector;
   //DSPFLOAT peakLevel;
   //int32_t peakLevelcnt;
-  fm_Demodulator *TheDemodulator;
+  fm_Demodulator *mpTheDemodulator;
 
-  int8_t rdsModus;
+  int8_t mRdsModus;
 
-  float noiseLevel;
-  float pilotLevel;
-  float rdsLevel;
-  int8_t viewSelector;
-  pllC *rds_plldecoder;
-  DSPFLOAT K_FM;
+  float mNoiseLevel;
+  float mPilotLevel;
+  float mRdsLevel;
+  //int8_t viewSelector;
+  pllC *mpRds_plldecoder;
+  DSPFLOAT mK_FM;
 
-  DSPFLOAT xkm1;
-  DSPFLOAT ykm1;
-  DSPFLOAT alpha;
+  DSPFLOAT mXkm1;
+  DSPFLOAT mYkml;
+  DSPFLOAT mAlpha;
 
   class pilotRecovery
   {
@@ -274,7 +279,8 @@ private:
     }
   };
 
-  pilotRecovery *pilotRecover;
+  pilotRecovery *mpPilotRecover;
+
 signals:
   void setPLLisLocked(bool);
   void hfBufferLoaded();

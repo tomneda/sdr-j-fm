@@ -50,27 +50,27 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
                          RingBuffer<double> *lfBuffer, int16_t filterDepth,
                          int16_t thresHold)
 {
-  mRunning                = false;
-  this->mMyRig            = vi;
-  this->mMyRadioInterface = RI;
-  this->mAudioSink          = mySink;
-  this->mInputRate        = inputRate;
-  this->mFmRate           = fmRate;
-  this->mDecimatingScale  = inputRate / fmRate;
-  this->mWorkingRate      = workingRate;
-  this->mAudioRate        = audioRate;
-  this->mDisplaySize      = displaySize;
-  this->mAverageCount     = averageCount;
-  this->mRepeatRate       = repeatRate;
-  this->mpHfBuffer         = hfBuffer;
-  this->mpLfBuffer         = lfBuffer;
-  this->mFilterDepth      = filterDepth;
-  this->mThresHold        = thresHold;
-  //this->freezer          = 0;
-  this->mSquelchOn        = false;
-  this->mScanning         = false;
-  mLgain                  = 20;
-  mRgain                  = 20;
+  mRunning          = false;
+  mMyRig            = vi;
+  mMyRadioInterface = RI;
+  mAudioSink        = mySink;
+  mInputRate        = inputRate;
+  mFmRate           = fmRate;
+  mDecimatingScale  = inputRate / fmRate;
+  mWorkingRate      = workingRate;
+  mAudioRate        = audioRate;
+  mDisplaySize      = displaySize;
+  mAverageCount     = averageCount;
+  mRepeatRate       = repeatRate;
+  mpHfBuffer        = hfBuffer;
+  mpLfBuffer        = lfBuffer;
+  mFilterDepth      = filterDepth;
+  mThresHold        = thresHold;
+  //freezer          = 0;
+  mSquelchOn        = false;
+  mScanning         = false;
+  mLgain            = 20;
+  mRgain            = 20;
 
   mPeakLevelSampleMax = workingRate / 5;  // workingRate is typ. 48000Ss -> so eval each 9600 samples for 200ms for peak level meter
   mpMyRdsDecoder = NULL;
@@ -481,8 +481,7 @@ void fmProcessor::run()
 //      {
 //        for (int32_t i = 0; i < displaySize; i++)
 //        {
-//          displayBuffer_hf[i] = 1.0 / freezer * Y_Values[i] +
-//                                (freezer - 1.0) / freezer * displayBuffer_hf[i];
+//          displayBuffer_hf[i] = 1.0 / freezer * Y_Values[i] + (freezer - 1.0) / freezer * displayBuffer_hf[i];
 //        }
 //        freezer++;
 //      }
@@ -894,7 +893,7 @@ DSPFLOAT fmProcessor::getNoise(DSPCOMPLEX *v, int32_t size)
   return sum / 40;
 }
 
-void fmProcessor::mapSpectrum(DSPCOMPLEX *in, double *out)
+void fmProcessor::mapSpectrum(const DSPCOMPLEX * const in, double * const out)
 {
   int i, j;
 
@@ -922,8 +921,7 @@ void fmProcessor::add_to_average(double *in, double *buffer)
 
   for (i = 0; i < mDisplaySize; i++)
   {
-    buffer[i] = 1.0 / mAverageCount * in[i] +
-                (mAverageCount - 1.0) / mAverageCount * buffer[i];
+    buffer[i] = 1.0 / mAverageCount * in[i] + (mAverageCount - 1.0) / mAverageCount * buffer[i];
   }
 }
 

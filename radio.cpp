@@ -159,7 +159,7 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
   }
 
   this->rasterSize   = fmSettings->value("rasterSize", 50).toInt();
-  this->repeatRate   = fmSettings->value("repeatRate", 5).toInt();
+  this->repeatRate   = fmSettings->value("repeatRate", 10).toInt();
   this->averageCount = fmSettings->value("averageCount", 5).toInt();
   this->audioRate    = fmSettings->value("audioRate", outputRate).toInt();
   //

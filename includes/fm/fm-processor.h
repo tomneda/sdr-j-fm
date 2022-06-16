@@ -115,7 +115,7 @@ public:
 
 private:
   void run() override;
-  void mapSpectrum(DSPCOMPLEX *, double *);
+  void mapSpectrum(const DSPCOMPLEX * const, double * const);
   void add_to_average(double *, double *);
   void extractLevels(double *, int32_t);
   void sendSampletoOutput(DSPCOMPLEX);

@@ -14,8 +14,14 @@ win32 {
   #CONFIG += qwt
 
   # works bad without optimization in debug version
-  QMAKE_CFLAGS += -O3 -ffast-math
-  QMAKE_CXXFLAGS += -O3 -ffast-math
+  CONFIG(debug, debug|release) {
+    QMAKE_CFLAGS += -ffast-math
+    QMAKE_CXXFLAGS += -ffast-math
+  }
+  else {
+    QMAKE_CFLAGS += -O3 -ffast-math
+    QMAKE_CXXFLAGS += -O3 -ffast-math
+  }
 }
 
 unix {

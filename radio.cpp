@@ -366,8 +366,6 @@ void RadioInterface::dumpControlState(QSettings *s)
   s->setValue("fmLFcutoff", fmLFcutoff->currentText());
   s->setValue("logging", logging->currentText());
   s->setValue("streamOutSelector", streamOutSelector->currentText());
-  //
-  s->setValue("streamOutSelector", streamOutSelector->currentText());
 
   s->setValue("currentFreq", currentFreq);
   s->setValue("min_loop_frequency", minLoopFrequency);
@@ -1636,8 +1634,8 @@ void RadioInterface::showStrength(float the_pilotStrength, float the_dcComponent
     pll_isLocked->setText("Pilot PLL Unlocked");
   }
 
-  pilotStrength->display(lockStrength);
-  //pilotStrength->display(the_pilotStrength);
+  //pilotStrength->display(lockStrength);
+  pilotStrength->display(the_pilotStrength);
   dc_component->display(the_dcComponent);
   static const float w = 1.0f / std::log10(2.0f);
   const float dcVal = (the_dcComponent < 0.0f ? -1 : 1) * w * std::log10(std::abs(the_dcComponent) + 1.0f);
@@ -1882,8 +1880,8 @@ void RadioInterface::lfBufferLoaded()
   //	first X axis labels
   for (i = 0; i < displaySize; i++)
   {
-    X_axis[i] = (-(double)(fmRate / 2) + (double)((i) * (double)2 * temp)) /
-                ((double)Khz(1));
+    //X_axis[i] = (-(fmRate / 2.0) + (2 * i * temp)) / ((double)Khz(1)); // two side spectrum
+    X_axis[i] = (i * temp) / ((double)Khz(1)); // one-side spectrum
   }
   //
   //	get the buffer data

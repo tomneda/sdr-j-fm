@@ -586,7 +586,9 @@ void fmProcessor::run()
       {
         double Y_Values[mDisplaySize];
         mpSpectrum_fft_lf->do_FFT();
-        mapSpectrum(mpSpectrumBuffer_lf, Y_Values);
+
+        //mapSpectrum(mpSpectrumBuffer_lf, Y_Values);
+        mapHalfSpectrum(mpSpectrumBuffer_lf, Y_Values);
 
         if (mFillAverageLfBuffer)
         {
@@ -598,7 +600,9 @@ void fmProcessor::run()
           add_to_average(Y_Values, displayBuffer_lf);
         }
 
-        extractLevels(displayBuffer_lf, mFmRate);
+        //extractLevels(displayBuffer_lf, mFmRate);
+        extractLevelsHalfSpectrum(displayBuffer_lf, mFmRate);
+
         mpLfBuffer->putDataIntoBuffer(displayBuffer_lf, mDisplaySize);
         lfCount = 0;
         //	and signal the GUI thread that we have data
@@ -905,22 +909,41 @@ DSPFLOAT fmProcessor::getNoise(DSPCOMPLEX *v, int32_t size)
 
 void fmProcessor::mapSpectrum(const DSPCOMPLEX * const in, double * const out)
 {
-  int i, j;
-
-  for (i = 0; i < mDisplaySize / 2; i++)
+  for (int32_t i = 0; i < mDisplaySize / 2; i++)
   {
-    int16_t factor = mSpectrumSize / mDisplaySize;
-    double  f      = 0;
-    for (j = 0; j < factor; j++)
+    const int16_t factor = mSpectrumSize / mDisplaySize;  // typ factor = 4 (whole divider)
+    double  f = 0;
+
+    for (int32_t j = 0; j < factor; j++)
     {
-      f += abs(in[i * factor + j]);
+      f += abs(in[i * factor + j]); // read 0Hz to rate/2 -> map to mid to end of display
     }
+
     out[mDisplaySize / 2 + i] = f / factor;
-    f                        = 0;
-    for (j = 0; j < factor; j++)
+
+    f = 0;
+
+    for (int32_t j = 0; j < factor; j++)
     {
-      f += abs(in[mSpectrumSize / 2 + factor * i + j]);
+      f += abs(in[mSpectrumSize / 2 + i * factor + j]); // read rate/2 down to 0Hz -> map to begin to mid of display
     }
+
+    out[i] = f / factor;
+  }
+}
+
+void fmProcessor::mapHalfSpectrum(const DSPCOMPLEX * const in, double * const out)
+{
+  for (int32_t i = 0; i < mDisplaySize; i++)
+  {
+    const int16_t factor = mSpectrumSize / mDisplaySize / 2;  // typ factor = 4 (whole divider)
+    double  f = 0;
+
+    for (int32_t j = 0; j < factor; j++)
+    {
+      f += abs(in[i * factor + j]); // read 0Hz to rate/2 -> map to mid to end of display
+    }
+
     out[i] = f / factor;
   }
 }
@@ -941,32 +964,64 @@ void fmProcessor::add_to_average(const double * const in, double * const buffer)
   }
 }
 
-void fmProcessor::extractLevels(double *in, int32_t range)
+void fmProcessor::extractLevels(const double * const in, const int32_t range)
 {
-  float binWidth    = (float)range / mDisplaySize;
-  int   pilotOffset = mDisplaySize / 2 - 19000 / binWidth;
-  int   rdsOffset   = mDisplaySize / 2 - 57000 / binWidth;
-  int   noiseOffset = mDisplaySize / 2 - 70000 / binWidth;
-  int   i;
-  int   a = mMyRig->bitDepth() - 1;
-  int   b = 1;
+  const float binWidth = (float)range / mDisplaySize;
+  const int32_t pilotOffset = mDisplaySize / 2 - 19000 / binWidth;
+  const int32_t rdsOffset   = mDisplaySize / 2 - 57000 / binWidth;
+  const int32_t noiseOffset = mDisplaySize / 2 - 70000 / binWidth;
 
-  while (--a > 0)
-  {
-    b <<= 1;
-  }
-  float temp1 = 0, temp2 = 0, temp3 = 0;
+//  int   a = mMyRig->bitDepth() - 1;
+//  int   b = 1;
 
-  for (i = 0; i < 7; i++)
+//  while (--a > 0)
+//  {
+//    b <<= 1;
+//  }
+
+  float noiseAvg = 0, pilotAvg = 0, rdsAvg = 0;
+
+  for (int32_t i = 0; i < 7; i++)
   {
-    temp1 += in[noiseOffset - 3 + i];
-    temp3 += in[rdsOffset - 3 + i];
+    noiseAvg += in[noiseOffset - 3 + i];
+    rdsAvg += in[rdsOffset - 3 + i];
   }
-  for (i = 0; i < 3; i++)
+
+  for (int32_t i = 0; i < 3; i++)
   {
-    temp2 += in[pilotOffset - 1 + i];
+    pilotAvg += in[pilotOffset - 1 + i];
   }
-  mNoiseLevel = 0.95 * mNoiseLevel + 0.05 * temp1 / 7;
-  mPilotLevel = 0.95 * mPilotLevel + 0.05 * temp2 / 3;
-  mRdsLevel   = 0.95 * mRdsLevel   + 0.05 * temp3 / 7;
+
+  mNoiseLevel = 0.95 * mNoiseLevel + 0.05 * noiseAvg / 7;
+  mPilotLevel = 0.95 * mPilotLevel + 0.05 * pilotAvg / 3;
+  mRdsLevel   = 0.95 * mRdsLevel   + 0.05 * rdsAvg / 7;
+}
+
+void fmProcessor::extractLevelsHalfSpectrum(const double * const in, const int32_t range)
+{
+  const float binWidth = (float)range / mDisplaySize / 2;
+  const int32_t pilotOffset = 19000 / binWidth;
+  const int32_t rdsOffset   = 57000 / binWidth;
+  const int32_t noiseOffset = 70000 / binWidth;
+
+  constexpr int32_t avgNoiseRdsSize = 1 + 2 * 6; // mid plus two times sidebands
+  constexpr int32_t avgPilotSize    = 1 + 2 * 2;
+
+  float noiseAvg = 0, pilotAvg = 0, rdsAvg = 0;
+
+  for (int32_t i = 0; i < avgNoiseRdsSize; i++)
+  {
+    noiseAvg += in[noiseOffset - 3 + i];
+    rdsAvg += in[rdsOffset - 3 + i];
+  }
+
+  for (int32_t i = 0; i < avgPilotSize; i++)
+  {
+    pilotAvg += in[pilotOffset - 1 + i];
+  }
+
+  constexpr float ALPHA = 0.2f;
+  mNoiseLevel = (1.0f - ALPHA) * mNoiseLevel + ALPHA * noiseAvg / avgNoiseRdsSize;
+  mPilotLevel = (1.0f - ALPHA) * mPilotLevel + ALPHA * pilotAvg / avgPilotSize;
+  mRdsLevel   = (1.0f - ALPHA) * mRdsLevel   + ALPHA * rdsAvg / avgNoiseRdsSize;
 }

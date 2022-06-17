@@ -118,9 +118,11 @@ public:
 private:
   void run() override;
   void mapSpectrum(const DSPCOMPLEX * const, double * const);
+  void mapHalfSpectrum(const DSPCOMPLEX * const, double * const);
   void fill_average_buffer(const double * const, double * const);
   void add_to_average(const double * const, double * const);
-  void extractLevels(double *, int32_t);
+  void extractLevels(const double * const, const int32_t);
+  void extractLevelsHalfSpectrum(const double * const, const int32_t);
   void sendSampletoOutput(DSPCOMPLEX);
   void evaluatePeakLevel(const DSPCOMPLEX s);
 

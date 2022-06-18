@@ -21,6 +21,7 @@ in radio.cpp for this.
 * A stylesheet "Combinear" from https://qss-stock.devsecstudio.com/ is used.
 * Remove the vertical red line for the left base band spectrum as it delivers no extra information and hid the DC peak.
 * Make the MAX and AVG numbers in the spectrum views colored and give them names.
+* Show only a single side MUX spectrum now, as there was no special information with a real-valued double sided spectrum. Also is the frequency resolution doubled now. 
 * More meaningful text on the Squelch button whether the squelch is currently on or off.
 * Added a unit description to several comboboxes with numbers and reorder them to a more suitable place.
 * The combobox of the used demodulator type shows now the demodulator name directly. The extra text box used for this formerly is still there.

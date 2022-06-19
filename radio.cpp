@@ -1635,8 +1635,12 @@ void RadioInterface::showStrength(float the_pilotStrength, float the_dcComponent
   }
 
   //pilotStrength->display(lockStrength);
-  pilotStrength->display(the_pilotStrength);
-  dc_component->display(the_dcComponent);
+  //pilotStrength->display(the_pilotStrength);
+  pilotStrength->display(QString("%1").arg(the_pilotStrength, 0, 'f', 1)); // allow one fix digit after decimal point
+
+  //dc_component->display(the_dcComponent);
+  dc_component->display(QString("%1").arg(the_dcComponent, 0, 'f', 2)); // allow tow fix digit after decimal point
+
   static const float w = 1.0f / std::log10(2.0f);
   const float dcVal = (the_dcComponent < 0.0f ? -1 : 1) * w * std::log10(std::abs(the_dcComponent) + 1.0f);
   thermoDcComponent->setValue(dcVal);
@@ -2102,7 +2106,7 @@ void RadioInterface::reset_afc()
   mAfcCurrOffFreq = 0;
 }
 
-#include <QCloseEvent>
+//#include <QCloseEvent>
 void RadioInterface::closeEvent(QCloseEvent *event)
 {
   //  QMessageBox::StandardButton resultButton =

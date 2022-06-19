@@ -78,8 +78,10 @@
 
 static
 // int16_t	delayTable [] = {15, 13, 11, 10, 9, 8, 7, 5, 3, 2, 1};
-int16_t delayTable[] = { 1, 3, 5, 7, 9, 10, 15 };
-#define delayTableSize    ((int)(sizeof(delayTable) / sizeof(int16_t)))
+
+constexpr int16_t delayTable[] = { 1, 3, 5, 7, 9, 10, 15 };
+constexpr int16_t delayTableSize = ((int)(sizeof(delayTable) / sizeof(int16_t)));
+
 /*
  *	We use the creation function merely to set up the
  *	user interface and make the connections between the

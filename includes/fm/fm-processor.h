@@ -206,6 +206,7 @@ private:
   fftFilter * mpRdsBandFilter;
   fftFilter * mpRdsLowPassFilter;
   HilbertFilter * mpRdsHilbertFilter;
+  int32_t mRdsSampleCnt;
 
   DSPFLOAT mPilotDelay;
 
@@ -224,8 +225,6 @@ private:
   DSPFLOAT mRightChannel{ 1.0f };   // (balance + 50.0) / 100.0;;
   FM_Mode mFmModus;
   uint8_t mSelector;
-  //DSPFLOAT peakLevel;
-  //int32_t peakLevelcnt;
   fm_Demodulator * mpTheDemodulator;
 
   rdsDecoder::ERdsMode mRdsModus{ rdsDecoder::ERdsMode::NO_RDS };
@@ -245,7 +244,7 @@ private:
   {
   private:
     int32_t Rate_in;
-    int32_t mCntSampleLockStable;
+    int32_t mSampleLockStableCnt;
     DSPFLOAT pilot_OscillatorPhase;
     DSPFLOAT pilot_oldValue;
     DSPFLOAT omega;
@@ -268,7 +267,7 @@ private:
       pilot_Lock = 0;
       pilot_oldValue = 0;
       pilot_OscillatorPhase = 0;
-      mCntSampleLockStable = 0;
+      mSampleLockStableCnt = 0;
     }
 
     ~pilotRecovery() = default;
@@ -299,7 +298,7 @@ private:
       // This is important in very noisy receive condition to maintain a stable mono mode.
       if (pll_isLocked_temp)
       {
-        if (pll_isLocked || ++mCntSampleLockStable > (Rate_in >> 1))   // for 500ms the PLL lock has to be stable
+        if (pll_isLocked || ++mSampleLockStableCnt > (Rate_in >> 1))   // for 500ms the PLL lock has to be stable
         {
           pll_isLocked = true;
         }
@@ -307,7 +306,7 @@ private:
       else   // not locked -> reset stable counter
       {
         pll_isLocked = false;
-        mCntSampleLockStable = 0;
+        mSampleLockStableCnt = 0;
       }
 
       return currentPhase;

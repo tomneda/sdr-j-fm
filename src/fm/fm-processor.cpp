@@ -37,6 +37,7 @@
 #define OMEGA_DEMOD                  2 * M_PI / fmRate
 #define OMEGA_PILOT                  ((DSPFLOAT(PILOT_FREQUENCY)) / fmRate) * (2 * M_PI)
 #define OMEGA_RDS                    ((DSPFLOAT)RDS_FREQUENCY / fmRate) * (2 * M_PI)
+#define RDS_DECIMATOR                8
 
 //
 //	Note that no decimation done as yet: the samplestream is still
@@ -102,12 +103,7 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   mInputMode      = IandQ;
   mpAudioDecimator = new newConverter(fmRate, workingRate, workingRate / 200);
   mpAudioOut = new DSPCOMPLEX[mpAudioDecimator->getOutputsize()];
-  /*
-   *	averagePeakLevel and audioGain are set
-   *	prior to calling the processFM method
-   */
-  //this->peakLevel           = -100;
-  //this->peakLevelcnt        = 0;
+
   mMaxFreqDeviation  = 0.95 * (0.5 * fmRate);
   mNormFreqDeviation = 0.6 * mMaxFreqDeviation;
   //this->audioGain           = 0;
@@ -142,13 +138,11 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   //
   //	In the case of mono we do not assume a pilot
   //	to be available. We borrow the approach from CuteSDR
-  mpRdsHilbertFilter =
-    new HilbertFilter(HILBERT_SIZE, (DSPFLOAT)RDS_FREQUENCY / fmRate, fmRate);
+  mpRdsHilbertFilter = new HilbertFilter(HILBERT_SIZE, (DSPFLOAT)RDS_FREQUENCY / fmRate, fmRate);
   mpRdsBandFilter = new fftFilter(FFT_SIZE, RDSBANDFILTER_SIZE);
-  mpRdsBandFilter->setSimple(RDS_FREQUENCY - RDS_WIDTH / 2,
-                           RDS_FREQUENCY + RDS_WIDTH / 2, fmRate);
-  mpRds_plldecoder = new pllC(fmRate, RDS_FREQUENCY, RDS_FREQUENCY - 50,
-                            RDS_FREQUENCY + 50, 200, mpMySinCos);
+  mpRdsBandFilter->setSimple(RDS_FREQUENCY - RDS_WIDTH / 2, RDS_FREQUENCY + RDS_WIDTH / 2, fmRate);
+  mpRds_plldecoder = new pllC(fmRate, RDS_FREQUENCY, RDS_FREQUENCY - 50, RDS_FREQUENCY + 50, 200, mpMySinCos);
+  mRdsSampleCnt = 0;
 
   //	for the deemphasis we use an in-line filter with
   mXkm1     = 0;
@@ -415,7 +409,6 @@ void fmProcessor::run()
   DSPCOMPLEX    *scanBuffer      = scan_fft->getVector();
   int           localP           = 0;
 
-#define RDS_DECIMATOR    8
   mpMyRdsDecoder = new rdsDecoder(mMyRadioInterface, mFmRate / RDS_DECIMATOR, mpMySinCos);
 
   mRunning = true; // will be set from the outside
@@ -513,15 +506,16 @@ void fmProcessor::run()
     for (int32_t i = 0; i < amount; i++)
     {
       DSPCOMPLEX v = DSPCOMPLEX(real(dataBuffer[i]) * mLgain, imag(dataBuffer[i]) *mRgain);
+
       v = v * mpLocalOscillator->nextValue(mLoFrequency);
-      //
-      //	first step: decimating (and filtering)
+
+      // first step: decimating (and filtering)
       if ((mDecimatingScale > 1) && !mpFmBandfilter->Pass(v, &v))
       {
         continue;
       }
 
-      //	second step: if we are scanning, do the scan
+      // second step: if we are scanning, do the scan
       if (mScanning)
       {
         scanBuffer[scanPointer++] = v;
@@ -542,36 +536,13 @@ void fmProcessor::run()
         continue; // no signal processing!!!!
       }
 
-      //	third step: if requested, apply filtering
+      // third step: if requested, apply filtering
       if (mFmBandwidth < 0.95 * mFmRate)
       {
         v = mpFmFilter->Pass(v);
       }
-      //	Now we have the signal ready for decoding
-      //	keep track of the peaklevel, we take segments
-//      if (abs(v) > peakLevel)
-//      {
-//        peakLevel = abs(v);
-//      }
-//      if (++peakLevelcnt >= fmRate / 4)
-//      {
-//        DSPFLOAT ratio = (DSPFLOAT)max_freq_deviation / (DSPFLOAT)norm_freq_deviation;
-//        if (peakLevel > 0)
-//        {
-//          this->audioGain = (ratio / peakLevel) / AUDIO_FREQ_DEV_PROPORTION;
-//        }
-//        if (audioGain <= 0.1)
-//        {
-//          audioGain = 0.1;
-//        }
-//        audioGain        = 0.99 * audioGainAverage + 0.01 * audioGain;
-//        audioGainAverage = audioGain;
-//        peakLevelcnt     = 0;
-//        //	         fprintf (stderr, "peakLevel = %f\n", peakLevel);
-//        peakLevel = -100;
-//      }
 
-      DSPFLOAT demod = mpTheDemodulator->demodulate(v);
+      const DSPFLOAT demod = mpTheDemodulator->demodulate(v);
 
       mpSpectrumBuffer_lf[localP++] = demod;
 
@@ -658,13 +629,11 @@ void fmProcessor::run()
 
       if ((mRdsModus != rdsDecoder::ERdsMode::NO_RDS))
       {
-        static int cnt = 0;
-
-        if (++cnt >= RDS_DECIMATOR)
+        if (++mRdsSampleCnt >= RDS_DECIMATOR) // rdsData is already bandpass filtered in process_stereo_or_mono()
         {
           DSPFLOAT mag;
           mpMyRdsDecoder->doDecode(rdsData, &mag, mRdsModus);
-          cnt = 0;
+          mRdsSampleCnt = 0;
         }
       }
 
@@ -717,7 +686,7 @@ void fmProcessor::process_stereo_or_mono(const float demod, DSPCOMPLEX *audioOut
     DSPFLOAT LRDiff = 2.0 * mpMySinCos->getCos(PhaseforLRDiff) * demod;
     const DSPFLOAT MixerValue = mpMySinCos->getCos(PhaseforRds);
 
-    *rdsValue = 5 * mpRdsLowPassFilter->Pass(MixerValue * demod);
+    *rdsValue = mpRdsLowPassFilter->Pass(5 * MixerValue * demod);
 
     DSPFLOAT LRPlus = demod;
 

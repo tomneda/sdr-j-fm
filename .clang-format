@@ -1,11 +1,8 @@
 # Format Style Options - Created with Clang Power Tools
 ---
-BasedOnStyle: LLVM
-#Standard: Cpp14
-#AlignConsecutiveMacros: Consecutive
-#AlignConsecutiveAssignments: Consecutive
 AllowShortFunctionsOnASingleLine: None
 AlwaysBreakBeforeMultilineStrings: true
+BasedOnStyle: LLVM
 BinPackParameters: false
 BreakBeforeBinaryOperators: All
 BreakBeforeBraces: Allman
@@ -17,11 +14,14 @@ ConstructorInitializerIndentWidth : 2
 ContinuationIndentWidth: 2
 Cpp11BracedListStyle: false
 IncludeBlocks: Regroup
-#InsertBraces: Always
 MaxEmptyLinesToKeep: 2
 ReflowComments: false
 SortIncludes: false
-#SpaceAroundPointerQualifiers: Before
+SpaceBeforeSquareBrackets: false
+SpaceInEmptyParentheses: false
 SpacesBeforeTrailingComments: 3
-SpaceBeforeSquareBrackets: true
-
+SpacesInAngles: false
+SpacesInCStyleCastParentheses: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+...

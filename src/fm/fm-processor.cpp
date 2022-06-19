@@ -668,7 +668,7 @@ void fmProcessor::run()
         }
       }
 
-      if (++mMyCount > mFmRate) // each second ...
+      if (++mMyCount > (mFmRate >> 1)) // each 500ms ...
       {
         mMyCount = 0;
         emit showStrength(get_pilotStrength(), get_dcComponent());

@@ -47,29 +47,37 @@ class RadioInterface;
 class audioSink;
 class newConverter;
 
-class fmProcessor : public QThread {
+class fmProcessor : public QThread
+{
   Q_OBJECT
 
 public:
-  enum class FM_Mode { Stereo, StereoPano, Mono };
+  enum class FM_Mode
+  {
+    Stereo,
+    StereoPano,
+    Mono
+  };
 
 public:
-  fmProcessor(deviceHandler *, RadioInterface *, audioSink *,
-              int32_t,              // inputRate
-              int32_t,              // decimation
-              int32_t,              // workingRate
-              int32_t,              // audioRate,
-              int32_t,              // displaySize
-              int32_t,              // spectrumSize
-              int32_t,              // averageCount
-              int32_t,              // repeatRate
-              RingBuffer<double> *, // HFScope
-              RingBuffer<double> *, // LFScope
-              int16_t,              // filterDepth
-              int16_t);             // threshold scanning
+  fmProcessor(deviceHandler *,
+              RadioInterface *,
+              audioSink *,
+              int32_t,                // inputRate
+              int32_t,                // decimation
+              int32_t,                // workingRate
+              int32_t,                // audioRate,
+              int32_t,                // displaySize
+              int32_t,                // spectrumSize
+              int32_t,                // averageCount
+              int32_t,                // repeatRate
+              RingBuffer<double> *,   // HFScope
+              RingBuffer<double> *,   // LFScope
+              int16_t,                // filterDepth
+              int16_t);               // threshold scanning
   ~fmProcessor() override;
 
-  void stop(); // stop the processor
+  void stop();   // stop the processor
   void setfmMode(FM_Mode);
   void setFMdecoder(int16_t);
   void setSoundMode(uint8_t);
@@ -103,7 +111,7 @@ public:
   void startScanning();
   void stopScanning();
   fm_Demodulator::TDecoderListNames & listNameofDecoder();
-  const char *nameofDecoder();
+  const char * nameofDecoder();
 
   enum Channels
   {
@@ -128,9 +136,9 @@ private:
   void evaluatePeakLevel(const DSPCOMPLEX s);
 
 private:
-  deviceHandler *mMyRig;
-  RadioInterface *mMyRadioInterface;
-  audioSink *mAudioSink;
+  deviceHandler * mMyRig;
+  RadioInterface * mMyRadioInterface;
+  audioSink * mAudioSink;
   int32_t mInputRate;
   int32_t mFmRate;
   int32_t mWorkingRate;
@@ -140,8 +148,8 @@ private:
   int32_t mRepeatRate;
   bool mFillAverageHfBuffer{ true };
   bool mFillAverageLfBuffer{ true };
-  RingBuffer<double> *mpHfBuffer;
-  RingBuffer<double> *mpLfBuffer;
+  RingBuffer<double> * mpHfBuffer;
+  RingBuffer<double> * mpLfBuffer;
   int16_t mFilterDepth;
   uint8_t mInputMode;
   //int32_t freezer;
@@ -153,72 +161,72 @@ private:
 
   bool mSquelchOn;
   int32_t mSpectrumSize;
-  common_fft *mpSpectrum_fft_hf;
-  common_fft *mpSpectrum_fft_lf;
-  DSPCOMPLEX *mpSpectrumBuffer_hf;
-  DSPCOMPLEX *mpSpectrumBuffer_lf;
+  common_fft * mpSpectrum_fft_hf;
+  common_fft * mpSpectrum_fft_lf;
+  DSPCOMPLEX * mpSpectrumBuffer_hf;
+  DSPCOMPLEX * mpSpectrumBuffer_lf;
   //double *mpDisplayBuffer;
-  double *mpLocalBuffer;
-  DecimatingFIR *mpFmBandfilter;
-  Oscillator *mpLocalOscillator;
-  newConverter *mpTheConverter;
+  double * mpLocalBuffer;
+  DecimatingFIR * mpFmBandfilter;
+  Oscillator * mpLocalOscillator;
+  newConverter * mpTheConverter;
   int32_t mLoFrequency;
   bool mRunning;
-  SinCos *mpMySinCos;
-  LowPassFIR *mpFmFilter;
+  SinCos * mpMySinCos;
+  LowPassFIR * mpFmFilter;
   int32_t mFmBandwidth;
   int32_t mFmFilterDegree;
   bool mNewFilter;
-  bool mAutoMono{true};
+  bool mAutoMono{ true };
 
   int16_t mOldSquelchValue;
   int16_t mSquelchValue;
 
   bool mDumping;
-  SNDFILE *mpDumpFile;
+  SNDFILE * mpDumpFile;
   int32_t mDecimatingScale;
 
   int32_t mMyCount;
   int16_t mLgain;
   int16_t mRgain;
 
-  int32_t mPeakLevelCurSampleCnt{0};
-  int32_t mPeakLevelSampleMax{0x7FFFFFFF};
-  DSPFLOAT mAbsPeakLeft{0.0f};
-  DSPFLOAT mAbsPeakRight{0.0f};
+  int32_t mPeakLevelCurSampleCnt{ 0 };
+  int32_t mPeakLevelSampleMax{ 0x7FFFFFFF };
+  DSPFLOAT mAbsPeakLeft{ 0.0f };
+  DSPFLOAT mAbsPeakRight{ 0.0f };
 
-  newConverter *mpAudioDecimator;
-  DSPCOMPLEX *mpAudioOut;
-  rdsDecoder *mpMyRdsDecoder;
+  newConverter * mpAudioDecimator;
+  DSPCOMPLEX * mpAudioOut;
+  rdsDecoder * mpMyRdsDecoder;
 
   void process_stereo_or_mono(const float, DSPCOMPLEX *, DSPFLOAT *);
   void process_mono_only(const float, DSPCOMPLEX *, DSPFLOAT *);
 
-  fftFilter *mpPilotBandFilter;
-  fftFilter *mpRdsBandFilter;
-  fftFilter *mpRdsLowPassFilter;
-  HilbertFilter *mpRdsHilbertFilter;
+  fftFilter * mpPilotBandFilter;
+  fftFilter * mpRdsBandFilter;
+  fftFilter * mpRdsLowPassFilter;
+  HilbertFilter * mpRdsHilbertFilter;
 
   DSPFLOAT mPilotDelay;
 
   DSPCOMPLEX audioGainCorrection(DSPCOMPLEX);
 
-  DSPFLOAT mVolumeFactor{0.5f};
+  DSPFLOAT mVolumeFactor{ 0.5f };
   //DSPFLOAT audioGain;
   int32_t mMaxFreqDeviation;
   int32_t mNormFreqDeviation;
   DSPFLOAT mOmegaDemod;
-  LowPassFIR *mpFmAudioFilter;
+  LowPassFIR * mpFmAudioFilter;
 
-  DSPFLOAT mPanorama{1.0f};
-  int16_t mBalance{0};
-  DSPFLOAT mLeftChannel{1.0f};   // -(balance - 50.0) / 100.0;;
-  DSPFLOAT mRightChannel{1.0f};  // (balance + 50.0) / 100.0;;
+  DSPFLOAT mPanorama{ 1.0f };
+  int16_t mBalance{ 0 };
+  DSPFLOAT mLeftChannel{ 1.0f };    // -(balance - 50.0) / 100.0;;
+  DSPFLOAT mRightChannel{ 1.0f };   // (balance + 50.0) / 100.0;;
   FM_Mode mFmModus;
   uint8_t mSelector;
   //DSPFLOAT peakLevel;
   //int32_t peakLevelcnt;
-  fm_Demodulator *mpTheDemodulator;
+  fm_Demodulator * mpTheDemodulator;
 
   rdsDecoder::ERdsMode mRdsModus{ rdsDecoder::ERdsMode::NO_RDS };
 
@@ -226,7 +234,7 @@ private:
   float mPilotLevel;
   float mRdsLevel;
   //int8_t viewSelector;
-  pllC *mpRds_plldecoder;
+  pllC * mpRds_plldecoder;
   DSPFLOAT mK_FM;
 
   DSPFLOAT mXkm1;
@@ -237,26 +245,30 @@ private:
   {
   private:
     int32_t Rate_in;
+    int32_t mCntSampleLockStable;
     DSPFLOAT pilot_OscillatorPhase;
     DSPFLOAT pilot_oldValue;
     DSPFLOAT omega;
     DSPFLOAT gain;
-    SinCos *mySinCos;
+    SinCos * mySinCos;
     DSPFLOAT pilot_Lock;
-    bool pll_isLocked;
     DSPFLOAT quadRef;
+    bool pll_isLocked;
+    bool mLockStable;
 
   public:
     pilotRecovery(int32_t Rate_in, DSPFLOAT omega, DSPFLOAT gain, SinCos * mySinCos)
     {
-      this->Rate_in         = Rate_in;
-      this->omega           = omega;
-      this->gain            = gain;
-      this->mySinCos        = mySinCos;
-      pll_isLocked          = false;
-      pilot_Lock            = 0;
-      pilot_oldValue        = 0;
+      this->Rate_in = Rate_in;
+      this->omega = omega;
+      this->gain = gain;
+      this->mySinCos = mySinCos;
+      pll_isLocked = false;
+      mLockStable = false;
+      pilot_Lock = 0;
+      pilot_oldValue = 0;
       pilot_OscillatorPhase = 0;
+      mCntSampleLockStable = 0;
     }
 
     ~pilotRecovery() = default;
@@ -267,7 +279,7 @@ private:
     DSPFLOAT getPilotPhase(const DSPFLOAT pilot)
     {
       const DSPFLOAT OscillatorValue = mySinCos->getCos(pilot_OscillatorPhase);
-      const DSPFLOAT PhaseError      = pilot * OscillatorValue;
+      const DSPFLOAT PhaseError = pilot * OscillatorValue;
 
       pilot_OscillatorPhase += PhaseError * gain;
 
@@ -279,15 +291,30 @@ private:
       //	         quadRef	= PI_Constrain (quadRef);
       pilot_oldValue = OscillatorValue;
       constexpr float alpha = 1.0f / 3000.0f;
-      pilot_Lock     = alpha * (-quadRef * pilot) + pilot_Lock * (1.0 - alpha);
+      pilot_Lock = alpha * (-quadRef * pilot) + pilot_Lock * (1.0 - alpha);
 
-      pll_isLocked = (pilot_Lock > 0.07f);
+      const bool pll_isLocked_temp = (pilot_Lock > 0.07f);
+
+      // Check if the PLL lock is stable for a while.
+      // This is important in very noisy receive condition to maintain a stable mono mode.
+      if (pll_isLocked_temp)
+      {
+        if (pll_isLocked || ++mCntSampleLockStable > (Rate_in >> 1))   // for 500ms the PLL lock has to be stable
+        {
+          pll_isLocked = true;
+        }
+      }
+      else   // not locked -> reset stable counter
+      {
+        pll_isLocked = false;
+        mCntSampleLockStable = 0;
+      }
 
       return currentPhase;
     }
   };
 
-  pilotRecovery *mpPilotRecover;
+  pilotRecovery * mpPilotRecover;
 
 signals:
   void setPLLisLocked(bool);

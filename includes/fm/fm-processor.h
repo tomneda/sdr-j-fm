@@ -31,6 +31,7 @@
 #include "fir-filters.h"
 #include "fm-constants.h"
 #include "fm-demodulator.h"
+#include "rds-decoder.h"
 #include "oscillator.h"
 #include "pllC.h"
 #include "ringbuffer.h"
@@ -42,7 +43,7 @@
 class deviceHandler;
 class RadioInterface;
 //class fm_Demodulator;
-class rdsDecoder;
+//class rdsDecoder;
 class audioSink;
 class newConverter;
 
@@ -82,7 +83,7 @@ public:
   void setBandwidth(int32_t);
   void setBandfilterDegree(int32_t);
   void setAttenuation(int16_t, int16_t);
-  void setfmRdsSelector(int8_t);
+  void setfmRdsSelector(rdsDecoder::ERdsMode);
   void resetRds();
   void set_localOscillator(int32_t);
   void setFreezer(bool);
@@ -190,8 +191,8 @@ private:
   DSPCOMPLEX *mpAudioOut;
   rdsDecoder *mpMyRdsDecoder;
 
-  void stereo(float, DSPCOMPLEX *, DSPFLOAT *);
-  void mono(float, DSPCOMPLEX *, DSPFLOAT *);
+  void process_stereo_or_mono(const float, DSPCOMPLEX *, DSPFLOAT *);
+  void process_mono_only(const float, DSPCOMPLEX *, DSPFLOAT *);
 
   fftFilter *mpPilotBandFilter;
   fftFilter *mpRdsBandFilter;
@@ -219,7 +220,7 @@ private:
   //int32_t peakLevelcnt;
   fm_Demodulator *mpTheDemodulator;
 
-  int8_t mRdsModus;
+  rdsDecoder::ERdsMode mRdsModus{ rdsDecoder::ERdsMode::NO_RDS };
 
   float mNoiseLevel;
   float mPilotLevel;

@@ -1482,19 +1482,19 @@ void RadioInterface::setfmMode(const QString &s)
   {
     myFMprocessor->setfmMode(fmProcessor::FM_Mode::Stereo);
     fmStereoPanoramaSlider->setEnabled(false);
-    fmChannelSelect->setEnabled(true);
+    //fmChannelSelect->setEnabled(true);
   }
   else if (s == "Stereo (Pano)")
   {
     myFMprocessor->setfmMode(fmProcessor::FM_Mode::StereoPano);
     fmStereoPanoramaSlider->setEnabled(true);
-    fmChannelSelect->setEnabled(true);
+    //fmChannelSelect->setEnabled(true);
   }
   else if (s == "Mono")
   {
     myFMprocessor->setfmMode(fmProcessor::FM_Mode::Mono);
     fmStereoPanoramaSlider->setEnabled(false);
-    fmChannelSelect->setEnabled(false);
+    //fmChannelSelect->setEnabled(false);
   }
   else
   {
@@ -1508,9 +1508,9 @@ void RadioInterface::setfmRdsSelector(const QString &s)
   {
     return;
   }
-  rdsModus = s == "RDS-1"
-                 ? rdsDecoder::RDS1
-                 : s == "RDS-2" ? rdsDecoder::RDS2 : rdsDecoder::NO_RDS;
+  rdsModus = (s == "RDS-1" ? rdsDecoder::ERdsMode::RDS1
+                           : (s == "RDS-2" ? rdsDecoder::ERdsMode::RDS2
+                                           : rdsDecoder::ERdsMode::NO_RDS));
   myFMprocessor->setfmRdsSelector(rdsModus);
 }
 

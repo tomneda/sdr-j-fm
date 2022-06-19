@@ -34,6 +34,7 @@
 #include "ringbuffer.h"
 #include "scope.h"
 #include "ui_radio.h"
+#include "rds-decoder.h"
 #include <QDialog>
 #include <QInputDialog>
 #include <QLineEdit>
@@ -152,7 +153,7 @@ private:
 
   fmProcessor *myFMprocessor;
   rdsDecoder *myRdsDecoder;
-  int8_t rdsModus;
+  rdsDecoder::ERdsMode rdsModus;
   int8_t viewKeuze;
 
   QString RadioText;

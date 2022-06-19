@@ -27,7 +27,7 @@
 //#include "fm-demodulator.h"
 #include "newconverter.h"
 #include "radio.h"
-#include "rds-decoder.h"
+//#include "rds-decoder.h"
 #include "sincos.h"
 #include "squelchClass.h"
 
@@ -400,8 +400,6 @@ void fmProcessor::stopScanning(void)
 
 void fmProcessor::run()
 {
-  DSPCOMPLEX    result;
-  DSPFLOAT      rdsData;
   const int32_t bufferSize = 2 * 8192;
   DSPCOMPLEX    dataBuffer[bufferSize];
   double        displayBuffer_hf[mDisplaySize];
@@ -609,44 +607,33 @@ void fmProcessor::run()
         emit lfBufferLoaded();
       }
 
+      DSPCOMPLEX result;
+      DSPFLOAT rdsData;
+
       if (mFmModus != FM_Mode::Mono)
       {
-        stereo(demod, &result, &rdsData);
-
-        const DSPFLOAT sumLR  = real(result);
-        const DSPFLOAT diffLR = imag(result);
-        const DSPFLOAT diffLRWeightend = diffLR * (mFmModus == FM_Mode::StereoPano ? mPanorama : 1.0f);
-
-        const DSPFLOAT left  = sumLR + diffLRWeightend;  // 2L = (L+R) + (L-R)
-        const DSPFLOAT right = sumLR - diffLRWeightend;  // 2R = (L+R) - (L-R)
-
-        switch (mSelector)
-        {
-        default:
-        case S_STEREO:
-          result = DSPCOMPLEX(left, right);
-          break;
-
-        case S_LEFT:
-          result = DSPCOMPLEX(left, left);
-          break;
-
-        case S_RIGHT:
-          result = DSPCOMPLEX(right, right);
-          break;
-
-        case S_LEFTplusRIGHT:
-          result = DSPCOMPLEX(sumLR, sumLR);
-          break;
-
-        case S_LEFTminusRIGHT:
-          result = DSPCOMPLEX(diffLRWeightend, diffLRWeightend);
-          break;
-        }
+        process_stereo_or_mono(demod, &result, &rdsData);
       }
       else
       {
-        mono(demod, &result, &rdsData);
+        process_mono_only(demod, &result, &rdsData);
+      }
+
+      const DSPFLOAT sumLR  = real(result);
+      const DSPFLOAT diffLR = imag(result);
+      const DSPFLOAT diffLRWeightend = diffLR * (mFmModus == FM_Mode::StereoPano ? mPanorama : 1.0f);
+
+      const DSPFLOAT left  = sumLR + diffLRWeightend;  // 2L = (L+R) + (L-R)
+      const DSPFLOAT right = sumLR - diffLRWeightend;  // 2R = (L+R) - (L-R)
+
+      switch (mSelector)
+      {
+      default:
+      case S_STEREO:         result = DSPCOMPLEX(left,  right); break;
+      case S_LEFT:           result = DSPCOMPLEX(left,  left); break;
+      case S_RIGHT:          result = DSPCOMPLEX(right, right); break;
+      case S_LEFTplusRIGHT:  result = DSPCOMPLEX(sumLR, sumLR); break;
+      case S_LEFTminusRIGHT: result = DSPCOMPLEX(diffLRWeightend, diffLRWeightend); break;
       }
 
       if (mpFmAudioFilter != nullptr)
@@ -676,14 +663,14 @@ void fmProcessor::run()
         }
       }
 
-      if ((mRdsModus != rdsDecoder::NO_RDS))
+      if ((mRdsModus != rdsDecoder::ERdsMode::NO_RDS))
       {
         static int cnt = 0;
 
         if (++cnt >= RDS_DECIMATOR)
         {
           DSPFLOAT mag;
-          mpMyRdsDecoder->doDecode(rdsData, &mag, (rdsDecoder::RdsMode)1);
+          mpMyRdsDecoder->doDecode(rdsData, &mag, mRdsModus);
           cnt = 0;
         }
       }
@@ -697,20 +684,18 @@ void fmProcessor::run()
   }
 }
 
-void fmProcessor::mono(float demod, DSPCOMPLEX *audioOut, DSPFLOAT *rdsValue)
+void fmProcessor::process_mono_only(const float demod, DSPCOMPLEX *audioOut, DSPFLOAT *rdsValue)
 {
-  DSPFLOAT   Re, Im;
-  DSPCOMPLEX rdsBase;
-
   //	deemphasize
-  Re        = mXkm1 = (demod - mXkm1) * mAlpha + mXkm1;
-  Im        = mYkml = (demod - mYkml) * mAlpha + mYkml;
-  *audioOut = DSPCOMPLEX(Re, Im);
-  //
+  const DSPFLOAT mono = mXkm1 = (demod - mXkm1) * mAlpha + mXkm1;
+  //const DSPFLOAT Im = mYkml = (demod - mYkml) * mAlpha + mYkml;
+
+  *audioOut = DSPCOMPLEX(mono, 0);
+
   //	fully inspired by cuteSDR, we try to decode the rds stream
   //	by simply am decoding it (after creating a decent complex
   //	signal by Hilbert filtering)
-  rdsBase = DSPCOMPLEX(5 * demod, 5 * demod);
+  DSPCOMPLEX rdsBase = DSPCOMPLEX(5 * demod, 5 * demod);
   rdsBase = mpRdsHilbertFilter->Pass(mpRdsBandFilter->Pass(rdsBase));
   mpRds_plldecoder->do_pll(rdsBase);
   DSPFLOAT rdsDelay = imag(mpRds_plldecoder->getDelay());
@@ -718,48 +703,40 @@ void fmProcessor::mono(float demod, DSPCOMPLEX *audioOut, DSPFLOAT *rdsValue)
   *rdsValue = mpRdsLowPassFilter->Pass(5 * rdsDelay);
 }
 
-void fmProcessor::stereo(float demod, DSPCOMPLEX *audioOut,
-                         DSPFLOAT *rdsValue)
+void fmProcessor::process_stereo_or_mono(const float demod, DSPCOMPLEX *audioOut, DSPFLOAT *rdsValue)
 {
-  DSPFLOAT LRPlus = 0;
-  DSPFLOAT LRDiff = 0;
-  DSPFLOAT pilot  = 0;
-  DSPFLOAT currentPilotPhase;
-  DSPFLOAT PhaseforLRDiff = 0;
-  DSPFLOAT PhaseforRds    = 0;
-
-  /*
-   */
-  LRPlus = LRDiff = pilot = demod;
   /*
    *	get the phase for the "carrier to be inserted" right
    */
-  pilot             = mpPilotBandFilter->Pass(5 * pilot);
-  currentPilotPhase = mpPilotRecover->getPilotPhase(5 * pilot);
-  /*
-   *	Now we have the right - i.e. synchronized - signal to work with
-   */
-  PhaseforLRDiff = 2 * (currentPilotPhase + mPilotDelay);
-  PhaseforRds    = 3 * (currentPilotPhase + mPilotDelay);
-  //
-  //	Due to filtering the real amplitude of the LRDiff might have
-  //	to be adjusted, we guess
-  LRDiff = 2.0 * mpMySinCos->getCos(PhaseforLRDiff) * LRDiff;
-  DSPFLOAT MixerValue = mpMySinCos->getCos(PhaseforRds);
-
-  *rdsValue = 5 * mpRdsLowPassFilter->Pass(MixerValue * demod);
-
-  //	apply deemphasis
-  LRPlus    = mXkm1 = (LRPlus - mXkm1) * mAlpha + mXkm1;
-  LRDiff    = mYkml = (LRDiff - mYkml) * mAlpha + mYkml;
+  const DSPFLOAT pilot = mpPilotBandFilter->Pass(5 * demod);
+  const DSPFLOAT currentPilotPhase = mpPilotRecover->getPilotPhase(5 * pilot);
 
   if (mpPilotRecover->isLocked() || mAutoMono == false)
   {
+    /*
+     *	Now we have the right - i.e. synchronized - signal to work with
+     */
+    const DSPFLOAT PhaseforLRDiff = 2 * (currentPilotPhase + mPilotDelay);
+    const DSPFLOAT PhaseforRds = 3 * (currentPilotPhase + mPilotDelay);
+
+    //	Due to filtering the real amplitude of the LRDiff might have
+    //	to be adjusted, we guess
+    DSPFLOAT LRDiff = 2.0 * mpMySinCos->getCos(PhaseforLRDiff) * demod;
+    const DSPFLOAT MixerValue = mpMySinCos->getCos(PhaseforRds);
+
+    *rdsValue = 5 * mpRdsLowPassFilter->Pass(MixerValue * demod);
+
+    DSPFLOAT LRPlus = demod;
+
+    //	apply deemphasis
+    LRPlus = mXkm1 = (LRPlus - mXkm1) * mAlpha + mXkm1;
+    LRDiff = mYkml = (LRDiff - mYkml) * mAlpha + mYkml;
+
     *audioOut = DSPCOMPLEX(LRPlus, LRDiff);
   }
   else
   {
-    *audioOut = DSPCOMPLEX(LRPlus, 0); // force to mono audio (TODO: what is with RDS when pilot is unlocked?)
+    process_mono_only(demod, audioOut, rdsValue);
   }
 }
 //
@@ -822,7 +799,7 @@ void fmProcessor::sendSampletoOutput(DSPCOMPLEX s)
   }
 }
 
-void fmProcessor::setfmRdsSelector(int8_t m)
+void fmProcessor::setfmRdsSelector(rdsDecoder::ERdsMode m)
 {
   mRdsModus = m;
 }

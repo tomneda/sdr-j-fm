@@ -1,6 +1,10 @@
 # Format Style Options - Created with Clang Power Tools
 ---
-AllowShortFunctionsOnASingleLine: None
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortLambdasOnASingleLine: All
+AllowShortEnumsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: All
 AlwaysBreakBeforeMultilineStrings: true
 BasedOnStyle: LLVM
 BinPackParameters: false
@@ -15,6 +19,7 @@ ContinuationIndentWidth: 2
 Cpp11BracedListStyle: false
 IncludeBlocks: Regroup
 MaxEmptyLinesToKeep: 2
+PointerAlignment: Middle
 ReflowComments: false
 SortIncludes: false
 SpaceBeforeSquareBrackets: false
@@ -24,4 +29,6 @@ SpacesInAngles: false
 SpacesInCStyleCastParentheses: false
 SpacesInParentheses: false
 SpacesInSquareBrackets: false
+TabWidth: 2
+UseTab: Never
 ...

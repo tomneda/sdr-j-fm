@@ -610,14 +610,7 @@ void fmProcessor::run()
       DSPCOMPLEX result;
       DSPFLOAT rdsData;
 
-      if (mFmModus != FM_Mode::Mono)
-      {
-        process_stereo_or_mono(demod, &result, &rdsData);
-      }
-      else
-      {
-        process_mono_only(demod, &result, &rdsData);
-      }
+      process_stereo_or_mono(demod, &result, &rdsData);
 
       const DSPFLOAT sumLR  = real(result);
       const DSPFLOAT diffLR = imag(result);
@@ -711,7 +704,7 @@ void fmProcessor::process_stereo_or_mono(const float demod, DSPCOMPLEX *audioOut
   const DSPFLOAT pilot = mpPilotBandFilter->Pass(5 * demod);
   const DSPFLOAT currentPilotPhase = mpPilotRecover->getPilotPhase(5 * pilot);
 
-  if (mpPilotRecover->isLocked() || mAutoMono == false)
+  if (mFmModus != FM_Mode::Mono && (mpPilotRecover->isLocked() || mAutoMono == false))
   {
     /*
      *	Now we have the right - i.e. synchronized - signal to work with

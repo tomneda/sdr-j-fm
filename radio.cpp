@@ -82,6 +82,10 @@ static
 constexpr int16_t delayTable[] = { 1, 3, 5, 7, 9, 10, 15 };
 constexpr int16_t delayTableSize = ((int)(sizeof(delayTable) / sizeof(int16_t)));
 
+static constexpr char TXT_DUMP_INPUT_STREAM[] = "Dump Input Stream";
+static constexpr char TXT_DUMP_AUDIO[] = "Dump Audio";
+static constexpr char TXT_WRITING[] = "WRITING";
+
 /*
  *	We use the creation function merely to set up the
  *	user interface and make the connections between the
@@ -290,9 +294,9 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
   ExtioLock = false;
   logFile   = nullptr;
   pauseButton->setText(QString("Pause"));
-  dumpButton->setText("Dump Input Stream");
+  dumpButton->setText(TXT_DUMP_INPUT_STREAM);
   sourceDumping = false;
-  audioDump->setText("Dump Audio");
+  audioDump->setText(TXT_DUMP_AUDIO);
   audioDumping       = false;
   currentPIcode      = 0;
   frequencyforPICode = 0;
@@ -517,7 +521,7 @@ void RadioInterface::stopDumping()
     myFMprocessor->stopDumping();
     sf_close(dumpfilePointer);
     sourceDumping = false;
-    dumpButton->setText("Dump Input Stream");
+    dumpButton->setText(TXT_DUMP_INPUT_STREAM);
   }
 
   if (audioDumping)
@@ -525,7 +529,7 @@ void RadioInterface::stopDumping()
     our_audioSink->stopDumping();
     sf_close(audiofilePointer);
     audioDumping = false;
-    audioDump->setText("Dump Audio");
+    audioDump->setText(TXT_DUMP_AUDIO);
   }
 }
 //	The following signals originate from the Winrad Extio interface
@@ -1250,7 +1254,7 @@ void RadioInterface::set_dumping()
     myFMprocessor->stopDumping();
     sf_close(dumpfilePointer);
     sourceDumping = false;
-    dumpButton->setText("Dump Input Stream");
+    dumpButton->setText(TXT_DUMP_INPUT_STREAM);
     return;
   }
 
@@ -1273,7 +1277,7 @@ void RadioInterface::set_dumping()
     return;
   }
 
-  dumpButton->setText("WRITING");
+  dumpButton->setText(TXT_WRITING);
   sourceDumping = true;
   myFMprocessor->startDumping(dumpfilePointer);
 }
@@ -1287,7 +1291,7 @@ void RadioInterface::set_audioDump()
     our_audioSink->stopDumping();
     sf_close(audiofilePointer);
     audioDumping = false;
-    audioDump->setText("Dump Audio");
+    audioDump->setText(TXT_DUMP_AUDIO);
     return;
   }
 
@@ -1311,7 +1315,7 @@ void RadioInterface::set_audioDump()
     return;
   }
 
-  audioDump->setText("WRITING");
+  audioDump->setText(TXT_WRITING);
   audioDumping = true;
   our_audioSink->startDumping(audiofilePointer);
 }

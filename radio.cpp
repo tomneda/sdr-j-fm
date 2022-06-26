@@ -1364,7 +1364,7 @@ void RadioInterface::setfmDeemphasis(const QString &s)
     return;
   }
 
-  if (s == "Off")
+  if (s == "Off (AM)")
   {
     myFMprocessor->setDeemphasis(1);
   }

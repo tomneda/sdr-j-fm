@@ -1036,6 +1036,16 @@
                </property>
                <item>
                 <property name="text">
+                 <string>Off (AM)</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>25us</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
                  <string>50us  (EU)</string>
                 </property>
                </item>
@@ -1046,7 +1056,7 @@
                </item>
                <item>
                 <property name="text">
-                 <string>Off</string>
+                 <string>750us (NBFM)</string>
                 </property>
                </item>
               </widget>
@@ -1058,7 +1068,12 @@
                </property>
                <item>
                 <property name="text">
-                 <string>4500Hz</string>
+                 <string>2500Hz (AM)</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>4500Hz (AM)</string>
                 </property>
                </item>
                <item>
@@ -1218,7 +1233,7 @@
                </property>
                <item>
                 <property name="text">
-                 <string>9kHz</string>
+                 <string>9kHz (AM)</string>
                 </property>
                </item>
                <item>

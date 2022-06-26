@@ -28,12 +28,12 @@
 
 fm_Demodulator::TDecoderListNames fm_Demodulator::sIdx2DecoderName =
 {
+ "AM (experimental)",
  "Difference Based",
  "Compl. Baseb. Delay",
  "Mixed Demod",
  "PLL Decoder",
- "Real Baseb. Delay",
- "AM"
+ "Real Baseb. Delay"
 };
 
 
@@ -46,10 +46,10 @@ fm_Demodulator::TDecoderListNames fm_Demodulator::sIdx2DecoderName =
 //	chapter 3.
 fm_Demodulator::fm_Demodulator (int32_t rateIn,
                                 SinCos  *mySinCos,
-                                DSPFLOAT K_FM) :
-  mAmHighpass(20, 100, rateIn, S_CHEBYSHEV),
-  mAmLowpass(1, 1, rateIn, S_CHEBYSHEV),
-  mAmBandpass(20, 100, 4500, rateIn, S_CHEBYSHEV)
+                                DSPFLOAT K_FM)
+//  mAmHighpass(20, 100, rateIn, S_CHEBYSHEV),
+//  mAmLowpass(1, 1, rateIn, S_CHEBYSHEV),
+//  mAmBandpass(20, 100, 4500, rateIn, S_CHEBYSHEV)
 {
   int32_t i;
 
@@ -108,24 +108,23 @@ DSPFLOAT fm_Demodulator::demodulate(DSPCOMPLEX z)
   DSPFLOAT res;
   DSPFLOAT I, Q;
 
-  if (selectedDecoder == 5) // AM
+  if (selectedDecoder == 0) // AM
   {
     const DSPFLOAT zAbs = abs(z) / 100;
 
-    //const float alpha = (zAbs > fm_afc ? 0.0001f : 0.0001f);
+    // get DC component or mean carrier power
     constexpr float alpha = 0.001f;
     fm_afc = (1.0f - alpha) * fm_afc + alpha * zAbs;
 
-    //fm_afc = mAmLowpass.Pass(zAbs);
-    //res = mAmHighpass.Pass(zAbs);
-    //return res / abs(fm_afc + 0.01);
+    // remove DC component from signal and norm level to carrier power
     constexpr float gainLimit = 0.01f;
-    //res = (zAbs - fm_afc) / (fm_afc < gainLimit ? gainLimit : fm_afc);
     res = (zAbs - fm_afc) / (fm_afc < gainLimit ? gainLimit : fm_afc);
+
+    // this avoids short spikes which would cause the auto level limitter to reduce audio level too much
     constexpr float audioLimit = 1.0f;
     if      (res >  audioLimit) res =  audioLimit;
     else if (res < -audioLimit) res = -audioLimit;
-    //res = mAmBandpass.Pass(res);
+
     return res;
   }
 
@@ -147,27 +146,27 @@ DSPFLOAT fm_Demodulator::demodulate(DSPCOMPLEX z)
   default:
     [[fallthrough]];
 
-  case 0: // DifferenceBased
+  case 1: // DifferenceBased
     res    = -(Imin1 * (Q - Qmin2) - Qmin1 * (I - Imin2));
     res   /= Imin1 * Imin1 + Qmin1 * Qmin1;
     Imin2  = Imin1;
     Qmin2  = Qmin1;
     break;
 
-  case 1: // ComplexBasebandDelay
+  case 2: // ComplexBasebandDelay
     res = -myAtan.argX(z * DSPCOMPLEX(Imin1, -Qmin1));
     break;
 
-  case 2: // MixedDemodulator
+  case 3: // MixedDemodulator
     res = -myAtan.atan2(Q * Imin1 - I * Qmin1, I * Imin1 + Q * Qmin1);
     break;
 
-  case 3: // PllDecoder
+  case 4: // PllDecoder
     myfm_pll->do_pll(z);
     res = myfm_pll->getPhaseIncr();
     break;
 
-  case 4: // RealBasebandDelay
+  case 5: // RealBasebandDelay
     res = (Imin1 * Q - Qmin1 * I + 1.0) / 2.0;
     res = -Arcsine [(int)(res * ArcsineSize)];
     break;

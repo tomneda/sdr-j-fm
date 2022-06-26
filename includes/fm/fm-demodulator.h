@@ -59,9 +59,9 @@ private:
   DSPFLOAT Imin2;
   DSPFLOAT Qmin2;
 
-  HighPassIIR mAmHighpass;
-  LowPassIIR  mAmLowpass;
-  BandPassIIR mAmBandpass;
+//  HighPassIIR mAmHighpass;
+//  LowPassIIR  mAmLowpass;
+//  BandPassIIR mAmBandpass;
 
 public:
   fm_Demodulator(int32_t Rate_in, SinCos *mySinCos, DSPFLOAT K_FM);

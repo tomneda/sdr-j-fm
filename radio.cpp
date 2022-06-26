@@ -25,7 +25,6 @@
 #include "fm-demodulator.h"
 #include "fm-processor.h"
 #include "popup-keypad.h"
-#include "program-list.h"
 #include "rds-decoder.h"
 #include "scope.h"
 #include <QDateTime>
@@ -33,6 +32,7 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QTabWidget>
 #include <QSettings>
 #include <Qt>
 
@@ -98,6 +98,7 @@ constexpr int16_t delayTableSize = ((int)(sizeof(delayTable) / sizeof(int16_t)))
 RadioInterface::RadioInterface(QSettings *Si, QString stationList,
                                int32_t outputRate, QWidget *parent)
   : QDialog(parent)
+  , mSaveName(stationList)
 {
   int16_t i;
   QString h;
@@ -115,6 +116,8 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
   thermoPeakLevelRight->setAlarmBrush(Qt::red);
   thermoPeakLevelLeft->setAlarmEnabled(true);
   thermoPeakLevelRight->setAlarmEnabled(true);
+
+
 
   fmSettings = Si;
 
@@ -287,9 +290,9 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
   ExtioLock = false;
   logFile   = nullptr;
   pauseButton->setText(QString("Pause"));
-  dumpButton->setText("inputDump");
+  dumpButton->setText("Dump Input Stream");
   sourceDumping = false;
-  audioDump->setText("audioDump");
+  audioDump->setText("Dump Audio");
   audioDumping       = false;
   currentPIcode      = 0;
   frequencyforPICode = 0;
@@ -310,8 +313,24 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
   connect(maximumSelect, SIGNAL(valueChanged(int)), this, SLOT(set_maximum(int)));
 
   displayTimer->start(1000);
-  myList = new programList(this, std::move(stationList));
-  myList->show();
+
+  scrollStationList->setWidgetResizable(true);
+
+  mpTableWidget = new QTableWidget(0, 2, this);
+
+  scrollStationList->setWidget(mpTableWidget);
+  mpTableWidget->setHorizontalHeaderLabels(QStringList() << tr("Station") << tr("Frequency"));
+
+  loadTable();
+
+  //mpTableWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+
+  //mpTableWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  //mpTableWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+  connect(mpTableWidget, SIGNAL(cellClicked(int,int)), this, SLOT(tableSelect(int,int)));
+  connect(mpTableWidget, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(removeRow(int,int)));
+
   myLine = nullptr;
   connect(freqSave, SIGNAL(clicked()), this, SLOT(set_freqSave()));
   connect(cbAfc, &QAbstractButton::clicked, this, [this](bool checked){ mAfcActive = checked; reset_afc(); } );
@@ -461,7 +480,7 @@ void RadioInterface::TerminateProcess()
   }
 
   stopIncrementing();
-  myList->saveTable();
+  saveTable();
   dumpControlState(fmSettings);
   fmSettings->sync();
 
@@ -471,11 +490,13 @@ void RadioInterface::TerminateProcess()
   myRig->stopReader();
   //	setDevice (QString ("dummy"));	// will select a virtualinput
   accept();
-  qDebug() << "Termination started";
-  delete myRig;
 
+  qDebug() << "Termination started";
+
+  delete myRig;
   delete mykeyPad;
-  delete myList;
+
+  delete_station_list();
 }
 
 void RadioInterface::abortSystem(int d)
@@ -496,7 +517,7 @@ void RadioInterface::stopDumping()
     myFMprocessor->stopDumping();
     sf_close(dumpfilePointer);
     sourceDumping = false;
-    dumpButton->setText("inputDump");
+    dumpButton->setText("Dump Input Stream");
   }
 
   if (audioDumping)
@@ -504,7 +525,7 @@ void RadioInterface::stopDumping()
     our_audioSink->stopDumping();
     sf_close(audiofilePointer);
     audioDumping = false;
-    audioDump->setText("audioDump");
+    audioDump->setText("Dump Audio");
   }
 }
 //	The following signals originate from the Winrad Extio interface
@@ -1229,7 +1250,7 @@ void RadioInterface::set_dumping()
     myFMprocessor->stopDumping();
     sf_close(dumpfilePointer);
     sourceDumping = false;
-    dumpButton->setText("input dump");
+    dumpButton->setText("Dump Input Stream");
     return;
   }
 
@@ -1266,7 +1287,7 @@ void RadioInterface::set_audioDump()
     our_audioSink->stopDumping();
     sf_close(audiofilePointer);
     audioDumping = false;
-    audioDump->setText("audioDump");
+    audioDump->setText("Dump Audio");
     return;
   }
 
@@ -2097,7 +2118,7 @@ void RadioInterface::handle_myLine()
 
   fprintf(stderr, "adding %s %s\n", programName.toLatin1().data(),
           QString::number(freq / Khz(1)).toLatin1().data());
-  myList->addRow(programName, QString::number(freq / Khz(1)));
+  addRow(programName, QString::number(freq / Khz(1)));
   delete myLine;
   myLine = nullptr;
 }
@@ -2128,4 +2149,107 @@ void RadioInterface::closeEvent(QCloseEvent *event)
   }
 }
 
+void RadioInterface::removeRow(int row, int column)
+{
+  (void)column;
+  mpTableWidget->removeRow(row);
 
+  mpTableWidget->resizeColumnsToContents();
+  scrollStationList->setFixedWidth(mpTableWidget->sizeHint().width() * 0.7); // TODO: how to do correct resizing with this factor?
+}
+
+void RadioInterface::saveTable()
+{
+  QFile file(mSaveName);
+
+  if (file.open(QIODevice::WriteOnly))
+  {
+    QDataStream stream(&file);
+    int32_t     n = mpTableWidget->rowCount();
+    int32_t     m = mpTableWidget->columnCount();
+    stream << n << m;
+
+    for (int i = 0; i < n; i++)
+    {
+      for (int j = 0; j < m; j++)
+      {
+        mpTableWidget->item(i, j)->write(stream);
+      }
+    }
+
+    file.close();
+  }
+}
+
+void RadioInterface::loadTable()
+{
+  QFile file(mSaveName);
+
+  if (file.open(QIODevice::ReadOnly))
+  {
+    QDataStream stream(&file);
+    int32_t     n, m;
+    stream >> n >> m;
+    mpTableWidget->setRowCount(n);
+    mpTableWidget->setColumnCount(m);
+
+    for (int i = 0; i < n; i++)
+    {
+      for (int j = 0; j < m; j++)
+      {
+        QTableWidgetItem *item = new QTableWidgetItem;
+        item->read(stream);
+        mpTableWidget->setItem(i, j, item);
+      }
+    }
+
+    file.close();
+  }
+
+  mpTableWidget->resizeColumnsToContents();
+  scrollStationList->setFixedWidth(mpTableWidget->sizeHint().width() * 0.7); // TODO: how to do correct resizing with this factor?
+}
+
+void RadioInterface::addRow(const QString &name, const QString &freq)
+{
+  const int16_t row = mpTableWidget->rowCount();
+
+  mpTableWidget->insertRow(row);
+  QTableWidgetItem * const item0 = new QTableWidgetItem;
+
+  item0->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+  item0->setText(name);
+  mpTableWidget->setItem(row, 0, item0);
+
+  QTableWidgetItem *const item1 = new QTableWidgetItem;
+  item1->setTextAlignment(Qt::AlignRight);
+  item1->setText(freq);
+
+  mpTableWidget->setItem(row, 1, item1);
+
+  mpTableWidget->resizeColumnsToContents();
+  scrollStationList->setFixedWidth(mpTableWidget->sizeHint().width() * 0.7); // TODO: how to do correct resizing with this factor?
+}
+
+void RadioInterface::tableSelect(int row, int column)
+{
+  QTableWidgetItem *theItem = mpTableWidget->item(row, 1);
+
+  (void)column;
+  QString theFreq = theItem->text();
+  int32_t freq    = theFreq.toInt();
+
+  newFrequency(Khz(freq));
+}
+
+void RadioInterface::delete_station_list()
+{
+  int16_t rows = mpTableWidget->rowCount();
+
+  for (int16_t i = rows; i > 0; i--)
+  {
+    mpTableWidget->removeRow(i);
+  }
+
+  delete mpTableWidget;
+}

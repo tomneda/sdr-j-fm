@@ -35,6 +35,9 @@
 #include "scope.h"
 #include "ui_radio.h"
 #include "rds-decoder.h"
+#include <QTableWidget>
+#include <QTableWidgetItem>
+#include <QWidget>
 #include <QDialog>
 #include <QInputDialog>
 #include <QLineEdit>
@@ -51,7 +54,7 @@ class rdsDecoder;
 class fft_scope;
 class audioSink;
 class deviceHandler;
-class programList;
+//class programList;
 
 /*
  *	The main gui object. It inherits from
@@ -172,7 +175,14 @@ private:
   void resetSelector();
   int32_t mapRates(int32_t);
 
-  programList *myList;
+  // station list
+  QTableWidget *mpTableWidget;
+  QString mSaveName;
+  void loadTable();
+  void saveTable();
+  void addRow(const QString &name, const QString &freq);
+  void delete_station_list();
+
   QLineEdit *myLine;
   /*
    *	The private slots link the GUI elements
@@ -223,6 +233,10 @@ private slots:
   void set_squelchMode();
   void set_freqSave();
   void handle_myLine();
+
+  // station list
+  void tableSelect(int, int);
+  void removeRow(int, int);
 
 public slots:
   void setHFplotterView(int);

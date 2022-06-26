@@ -82,7 +82,6 @@ HEADERS += ./radio.h \
            ./includes/popup-keypad.h \
            ./includes/fm-constants.h \
            ./includes/various/keyboardfilter.h \
-           ./includes/various/program-list.h \
            ./includes/various/squelchClass.h \
            ./includes/various/fft.h \
            ./includes/various/oscillator.h \
@@ -115,7 +114,6 @@ SOURCES += ./main.cpp \
            ./radio.cpp \
            ./src/popup-keypad.cpp \
            ./src/various/keyboardfilter.cpp \
-           ./src/various/program-list.cpp \
            ./src/various/fft.cpp \
            ./src/various/oscillator.cpp \
            ./src/various/pllC.cpp \

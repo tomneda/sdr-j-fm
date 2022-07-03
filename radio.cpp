@@ -33,6 +33,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QTabWidget>
+#include <QHeaderView>
 #include <QSettings>
 #include <Qt>
 
@@ -323,14 +324,12 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
   mpTableWidget = new QTableWidget(0, 2, this);
 
   scrollStationList->setWidget(mpTableWidget);
+
   mpTableWidget->setHorizontalHeaderLabels(QStringList() << tr("Station") << tr("Frequency"));
+  mpTableWidget->setEditTriggers(QAbstractItemView::EditKeyPressed); // only F2 is allowed, no double click (this would delete the entry)
+  mpTableWidget->verticalHeader()->setVisible(false); // remove index number column
 
   loadTable();
-
-  //mpTableWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-
-  //mpTableWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-  //mpTableWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
   connect(mpTableWidget, SIGNAL(cellClicked(int,int)), this, SLOT(tableSelect(int,int)));
   connect(mpTableWidget, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(removeRow(int,int)));
@@ -2153,15 +2152,6 @@ void RadioInterface::closeEvent(QCloseEvent *event)
   }
 }
 
-void RadioInterface::removeRow(int row, int column)
-{
-  (void)column;
-  mpTableWidget->removeRow(row);
-
-  mpTableWidget->resizeColumnsToContents();
-  scrollStationList->setFixedWidth(mpTableWidget->sizeHint().width() * 0.7); // TODO: how to do correct resizing with this factor?
-}
-
 void RadioInterface::saveTable()
 {
   QFile file(mSaveName);
@@ -2169,8 +2159,8 @@ void RadioInterface::saveTable()
   if (file.open(QIODevice::WriteOnly))
   {
     QDataStream stream(&file);
-    int32_t     n = mpTableWidget->rowCount();
-    int32_t     m = mpTableWidget->columnCount();
+    int32_t n = mpTableWidget->rowCount();
+    int32_t m = mpTableWidget->columnCount();
     stream << n << m;
 
     for (int i = 0; i < n; i++)
@@ -2184,6 +2174,8 @@ void RadioInterface::saveTable()
     file.close();
   }
 }
+
+static constexpr auto STATIONLISTFACTOR = 0.65; // workaround until better solution is found
 
 void RadioInterface::loadTable()
 {
@@ -2203,6 +2195,7 @@ void RadioInterface::loadTable()
       {
         QTableWidgetItem *item = new QTableWidgetItem;
         item->read(stream);
+        item->setTextAlignment((j == 0 ? Qt::AlignLeft : Qt::AlignRight) | Qt::AlignVCenter);
         mpTableWidget->setItem(i, j, item);
       }
     }
@@ -2211,7 +2204,7 @@ void RadioInterface::loadTable()
   }
 
   mpTableWidget->resizeColumnsToContents();
-  scrollStationList->setFixedWidth(mpTableWidget->sizeHint().width() * 0.7); // TODO: how to do correct resizing with this factor?
+  scrollStationList->setFixedWidth(mpTableWidget->sizeHint().width() * STATIONLISTFACTOR); // TODO: how to do correct resizing with this factor?
 }
 
 void RadioInterface::addRow(const QString &name, const QString &freq)
@@ -2219,29 +2212,43 @@ void RadioInterface::addRow(const QString &name, const QString &freq)
   const int16_t row = mpTableWidget->rowCount();
 
   mpTableWidget->insertRow(row);
-  QTableWidgetItem * const item0 = new QTableWidgetItem;
 
-  item0->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+  QTableWidgetItem * const item0 = new QTableWidgetItem;
+  item0->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
   item0->setText(name);
   mpTableWidget->setItem(row, 0, item0);
 
   QTableWidgetItem *const item1 = new QTableWidgetItem;
-  item1->setTextAlignment(Qt::AlignRight);
+  item1->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
   item1->setText(freq);
-
   mpTableWidget->setItem(row, 1, item1);
 
   mpTableWidget->resizeColumnsToContents();
-  scrollStationList->setFixedWidth(mpTableWidget->sizeHint().width() * 0.7); // TODO: how to do correct resizing with this factor?
+  scrollStationList->setFixedWidth(mpTableWidget->sizeHint().width() * STATIONLISTFACTOR); // TODO: how to do correct resizing with this factor?
+}
+
+void RadioInterface::removeRow(int row, int column)
+{
+  (void)column;
+  const QTableWidgetItem * const itemStation = mpTableWidget->item(row, 0);
+  const QTableWidgetItem * const itemFreq = mpTableWidget->item(row, 1);
+
+  const QString deletionText(tr("Delete station '") + itemStation->text() + tr("' from station list?\n (Frequency: ") + itemFreq->text() + ")");
+
+  if (QMessageBox::question(this, tr("Confirmation"), deletionText) == QMessageBox::Yes)
+  {
+    mpTableWidget->removeRow(row);
+
+    mpTableWidget->resizeColumnsToContents();
+    scrollStationList->setFixedWidth(mpTableWidget->sizeHint().width() * STATIONLISTFACTOR); // TODO: how to do correct resizing with this factor?
+  }
 }
 
 void RadioInterface::tableSelect(int row, int column)
 {
-  QTableWidgetItem *theItem = mpTableWidget->item(row, 1);
-
   (void)column;
-  QString theFreq = theItem->text();
-  int32_t freq    = theFreq.toInt();
+  const QTableWidgetItem *const item = mpTableWidget->item(row, 1);
+  const int32_t freq = item->text().toInt();
 
   newFrequency(Khz(freq));
 }

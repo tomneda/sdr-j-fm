@@ -1080,6 +1080,11 @@
                    </item>
                    <item>
                     <property name="text">
+                     <string>530us (NBFM)</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
                      <string>750us (NBFM)</string>
                     </property>
                    </item>
@@ -1258,6 +1263,11 @@
                    <item>
                     <property name="text">
                      <string>9kHz (AM)</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>15kHz</string>
                     </property>
                    </item>
                    <item>

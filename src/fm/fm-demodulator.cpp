@@ -142,6 +142,8 @@ DSPFLOAT fm_Demodulator::demodulate(DSPCOMPLEX z)
   z = DSPCOMPLEX(I, Q);
   int32_t arcSineIdx;
 
+  // see https://docplayer.net/32191874-Dsp-implementation-of-fm-demodulator-algorithms-on-a-high-performance-digital-signal-processor-diploma-thesis-11-1.html
+
   switch (selectedDecoder)
   {
   default:
@@ -153,17 +155,16 @@ DSPFLOAT fm_Demodulator::demodulate(DSPCOMPLEX z)
     break;
 
   case 2: // MixedDemodulator
-    res = -myAtan.atan2(Q * Imin1 - I * Qmin1, I * Imin1 + Q * Qmin1);
+    res = -myAtan.atan2(Q * Imin1 - I * Qmin1, I * Imin1 + Q * Qmin1); // is same as ComplexBasebandDelay (expanded complex multiplication)
     break;
 
   case 3: // ComplexBasebandDelay
-    res = -myAtan.argX(z * DSPCOMPLEX(Imin1, -Qmin1));
-    // is same as MixedDemodulator: res = -myAtan.atan2(Q * Imin1 - I * Qmin1, I * Imin1 + Q * Qmin1);
+    res = -myAtan.argX(z * DSPCOMPLEX(Imin1, -Qmin1)); // is same as MixedDemodulator
     break;
 
   case 4: // RealBasebandDelay
     res = Imin1 * Q - Qmin1 * I; // theoretical interval [-2 .. +2], practical interval [-1 .. +1]
-    arcSineIdx = (int32_t)(ARCSINESIZE * (res + 1.0f) / 2.0f);
+    arcSineIdx = (int32_t)(ARCSINESIZE * (res + 1.0f) / 2.0f + 0.5f);
     assert(arcSineIdx >= 0 && arcSineIdx <= ARCSINESIZE);
     res = -Arcsine[arcSineIdx]; // Arcsine center is at ArcsineSize/2
     break;

@@ -25,20 +25,18 @@
 
 #include  "fm-demodulator.h"
 #include  "Xtan2.h"
+#include  <assert.h>
 
 fm_Demodulator::TDecoderListNames fm_Demodulator::sIdx2DecoderName =
 {
  "AM (experimental)",
- "Difference Based",
- "Compl. Baseb. Delay",
- "Mixed Demod",
  "PLL Decoder",
- "Real Baseb. Delay"
+ "Mixed Demod",
+ "Complex Baseband Delay",
+ "Real Baseband Delay",
+ "Difference Based"
 };
 
-
-
-//
 //	Just to play around a little, I implemented 5 common
 //	fm decoders. The main source of inspiration is found in
 //	a Diploma Thesis "Implementation of FM demodulator Algorithms
@@ -59,24 +57,20 @@ fm_Demodulator::fm_Demodulator (int32_t rateIn,
 
   this->selectedDecoder = 3;
   this->max_freq_deviation = 0.95 * (0.5 * rateIn);
-  myfm_pll = new pllC(rateIn,
-                      0,
-                      -max_freq_deviation,
-                      +max_freq_deviation,
-                      0.85 * rateIn,
-                      mySinCos);
-  ArcsineSize = 4 * 8192;
-  Arcsine     = new DSPFLOAT [ArcsineSize];
+  myfm_pll = new pllC(rateIn, 0, -max_freq_deviation, +max_freq_deviation, 0.85 * rateIn, mySinCos);
 
-  for (i = 0; i < ArcsineSize; i++)
+  Arcsine = new DSPFLOAT[ARCSINESIZE + 1]; // use also the top limit with +1 (happens with heavy noise)
+
+  for (i = 0; i <= ARCSINESIZE; i++)
   {
-    Arcsine [i] = asin(2.0 * i / ArcsineSize - 1.0) / 2.0;
+    Arcsine[i] = asin(2.0 * i / ARCSINESIZE - 1.0); // maps +/-1 [0..8192] -> +/-PI/2
   }
 
-  Imin1  = 0.2;
+  Imin1 = 0.2;
   Qmin1  = 0.2;
   Imin2  = 0.2;
   Qmin2  = 0.2;
+  am_carr_ampl = 0;
   fm_afc = 0;
   fm_cvt = 1.0;
   // fm_cvt = 0.50 * (rateIn / (M_PI * 150000));
@@ -105,30 +99,10 @@ const char * fm_Demodulator::nameofDecoder() const
 
 DSPFLOAT fm_Demodulator::demodulate(DSPCOMPLEX z)
 {
+  constexpr DSPFLOAT DCAlpha = 0.0001;
+
   DSPFLOAT res;
   DSPFLOAT I, Q;
-
-  if (selectedDecoder == 0) // AM
-  {
-    const DSPFLOAT zAbs = abs(z) / 100;
-
-    // get DC component or mean carrier power
-    constexpr float alpha = 0.001f;
-    fm_afc = (1.0f - alpha) * fm_afc + alpha * zAbs;
-
-    // remove DC component from signal and norm level to carrier power
-    constexpr float gainLimit = 0.01f;
-    res = (zAbs - fm_afc) / (fm_afc < gainLimit ? gainLimit : fm_afc);
-
-    // this avoids short spikes which would cause the auto level limitter to reduce audio level too much
-    constexpr float audioLimit = 1.0f;
-    if      (res >  audioLimit) res =  audioLimit;
-    else if (res < -audioLimit) res = -audioLimit;
-
-    return res;
-  }
-
-  constexpr DSPFLOAT DCAlpha = 0.0001;
 
   if (abs(z) <= 0.001)
   {
@@ -140,35 +114,65 @@ DSPFLOAT fm_Demodulator::demodulate(DSPCOMPLEX z)
     Q = imag(z) / abs(z);
   }
 
+  if (selectedDecoder == 0) // AM
+  {
+    // get carrier offset to have AFC for AM, too
+    myfm_pll->do_pll(DSPCOMPLEX(I, Q));
+    res = myfm_pll->getPhaseIncr();
+    fm_afc = (1 - DCAlpha) * fm_afc + DCAlpha * res;
+
+    const DSPFLOAT zAbs = abs(z) / 1;
+
+    // get DC component or mean carrier power
+    constexpr float alpha = 0.001f;
+    am_carr_ampl = (1.0f - alpha) * am_carr_ampl + alpha * zAbs;
+
+    // remove DC component from signal and norm level to carrier power
+    constexpr float gainLimit = 0.5f;
+    res = (zAbs - am_carr_ampl) / (am_carr_ampl < gainLimit ? gainLimit : am_carr_ampl);
+
+    // this avoids short spikes which would cause the auto level limitter to reduce audio level too much
+    constexpr float audioLimit = 1.0f;
+    if      (res >  audioLimit) res =  audioLimit;
+    else if (res < -audioLimit) res = -audioLimit;
+
+    return res;
+  }
+
   z = DSPCOMPLEX(I, Q);
+  int32_t arcSineIdx;
+
   switch (selectedDecoder)
   {
   default:
     [[fallthrough]];
 
-  case 1: // DifferenceBased
-    res    = -(Imin1 * (Q - Qmin2) - Qmin1 * (I - Imin2));
-    res   /= Imin1 * Imin1 + Qmin1 * Qmin1;
-    Imin2  = Imin1;
-    Qmin2  = Qmin1;
-    break;
-
-  case 2: // ComplexBasebandDelay
-    res = -myAtan.argX(z * DSPCOMPLEX(Imin1, -Qmin1));
-    break;
-
-  case 3: // MixedDemodulator
-    res = -myAtan.atan2(Q * Imin1 - I * Qmin1, I * Imin1 + Q * Qmin1);
-    break;
-
-  case 4: // PllDecoder
+  case 1: // PllDecoder
     myfm_pll->do_pll(z);
     res = myfm_pll->getPhaseIncr();
     break;
 
-  case 5: // RealBasebandDelay
-    res = (Imin1 * Q - Qmin1 * I + 1.0) / 2.0;
-    res = -Arcsine [(int)(res * ArcsineSize)];
+  case 2: // MixedDemodulator
+    res = -myAtan.atan2(Q * Imin1 - I * Qmin1, I * Imin1 + Q * Qmin1);
+    break;
+
+  case 3: // ComplexBasebandDelay
+    res = -myAtan.argX(z * DSPCOMPLEX(Imin1, -Qmin1));
+    // is same as MixedDemodulator: res = -myAtan.atan2(Q * Imin1 - I * Qmin1, I * Imin1 + Q * Qmin1);
+    break;
+
+  case 4: // RealBasebandDelay
+    res = Imin1 * Q - Qmin1 * I; // theoretical interval [-2 .. +2], practical interval [-1 .. +1]
+    arcSineIdx = (int32_t)(ARCSINESIZE * (res + 1.0f) / 2.0f);
+    assert(arcSineIdx >= 0 && arcSineIdx <= ARCSINESIZE);
+    res = -Arcsine[arcSineIdx]; // Arcsine center is at ArcsineSize/2
+    break;
+
+  case 5: // DifferenceBased
+    res    = -(Imin1 * (Q - Qmin2) - Qmin1 * (I - Imin2));
+    res   /= (Imin1 * Imin1 + Qmin1 * Qmin1) * M_SQRT2;
+    Imin2  = Imin1;
+    Qmin2  = Qmin1;
     break;
   }
 

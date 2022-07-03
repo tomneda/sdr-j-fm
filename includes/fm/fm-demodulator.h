@@ -41,17 +41,19 @@ public:
   using TDecoderListNames = const std::vector<const char *>;
 
 private:
+  static constexpr int32_t ARCSINESIZE = 4 * 8192;
+
   static TDecoderListNames sIdx2DecoderName;
 
   int16_t selectedDecoder;
   DSPFLOAT max_freq_deviation;
   int32_t rateIn;
+  DSPFLOAT am_carr_ampl;
   DSPFLOAT fm_afc;
   DSPFLOAT fm_cvt;
   DSPFLOAT K_FM;
   pllC *myfm_pll;
   SinCos *mySinCos;
-  int32_t ArcsineSize;
   DSPFLOAT *Arcsine;
   compAtan myAtan;
   DSPFLOAT Imin1;

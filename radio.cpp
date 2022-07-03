@@ -890,30 +890,35 @@ void RadioInterface::setInputMode(const QString &s)
 
 void RadioInterface::setfmChannelSelector(const QString &s)
 {
-  if (s == "Stereo")
+  if (s == "L | R")
   {
     channelSelector = fmProcessor::S_STEREO;
   }
-  else if (s == "Left")
+  else if (s == "R | L")
+  {
+    channelSelector = fmProcessor::S_STEREO_SWAPPED;
+  }
+  else if (s == "L | L")
   {
     channelSelector = fmProcessor::S_LEFT;
   }
-  else if (s == "Right")
+  else if (s == "R | R")
   {
     channelSelector = fmProcessor::S_RIGHT;
   }
-  else if (s == "Left+Right")
+  else if (s == "M | M")
   {
     channelSelector = fmProcessor::S_LEFTplusRIGHT;
   }
-  else if (s == "Left-Right")
+  else if (s == "S | S")
   {
     channelSelector = fmProcessor::S_LEFTminusRIGHT;
   }
-  else   // the default
+  else
   {
-    channelSelector = fmProcessor::S_LEFT;
+    channelSelector = fmProcessor::S_STEREO;
   }
+
   if (myFMprocessor != nullptr)
   {
     myFMprocessor->setSoundMode(channelSelector);

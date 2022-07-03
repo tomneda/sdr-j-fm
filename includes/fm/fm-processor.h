@@ -115,11 +115,12 @@ public:
 
   enum Channels
   {
-    S_STEREO = 0,
-    S_LEFT = 1,
-    S_RIGHT = 2,
-    S_LEFTplusRIGHT = 0103,
-    S_LEFTminusRIGHT = 0104
+    S_STEREO,
+    S_STEREO_SWAPPED,
+    S_LEFT,
+    S_RIGHT,
+    S_LEFTplusRIGHT,
+    S_LEFTminusRIGHT
   };
 
   void set_squelchValue(int16_t);

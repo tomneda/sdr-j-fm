@@ -594,6 +594,7 @@ void fmProcessor::run()
       {
       default:
       case S_STEREO:         result = DSPCOMPLEX(left,  right); break;
+      case S_STEREO_SWAPPED: result = DSPCOMPLEX(right, left); break;
       case S_LEFT:           result = DSPCOMPLEX(left,  left); break;
       case S_RIGHT:          result = DSPCOMPLEX(right, right); break;
       case S_LEFTplusRIGHT:  result = DSPCOMPLEX(sumLR, sumLR); break;

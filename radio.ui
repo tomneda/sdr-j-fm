@@ -1001,31 +1001,36 @@
                  <item>
                   <widget class="QComboBox" name="fmChannelSelect">
                    <property name="toolTip">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select the sound combination of channels. Default is stereo, i.e. a summation of the L+R signal that is transmitted in the low part of the spectrum and the L-R signal that is shifted 38 Khz.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select the source combinations of the two audio channels:&lt;/p&gt;&lt;p&gt;L = Left&lt;br/&gt;R = Right&lt;br/&gt;M = Mono (L+R)&lt;br/&gt;S = Side (L-R)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <item>
                     <property name="text">
-                     <string>Stereo</string>
+                     <string>L | R</string>
                     </property>
                    </item>
                    <item>
                     <property name="text">
-                     <string>Left</string>
+                     <string>R | L</string>
                     </property>
                    </item>
                    <item>
                     <property name="text">
-                     <string>Right</string>
+                     <string>M | M</string>
                     </property>
                    </item>
                    <item>
                     <property name="text">
-                     <string>Left+Right</string>
+                     <string>S | S</string>
                     </property>
                    </item>
                    <item>
                     <property name="text">
-                     <string>Left-Right</string>
+                     <string>L | L</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>R | R</string>
                     </property>
                    </item>
                   </widget>

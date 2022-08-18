@@ -53,7 +53,7 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_7">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,1,1,3,2,0,16,0,2">
+        <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,1,0,3,2,0,16,0,2">
          <item>
           <widget class="QLCDNumber" name="lcd_inputRate">
            <property name="palette">
@@ -93,6 +93,9 @@
              </disabled>
             </palette>
            </property>
+           <property name="toolTip">
+            <string>RF sample rate (at input)</string>
+           </property>
            <property name="autoFillBackground">
             <bool>false</bool>
            </property>
@@ -104,62 +107,6 @@
            </property>
            <property name="digitCount">
             <number>8</number>
-           </property>
-           <property name="segmentStyle">
-            <enum>QLCDNumber::Flat</enum>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLCDNumber" name="lcd_OutputRate">
-           <property name="palette">
-            <palette>
-             <active>
-              <colorrole role="Window">
-               <brush brushstyle="SolidPattern">
-                <color alpha="255">
-                 <red>255</red>
-                 <green>255</green>
-                 <blue>0</blue>
-                </color>
-               </brush>
-              </colorrole>
-             </active>
-             <inactive>
-              <colorrole role="Window">
-               <brush brushstyle="SolidPattern">
-                <color alpha="255">
-                 <red>255</red>
-                 <green>255</green>
-                 <blue>0</blue>
-                </color>
-               </brush>
-              </colorrole>
-             </inactive>
-             <disabled>
-              <colorrole role="Window">
-               <brush brushstyle="SolidPattern">
-                <color alpha="255">
-                 <red>255</red>
-                 <green>255</green>
-                 <blue>0</blue>
-                </color>
-               </brush>
-              </colorrole>
-             </disabled>
-            </palette>
-           </property>
-           <property name="autoFillBackground">
-            <bool>false</bool>
-           </property>
-           <property name="frameShape">
-            <enum>QFrame::NoFrame</enum>
-           </property>
-           <property name="lineWidth">
-            <number>2</number>
-           </property>
-           <property name="digitCount">
-            <number>6</number>
            </property>
            <property name="segmentStyle">
             <enum>QLCDNumber::Flat</enum>
@@ -205,6 +152,9 @@
              </disabled>
             </palette>
            </property>
+           <property name="toolTip">
+            <string>IF sample rate (at demodulator)</string>
+           </property>
            <property name="autoFillBackground">
             <bool>false</bool>
            </property>
@@ -219,6 +169,65 @@
            </property>
            <property name="digitCount">
             <number>7</number>
+           </property>
+           <property name="segmentStyle">
+            <enum>QLCDNumber::Flat</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLCDNumber" name="lcd_OutputRate">
+           <property name="palette">
+            <palette>
+             <active>
+              <colorrole role="Window">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>255</red>
+                 <green>255</green>
+                 <blue>0</blue>
+                </color>
+               </brush>
+              </colorrole>
+             </active>
+             <inactive>
+              <colorrole role="Window">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>255</red>
+                 <green>255</green>
+                 <blue>0</blue>
+                </color>
+               </brush>
+              </colorrole>
+             </inactive>
+             <disabled>
+              <colorrole role="Window">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>255</red>
+                 <green>255</green>
+                 <blue>0</blue>
+                </color>
+               </brush>
+              </colorrole>
+             </disabled>
+            </palette>
+           </property>
+           <property name="toolTip">
+            <string>AF sample rate (audio output)</string>
+           </property>
+           <property name="autoFillBackground">
+            <bool>false</bool>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::NoFrame</enum>
+           </property>
+           <property name="lineWidth">
+            <number>2</number>
+           </property>
+           <property name="digitCount">
+            <number>6</number>
            </property>
            <property name="segmentStyle">
             <enum>QLCDNumber::Flat</enum>
@@ -1026,12 +1035,12 @@
                    </property>
                    <item>
                     <property name="text">
-                     <string>Stereo</string>
+                     <string>Stereo (Pano)</string>
                     </property>
                    </item>
                    <item>
                     <property name="text">
-                     <string>Stereo (Pano)</string>
+                     <string>Stereo</string>
                     </property>
                    </item>
                    <item>

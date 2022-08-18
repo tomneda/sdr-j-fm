@@ -56,43 +56,54 @@ public:
   rdsDecoder(RadioInterface *, int32_t, SinCos *);
   ~rdsDecoder(void);
 
-  enum class ERdsMode { NO_RDS, RDS1, RDS2 };
+  enum class ERdsMode
+  {
+    NO_RDS,
+    RDS1,
+    RDS2,
+    RDS3
+  };
 
-  void doDecode(DSPFLOAT, DSPFLOAT *, ERdsMode);
+  void doDecode(const DSPFLOAT, DSPFLOAT * const, const ERdsMode);
   void reset(void);
 
 private:
   void processBit(bool);
-  void doDecode1(DSPFLOAT, DSPFLOAT *);
-  void doDecode2(DSPFLOAT, DSPFLOAT *);
-  int32_t sampleRate;
-  int32_t numofFrames;
-  SinCos *mySinCos;
-  RadioInterface *MyRadioInterface;
-  RDSGroup *my_rdsGroup;
-  rdsBlockSynchronizer *my_rdsBlockSync;
-  rdsGroupDecoder *my_rdsGroupDecoder;
-  DSPFLOAT omegaRDS;
-  int32_t symbolCeiling;
-  int32_t symbolFloor;
-  bool prevBit;
-  DSPFLOAT bitIntegrator;
-  DSPFLOAT bitClkPhase;
-  DSPFLOAT prev_clkState;
-  bool Resync;
+  void doDecode1(const DSPFLOAT, DSPFLOAT * const);
+  void doDecode2(const DSPFLOAT, DSPFLOAT * const);
+  void doDecode3(const DSPFLOAT, DSPFLOAT * const);
 
-  DSPFLOAT *rdsBuffer;
-  DSPFLOAT *rdsKernel;
-  int16_t ip;
-  int16_t rdsfilterSize;
-  DSPFLOAT Match(DSPFLOAT);
-  BandPassIIR *sharpFilter;
-  DSPFLOAT rdsLastSyncSlope;
-  DSPFLOAT rdsLastSync;
-  DSPFLOAT rdsLastData;
-  bool previousBit;
-  DSPFLOAT *syncBuffer;
-  int16_t p;
+  int32_t mSampleRate;
+  int32_t mNumOfFrames;
+  SinCos * mpSinCos;
+  RadioInterface * mpRadioInterface;
+  RDSGroup * mpRdsGroup;
+  rdsBlockSynchronizer * mpRdsBlockSync;
+  rdsGroupDecoder * mpRdsGroupDecoder;
+  DSPFLOAT mOmegaRDS;
+  int32_t mSymbolCeiling;
+  int32_t mSymbolFloor;
+  bool mPrevBit;
+  DSPFLOAT mBitIntegrator;
+  DSPFLOAT mBitClkPhase;
+  DSPFLOAT mPrev_clkState;
+  bool mResync;
+
+  DSPFLOAT * mpRdsBuffer;
+  DSPFLOAT * mpRdsKernel;
+  int16_t mCurRdsBufferIdx;
+  int16_t mRdsfilterSize;
+
+  DSPFLOAT doMatchFiltering(DSPFLOAT);
+
+  BandPassIIR * mpSharpFilter;
+  DSPFLOAT mRdsLastSyncSlope;
+  DSPFLOAT mRdsLastSync;
+  DSPFLOAT mRdsLastData;
+  bool mPreviousBit;
+  DSPFLOAT * mSyncBuffer;
+  int16_t mSyncBuffPtrIdx;
+
   void synchronizeOnBitClk(DSPFLOAT *, int16_t);
 
 signals:

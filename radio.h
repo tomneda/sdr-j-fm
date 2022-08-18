@@ -254,11 +254,11 @@ public slots:
   void setGroup(int);
   void setPTYCode(int);
   void setPiCode(int);
-  void clearStationLabel();
+  //void clearStationLabel();
   void setStationLabel(const QString &);
-  void clearRadioText();
+  //void clearRadioText();
   void setRadioText(const QString &);
-  void setAFDisplay(int);
+  void setAFDisplay(int, int);
   void setRDSisSynchronized(bool);
   void setMusicSpeechFlag(int);
   void clearMusicSpeechFlag();

@@ -1047,11 +1047,11 @@ void RadioInterface::setTuner(int32_t n)
   if (myFMprocessor != nullptr)
   {
     myFMprocessor->set_localOscillator(LOFrequency);
-    myFMprocessor->resetRds();
 
     // redraw LF frequency only with bigger frequency steps, AFC will trigger this too, else
     if (vfo != vfoLast || std::abs(LOFrequency - loFrequencyLast) >= KHz(100))
     {
+      myFMprocessor->resetRds();
       myFMprocessor->triggerDrawNewLfSpectrum(); // any change in frequency, draw new LF spectrum immediately without averaging
     }
   }
@@ -1430,9 +1430,21 @@ void RadioInterface::setPTYCode(int n)
   //	rdsPTYDisplay	-> display (n);
 }
 
-void RadioInterface::setAFDisplay(int n)
+void RadioInterface::setAFDisplay(int n1, int n2)
 {
-  rdsAFDisplay->display(n);
+  if (n1 == 0 && n2 == 0) // reset constellation
+  {
+    rdsAF1Display->display(n1);
+    rdsAF2Display->display(n2);
+  }
+  else if (n1 > 0)
+  {
+    rdsAF1Display->display(n1);
+  }
+  else if (n2 > 0)
+  {
+    rdsAF2Display->display(n2);
+  }
 }
 
 void RadioInterface::setPiCode(int n)
@@ -1448,12 +1460,12 @@ void RadioInterface::setPiCode(int n)
   rdsPiDisplay->display(n);
 }
 
-void RadioInterface::clearStationLabel()
-{
-  StationLabel = QString("");
-  stationLabelTextBox->setText(StationLabel);
-}
-//
+//void RadioInterface::clearStationLabel()
+//{
+//  StationLabel = QString("");
+//  stationLabelTextBox->setText(StationLabel);
+//}
+
 void RadioInterface::setStationLabel(const QString &s)
 {
   stationLabelTextBox->setText(s);
@@ -1476,14 +1488,12 @@ void RadioInterface::clearMusicSpeechFlag()
   speechLabel->setText(QString(""));
 }
 
-void RadioInterface::clearRadioText()
-{
-  RadioText = QString("");
-  radioTextBox->setText(RadioText);
-}
-//
-//	Note that, although s is a "char *", it is not a C string,
-//	(no zero at the end)
+//void RadioInterface::clearRadioText()
+//{
+//  RadioText = QString("");
+//  radioTextBox->setText(RadioText);
+//}
+
 void RadioInterface::setRadioText(const QString &s)
 {
   radioTextBox->setText(s);
@@ -1539,9 +1549,12 @@ void RadioInterface::setfmRdsSelector(const QString &s)
   {
     return;
   }
-  rdsModus = (s == "RDS-1" ? rdsDecoder::ERdsMode::RDS1
-                           : (s == "RDS-2" ? rdsDecoder::ERdsMode::RDS2
-                                           : rdsDecoder::ERdsMode::NO_RDS));
+
+  if      (s == "RDS-1") rdsModus = rdsDecoder::ERdsMode::RDS1;
+  else if (s == "RDS-2") rdsModus = rdsDecoder::ERdsMode::RDS2;
+  else if (s == "RDS-3") rdsModus = rdsDecoder::ERdsMode::RDS3;
+  else                   rdsModus = rdsDecoder::ERdsMode::NO_RDS;
+
   myFMprocessor->setfmRdsSelector(rdsModus);
 }
 

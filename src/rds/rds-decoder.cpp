@@ -27,7 +27,7 @@
 #include "iir-filters.h"
 #include "sincos.h"
 
-const DSPFLOAT RDS_BITCLK_HZ = 1187.5;
+constexpr DSPFLOAT RDS_BITCLK_HZ = 1187.5;
 /*
  *	RDS is a bpsk-like signal, with a baudrate 1187.5
  *	on a carrier of  3 * 19 k.
@@ -37,30 +37,30 @@ const DSPFLOAT RDS_BITCLK_HZ = 1187.5;
  *	samples per bit.
  *	Notice that mixing to zero IF has been done
  */
-rdsDecoder::rdsDecoder(RadioInterface *myRadio, int32_t rate, SinCos *mySinCos)
+rdsDecoder::rdsDecoder(RadioInterface * iRadioIf, int32_t iRate, SinCos * ipSinCos)
 {
-  DSPFLOAT synchronizerSamples;
+  (void)ipSinCos;
+
   int16_t i;
   int16_t length;
 
-  this->MyRadioInterface = myRadio;
-  this->sampleRate = rate;
-  (void)mySinCos;
-  this->mySinCos = new SinCos(rate);
-  omegaRDS = (2 * M_PI * RDS_BITCLK_HZ) / (DSPFLOAT)rate;
+  mpRadioInterface = iRadioIf;
+  mSampleRate = iRate;
+  mpSinCos = new SinCos(iRate);
+  mOmegaRDS = (2 * M_PI * RDS_BITCLK_HZ) / (DSPFLOAT)iRate;
   //
   //	for the decoder a la FMStack we need:
-  synchronizerSamples = sampleRate / (DSPFLOAT)RDS_BITCLK_HZ;
-  symbolCeiling = ceil(synchronizerSamples);
-  symbolFloor = floor(synchronizerSamples);
-  syncBuffer = new DSPFLOAT[symbolCeiling];
-  memset(syncBuffer, 0, symbolCeiling * sizeof(DSPFLOAT));
-  p = 0;
-  bitIntegrator = 0;
-  bitClkPhase = 0;
-  prev_clkState = 0;
-  prevBit = 0;
-  Resync = true;
+  const DSPFLOAT synchronizerSamples = mSampleRate / (DSPFLOAT)RDS_BITCLK_HZ;
+  mSymbolCeiling = ceil(synchronizerSamples);
+  mSymbolFloor = floor(synchronizerSamples);
+  mSyncBuffer = new DSPFLOAT[mSymbolCeiling];
+  memset(mSyncBuffer, 0, mSymbolCeiling * sizeof(DSPFLOAT));
+  mSyncBuffPtrIdx = 0;
+  mBitIntegrator = 0;
+  mBitClkPhase = 0;
+  mPrev_clkState = 0;
+  mPrevBit = 0;
+  mResync = true;
   //
   //	The matched filter is a borrowed from the cuteRDS, who in turn
   //	borrowed it from course material
@@ -68,71 +68,71 @@ rdsDecoder::rdsDecoder(RadioInterface *myRadio, int32_t rate, SinCos *mySinCos)
   //	Note that the formula down has a discontinuity for
   //	two values of x, we better make the symbollength odd
 
-  length = (symbolCeiling & ~01) + 1;
-  rdsfilterSize = 2 * length + 1;
-  rdsBuffer = new DSPFLOAT[rdsfilterSize];
-  memset(rdsBuffer, 0, rdsfilterSize * sizeof(DSPFLOAT));
-  ip = 0;
-  rdsKernel = new DSPFLOAT[rdsfilterSize];
-  rdsKernel[length] = 0;
+  length = (mSymbolCeiling & ~01) + 1;
+  mRdsfilterSize = 2 * length + 1;
+  mpRdsBuffer = new DSPFLOAT[mRdsfilterSize];
+  memset(mpRdsBuffer, 0, mRdsfilterSize * sizeof(DSPFLOAT));
+  mCurRdsBufferIdx = 0;
+  mpRdsKernel = new DSPFLOAT[mRdsfilterSize];
+  mpRdsKernel[length] = 0;
   for (i = 1; i <= length; i++)
   {
-    DSPFLOAT x = ((DSPFLOAT)i) / rate * RDS_BITCLK_HZ;
-    rdsKernel[length + i] = 0.75 * cos(4 * M_PI * x) * ((1.00 / (1.0 / x - 64 * x)) - ((1.00 / (9.0 / x - 64 * x))));
-    rdsKernel[length - i] = -0.75 * cos(4 * M_PI * x) * ((1.00 / (1.0 / x - 64 * x)) - ((1.00 / (9.0 / x - 64 * x))));
+    DSPFLOAT x = ((DSPFLOAT)i) / iRate * RDS_BITCLK_HZ;
+    mpRdsKernel[length + i] =  0.75 * cos(4 * M_PI * x) * ((1.00 / (1.0 / x - 64 * x)) - ((1.00 / (9.0 / x - 64 * x))));
+    mpRdsKernel[length - i] = -mpRdsKernel[length + i];
   }
-  //
+
   //	The matched filter is followed by a pretty sharp filter
   //	to eliminate all remaining "noise".
-  sharpFilter = new BandPassIIR(9, RDS_BITCLK_HZ - 6, RDS_BITCLK_HZ + 6, rate, S_BUTTERWORTH);
-  rdsLastSyncSlope = 0;
-  rdsLastSync = 0;
-  rdsLastData = 0;
-  previousBit = false;
+  mpSharpFilter = new BandPassIIR(9, RDS_BITCLK_HZ - 6, RDS_BITCLK_HZ + 6, iRate, S_BUTTERWORTH);
+  mRdsLastSyncSlope = 0;
+  mRdsLastSync = 0;
+  mRdsLastData = 0;
+  mPreviousBit = false;
 
-  my_rdsGroup = new RDSGroup();
-  my_rdsGroup->clear();
-  my_rdsBlockSync = new rdsBlockSynchronizer(MyRadioInterface);
-  my_rdsBlockSync->setFecEnabled(true);
-  my_rdsGroupDecoder = new rdsGroupDecoder(MyRadioInterface);
+  mpRdsGroup = new RDSGroup();
+  mpRdsGroup->clear();
+  mpRdsBlockSync = new rdsBlockSynchronizer(mpRadioInterface);
+  mpRdsBlockSync->setFecEnabled(true);
+  mpRdsGroupDecoder = new rdsGroupDecoder(mpRadioInterface);
 
-  connect(this, SIGNAL(setCRCErrors(int)), MyRadioInterface, SLOT(setCRCErrors(int)));
-  connect(this, SIGNAL(setSyncErrors(int)), MyRadioInterface, SLOT(setSyncErrors(int)));
+  connect(this, SIGNAL(setCRCErrors(int)), mpRadioInterface, SLOT(setCRCErrors(int)));
+  connect(this, SIGNAL(setSyncErrors(int)), mpRadioInterface, SLOT(setSyncErrors(int)));
 }
 
 rdsDecoder::~rdsDecoder(void)
 {
-  delete[] syncBuffer;
-  delete my_rdsGroupDecoder;
-  delete my_rdsGroup;
-  delete my_rdsBlockSync;
-  delete rdsKernel;
-  delete rdsBuffer;
-  delete sharpFilter;
+  delete[] mSyncBuffer;
+  delete mpRdsGroupDecoder;
+  delete mpRdsGroup;
+  delete mpRdsBlockSync;
+  delete mpRdsKernel;
+  delete mpRdsBuffer;
+  delete mpSharpFilter;
 }
 
-void rdsDecoder::reset(void)
-{
-  my_rdsGroupDecoder->reset();
-}
+void rdsDecoder::reset(void) { mpRdsGroupDecoder->reset(); }
 
-DSPFLOAT rdsDecoder::Match(DSPFLOAT v)
+DSPFLOAT rdsDecoder::doMatchFiltering(DSPFLOAT v)
 {
-  int16_t i;
   DSPFLOAT tmp = 0;
 
-  rdsBuffer[ip] = v;
-  for (i = 0; i < rdsfilterSize; i++)
+  mpRdsBuffer[mCurRdsBufferIdx] = v;
+
+  for (int16_t i = 0; i < mRdsfilterSize; i++)
   {
-    int16_t index = (ip - i);
+    int16_t index = (mCurRdsBufferIdx - i); // read data backwards from current position
+
     if (index < 0)
     {
-      index += rdsfilterSize;
+      index += mRdsfilterSize; // wrap around index
     }
-    tmp += rdsBuffer[index] * rdsKernel[i];
+
+    tmp += mpRdsBuffer[index] * mpRdsKernel[i];
   }
 
-  ip = (ip + 1) % rdsfilterSize;
+  mCurRdsBufferIdx = (mCurRdsBufferIdx + 1) % mRdsfilterSize;
+
   return tmp;
 }
 /*
@@ -140,7 +140,7 @@ DSPFLOAT rdsDecoder::Match(DSPFLOAT v)
  *	when entering this stage. The return value stored in "*m" is used
  *	to display things to the user
  */
-void rdsDecoder::doDecode(DSPFLOAT v, DSPFLOAT *m, ERdsMode mode)
+void rdsDecoder::doDecode(const DSPFLOAT v, DSPFLOAT * const m, const ERdsMode mode)
 {
   if (mode == ERdsMode::NO_RDS)
   {
@@ -157,87 +157,82 @@ void rdsDecoder::doDecode(DSPFLOAT v, DSPFLOAT *m, ERdsMode mode)
   }
 }
 
-void rdsDecoder::doDecode1(DSPFLOAT v, DSPFLOAT *m)
+void rdsDecoder::doDecode1(const DSPFLOAT v, DSPFLOAT * const m)
 {
-  DSPFLOAT rdsMag;
-  DSPFLOAT rdsSlope = 0;
-  bool bit;
+  const DSPFLOAT vMF = doMatchFiltering(v);
+  const DSPFLOAT rdsMag = mpSharpFilter->Pass(vMF * vMF);
+  *m = 20*rdsMag;
+  //*m = (20 * rdsMag + 1.0);
+  const DSPFLOAT rdsSlope = rdsMag - mRdsLastSync;
+  mRdsLastSync = rdsMag;
 
-  v = Match(v);
-  rdsMag = sharpFilter->Pass(v * v);
-  *m = (20 * rdsMag + 1.0);
-  rdsSlope = rdsMag - rdsLastSync;
-  rdsLastSync = rdsMag;
-
-  if ((rdsSlope < 0.0) && (rdsLastSyncSlope >= 0.0))
+  if ((rdsSlope < 0.0) && (mRdsLastSyncSlope >= 0.0))
   {
     //	top of the sine wave: get the data
-    bit = rdsLastData >= 0;
-    processBit(bit ^ previousBit);
-    previousBit = bit;
+    const bool bit = mRdsLastData >= 0;
+    processBit(bit ^ mPreviousBit);
+    //*m = (bit ^ mPreviousBit ? 0.5 : -0.5);
+    mPreviousBit = bit;
   }
 
-  rdsLastData = v;
-  rdsLastSyncSlope = rdsSlope;
-  my_rdsBlockSync->resetResyncErrorCounter();
+  mRdsLastData = v;
+  mRdsLastSyncSlope = rdsSlope;
+  mpRdsBlockSync->resetResyncErrorCounter();
 }
 
-void rdsDecoder::doDecode2(DSPFLOAT v, DSPFLOAT *mag)
+void rdsDecoder::doDecode2(const DSPFLOAT v, DSPFLOAT * const m)
 {
-  DSPFLOAT clkState;
+  mSyncBuffer[mSyncBuffPtrIdx] = v;
+  //*m = mSyncBuffer[mSyncBuffPtrIdx] + 1;
+  mSyncBuffPtrIdx = (mSyncBuffPtrIdx + 1) % mSymbolCeiling;
+  //v = mSyncBuffer[mSyncBuffPtrIdx];   // an old one
 
-  syncBuffer[p] = v;
-  *mag = syncBuffer[p] + 1;
-  p = (p + 1) % symbolCeiling;
-  v = syncBuffer[p];   // an old one
-
-  if (Resync || (my_rdsBlockSync->getNumSyncErrors() > 3))
+  if (mResync || (mpRdsBlockSync->getNumSyncErrors() > 3))
   {
-    synchronizeOnBitClk(syncBuffer, p);
-    my_rdsBlockSync->resync();
-    my_rdsBlockSync->resetResyncErrorCounter();
-    Resync = false;
+    synchronizeOnBitClk(mSyncBuffer, mSyncBuffPtrIdx);
+    mpRdsBlockSync->resync();
+    mpRdsBlockSync->resetResyncErrorCounter();
+    mResync = false;
   }
 
-  clkState = mySinCos->getSin(bitClkPhase);
-  bitIntegrator += v * clkState;
+  const DSPFLOAT clkState = mpSinCos->getSin(mBitClkPhase);
+  mBitIntegrator += v * clkState;
+  *m = mBitIntegrator;
 
   //	rising edge -> look at integrator
-  if (prev_clkState <= 0 && clkState > 0)
+  if (mPrev_clkState <= 0 && clkState > 0)
   {
-    bool currentBit = bitIntegrator >= 0;
-    processBit(currentBit ^ previousBit);
-    bitIntegrator = 0;   // we start all over
-    previousBit = currentBit;
+    bool currentBit = mBitIntegrator >= 0;
+    processBit(currentBit ^ mPreviousBit);
+    mBitIntegrator = 0;   // we start all over
+    mPreviousBit = currentBit;
   }
 
-  prev_clkState = clkState;
-  bitClkPhase = fmod(bitClkPhase + omegaRDS, 2 * M_PI);
+  mPrev_clkState = clkState;
+  mBitClkPhase = fmod(mBitClkPhase + mOmegaRDS, 2 * M_PI);
 }
 
 void rdsDecoder::processBit(bool bit)
 {
-  switch (my_rdsBlockSync->pushBit(bit, my_rdsGroup))
+  switch (mpRdsBlockSync->pushBit(bit, mpRdsGroup))
   {
-  case rdsBlockSynchronizer::RDS_WAITING_FOR_BLOCK_A:
-    break;   // still waiting in block A
+  case rdsBlockSynchronizer::RDS_WAITING_FOR_BLOCK_A: break;   // still waiting in block A
 
-  case rdsBlockSynchronizer::RDS_BUFFERING:
-    break;   // just buffer
+  case rdsBlockSynchronizer::RDS_BUFFERING: break;   // just buffer
 
   case rdsBlockSynchronizer::RDS_NO_SYNC:
     //	      resync if the last sync failed
-    setSyncErrors(my_rdsBlockSync->getNumSyncErrors());
-    my_rdsBlockSync->resync();
+    setSyncErrors(mpRdsBlockSync->getNumSyncErrors());
+    mpRdsBlockSync->resync();
     break;
 
   case rdsBlockSynchronizer::RDS_NO_CRC:
-    setCRCErrors(my_rdsBlockSync->getNumCRCErrors());
-    my_rdsBlockSync->resync();
+    setCRCErrors(mpRdsBlockSync->getNumCRCErrors());
+    mpRdsBlockSync->resync();
     break;
 
   case rdsBlockSynchronizer::RDS_COMPLETE_GROUP:
-    if (!my_rdsGroupDecoder->decode(my_rdsGroup))
+    if (!mpRdsGroupDecoder->decode(mpRdsGroup))
     {
       ;   // error decoding the rds group
     }
@@ -247,53 +242,51 @@ void rdsDecoder::processBit(bool bit)
   }
 }
 
-void rdsDecoder::synchronizeOnBitClk(DSPFLOAT *v, int16_t first)
+void rdsDecoder::synchronizeOnBitClk(DSPFLOAT * v, int16_t first)
 {
   bool isHigh = false;
   int32_t k = 0;
-  int32_t i;
-  DSPFLOAT phase;
-  DSPFLOAT *correlationVector = (DSPFLOAT *)alloca(symbolCeiling * sizeof(DSPFLOAT));
+  DSPFLOAT * const correlationVector = (DSPFLOAT *)alloca(mSymbolCeiling * sizeof(DSPFLOAT));
 
-  memset(correlationVector, 0, symbolCeiling * sizeof(DSPFLOAT));
+  memset(correlationVector, 0, mSymbolCeiling * sizeof(DSPFLOAT));
 
   //	synchronizerSamples	= sampleRate / (DSPFLOAT)RDS_BITCLK_HZ;
-  for (i = 0; i < symbolCeiling; i++)
+  for (int32_t i = 0; i < mSymbolCeiling; i++)
   {
-    phase = fmod(i * (omegaRDS / 2), 2 * M_PI);
+    const DSPFLOAT phase = fmod(i * (mOmegaRDS / 2), 2 * M_PI);
     //	reset index on phase change
-    if (mySinCos->getSin(phase) > 0 && !isHigh)
+    if (mpSinCos->getSin(phase) > 0 && !isHigh)
     {
       isHigh = true;
       k = 0;
     }
-    else if (mySinCos->getSin(phase) < 0 && isHigh)
+    else if (mpSinCos->getSin(phase) < 0 && isHigh)
     {
       isHigh = false;
       k = 0;
     }
 
-    correlationVector[k++] += v[(first + i) % symbolCeiling];
+    correlationVector[k++] += v[(first + i) % mSymbolCeiling];
   }
 
   //	detect rising edge in correlation window
   int32_t iMin = 0;
 
-  while (iMin < symbolFloor && correlationVector[iMin++] > 0)
+  while (iMin < mSymbolFloor && correlationVector[iMin++] > 0)
   {
     ;
   }
 
-  while (iMin < symbolFloor && correlationVector[iMin++] < 0)
+  while (iMin < mSymbolFloor && correlationVector[iMin++] < 0)
   {
     ;
   }
 
   //	set the phase, previous sample (iMin - 1) is obviously the one
-  bitClkPhase = fmod(-omegaRDS * (iMin - 1), 2 * M_PI);
+  mBitClkPhase = fmod(-mOmegaRDS * (iMin - 1), 2 * M_PI);
 
-  while (bitClkPhase < 0)
+  while (mBitClkPhase < 0)
   {
-    bitClkPhase += 2 * M_PI;
+    mBitClkPhase += 2 * M_PI;
   }
 }

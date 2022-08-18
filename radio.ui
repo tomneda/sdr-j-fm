@@ -11,7 +11,7 @@
     <x>0</x>
     <y>0</y>
     <width>1242</width>
-    <height>759</height>
+    <height>749</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -53,7 +53,7 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_7">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,1,1,3,2,0,16,0,2">
          <item>
           <widget class="QLCDNumber" name="lcd_inputRate">
            <property name="palette">
@@ -226,7 +226,28 @@
           </widget>
          </item>
          <item>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
           <widget class="QLabel" name="stationLabelTextBox">
+           <property name="font">
+            <font>
+             <family>Consolas</family>
+             <pointsize>12</pointsize>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
            <property name="frameShape">
             <enum>QFrame::Panel</enum>
            </property>
@@ -237,12 +258,27 @@
             <number>2</number>
            </property>
            <property name="text">
-            <string/>
+            <string>STATIONS</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="Line" name="line_3">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QLabel" name="radioTextBox">
+           <property name="font">
+            <font>
+             <family>Consolas</family>
+             <pointsize>12</pointsize>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
            <property name="frameShape">
             <enum>QFrame::Panel</enum>
            </property>
@@ -250,7 +286,14 @@
             <enum>QFrame::Raised</enum>
            </property>
            <property name="text">
-            <string/>
+            <string>123456789A123456789B123456789C123456789D123456789E123456789F1234</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="Line" name="line_4">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
            </property>
           </widget>
          </item>
@@ -1182,7 +1225,7 @@
                  </property>
                  <item>
                   <property name="text">
-                   <string>no rds</string>
+                   <string>No RDS</string>
                   </property>
                  </item>
                  <item>
@@ -1193,6 +1236,11 @@
                  <item>
                   <property name="text">
                    <string>RDS-2</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>RDS-3</string>
                   </property>
                  </item>
                 </widget>
@@ -1436,142 +1484,6 @@
              </item>
              <item>
               <layout class="QGridLayout" name="gridLayout">
-               <item row="0" column="0" colspan="2">
-                <widget class="QPushButton" name="dumpButton">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dump the incoming data stream into a file. Touching the button will cause a menu to appear with which a file(name) may be selected. Touching the button while dumping will close the file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="text">
-                  <string>inputDump</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="2" colspan="3">
-                <widget class="QPushButton" name="audioDump">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Write the audio as received into a file. Touching the button will cause a menu to appear with which a file(name) may be selected. Touching the button while writing, will cause the file to be closed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="text">
-                  <string>audioDump</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="5" colspan="3">
-                <widget class="QComboBox" name="logging">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Log some data of the received signal.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <item>
-                  <property name="text">
-                   <string>log off</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>log 1 sec</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>log 2 sec</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>log 3 sec</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>log 4 sec</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>log 5 sec</string>
-                  </property>
-                 </item>
-                </widget>
-               </item>
-               <item row="0" column="8">
-                <widget class="QPushButton" name="logSaving">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save the log (button left) to a file. A menu will appear, allowing selecting a file. Pressing the button while saving will close the file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="text">
-                  <string>Save Log</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0" colspan="3">
-                <widget class="QPushButton" name="freqButton">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Frequency selection is in a separate window, where  keypad is shown after touching this button. Type in the desired frequency in either kHz or mHz. As soon as the Khz or Mhz button is&lt;/p&gt;&lt;p&gt;touched the frequency is considered selected.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="text">
-                  <string>Select Frequency</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="3" colspan="3">
-                <widget class="QLCDNumber" name="lcd_Frequency">
-                 <property name="font">
-                  <font>
-                   <pointsize>24</pointsize>
-                   <weight>75</weight>
-                   <bold>true</bold>
-                  </font>
-                 </property>
-                 <property name="autoFillBackground">
-                  <bool>false</bool>
-                 </property>
-                 <property name="frameShape">
-                  <enum>QFrame::Box</enum>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
-                 </property>
-                 <property name="lineWidth">
-                  <number>2</number>
-                 </property>
-                 <property name="digitCount">
-                  <number>6</number>
-                 </property>
-                 <property name="segmentStyle">
-                  <enum>QLCDNumber::Flat</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="6" colspan="3">
-                <widget class="QPushButton" name="freqSave">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save the current frequency and give it a name.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="text">
-                  <string>Save Frequency</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="0">
-                <widget class="QPushButton" name="f_minus">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Decrease the frequency with the amount specified in the selector below.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="text">
-                  <string>f-</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="1" colspan="3">
-                <widget class="QPushButton" name="fc_minus">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Scan downwards with frequency steps as specified (in Khz) below, in the range specified.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="text">
-                  <string>fc-</string>
-                 </property>
-                </widget>
-               </item>
                <item row="2" column="4">
                 <widget class="QLabel" name="incrementingFlag">
                  <property name="frameShape">
@@ -1585,6 +1497,13 @@
                  </property>
                 </widget>
                </item>
+               <item row="4" column="5" colspan="2">
+                <widget class="QLabel" name="label_3">
+                 <property name="text">
+                  <string>Biterror rate</string>
+                 </property>
+                </widget>
+               </item>
                <item row="2" column="5" colspan="2">
                 <widget class="QPushButton" name="fc_plus">
                  <property name="toolTip">
@@ -1595,139 +1514,13 @@
                  </property>
                 </widget>
                </item>
-               <item row="2" column="7" colspan="2">
-                <widget class="QPushButton" name="f_plus">
+               <item row="0" column="0" colspan="2">
+                <widget class="QPushButton" name="dumpButton">
                  <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Increment the frequency with the stepsize as given below (in Khz).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dump the incoming data stream into a file. Touching the button will cause a menu to appear with which a file(name) may be selected. Touching the button while dumping will close the file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="text">
-                  <string>f+</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0" colspan="3">
-                <widget class="QSpinBox" name="minimumSelect">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                   <weight>50</weight>
-                   <bold>false</bold>
-                  </font>
-                 </property>
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Specifiy the lower band for the scanner function.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="buttonSymbols">
-                  <enum>QAbstractSpinBox::UpDownArrows</enum>
-                 </property>
-                 <property name="maximum">
-                  <number>1700</number>
-                 </property>
-                 <property name="value">
-                  <number>86</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="3" colspan="3">
-                <widget class="QSpinBox" name="fm_increment">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Specify the stepsize of the buttons above (in Khz).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="maximum">
-                  <number>1000</number>
-                 </property>
-                 <property name="singleStep">
-                  <number>100</number>
-                 </property>
-                 <property name="value">
-                  <number>100</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="6" colspan="3">
-                <widget class="QSpinBox" name="maximumSelect">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                   <weight>50</weight>
-                   <bold>false</bold>
-                  </font>
-                 </property>
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Specify the upper bound for the scan function (in Mhz).&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="maximum">
-                  <number>1700</number>
-                 </property>
-                 <property name="value">
-                  <number>110</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="0">
-                <widget class="QLabel" name="label_2">
-                 <property name="text">
-                  <string>Sync errors</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="2" colspan="2">
-                <widget class="QLCDNumber" name="syncErrors">
-                 <property name="palette">
-                  <palette>
-                   <active>
-                    <colorrole role="Window">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>255</red>
-                       <green>255</green>
-                       <blue>0</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </active>
-                   <inactive>
-                    <colorrole role="Window">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>255</red>
-                       <green>255</green>
-                       <blue>0</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </inactive>
-                   <disabled>
-                    <colorrole role="Window">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>255</red>
-                       <green>255</green>
-                       <blue>0</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </disabled>
-                  </palette>
-                 </property>
-                 <property name="autoFillBackground">
-                  <bool>false</bool>
-                 </property>
-                 <property name="frameShape">
-                  <enum>QFrame::NoFrame</enum>
-                 </property>
-                 <property name="digitCount">
-                  <number>3</number>
-                 </property>
-                 <property name="segmentStyle">
-                  <enum>QLCDNumber::Flat</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="5" colspan="2">
-                <widget class="QLabel" name="label_3">
-                 <property name="text">
-                  <string>Biterror rate</string>
+                  <string>inputDump</string>
                  </property>
                 </widget>
                </item>
@@ -1784,13 +1577,6 @@
                  </property>
                 </widget>
                </item>
-               <item row="5" column="0">
-                <widget class="QLabel" name="label">
-                 <property name="text">
-                  <string>CRC errors</string>
-                 </property>
-                </widget>
-               </item>
                <item row="5" column="2" colspan="2">
                 <widget class="QLCDNumber" name="crcErrors">
                  <property name="palette">
@@ -1844,10 +1630,355 @@
                  </property>
                 </widget>
                </item>
+               <item row="3" column="0" colspan="3">
+                <widget class="QSpinBox" name="minimumSelect">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                   <weight>50</weight>
+                   <bold>false</bold>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Specifiy the lower band for the scanner function.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="buttonSymbols">
+                  <enum>QAbstractSpinBox::UpDownArrows</enum>
+                 </property>
+                 <property name="maximum">
+                  <number>1700</number>
+                 </property>
+                 <property name="value">
+                  <number>86</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="3" colspan="3">
+                <widget class="QSpinBox" name="fm_increment">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Specify the stepsize of the buttons above (in Khz).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="maximum">
+                  <number>1000</number>
+                 </property>
+                 <property name="singleStep">
+                  <number>100</number>
+                 </property>
+                 <property name="value">
+                  <number>100</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="3" colspan="3">
+                <widget class="QLCDNumber" name="lcd_Frequency">
+                 <property name="font">
+                  <font>
+                   <pointsize>24</pointsize>
+                   <weight>75</weight>
+                   <bold>true</bold>
+                  </font>
+                 </property>
+                 <property name="autoFillBackground">
+                  <bool>false</bool>
+                 </property>
+                 <property name="frameShape">
+                  <enum>QFrame::Box</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Raised</enum>
+                 </property>
+                 <property name="lineWidth">
+                  <number>2</number>
+                 </property>
+                 <property name="digitCount">
+                  <number>6</number>
+                 </property>
+                 <property name="segmentStyle">
+                  <enum>QLCDNumber::Flat</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="6" colspan="3">
+                <widget class="QSpinBox" name="maximumSelect">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                   <weight>50</weight>
+                   <bold>false</bold>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Specify the upper bound for the scan function (in Mhz).&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="maximum">
+                  <number>1700</number>
+                 </property>
+                 <property name="value">
+                  <number>110</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="0" colspan="4">
+                <widget class="QLabel" name="systemindicator">
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                   <weight>50</weight>
+                   <bold>false</bold>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Last GIT commit SHA1&lt;/p&gt;&lt;p&gt;Copyright (C) 2016, Jan van Katwijk (J.vanKatwijk@gmail.com), Lazy Chair Programming&lt;/p&gt;&lt;p&gt;sdr-j-fm is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="frameShape">
+                  <enum>QFrame::Panel</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Raised</enum>
+                 </property>
+                 <property name="lineWidth">
+                  <number>2</number>
+                 </property>
+                 <property name="text">
+                  <string>fm software</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" colspan="3">
+                <widget class="QPushButton" name="freqButton">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Frequency selection is in a separate window, where  keypad is shown after touching this button. Type in the desired frequency in either kHz or mHz. As soon as the Khz or Mhz button is&lt;/p&gt;&lt;p&gt;touched the frequency is considered selected.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string>Select Frequency</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="6" colspan="3">
+                <widget class="QPushButton" name="freqSave">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save the current frequency and give it a name.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string>Save Frequency</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="5" colspan="3">
+                <widget class="QComboBox" name="logging">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Log some data of the received signal.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>log off</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>log 1 sec</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>log 2 sec</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>log 3 sec</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>log 4 sec</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>log 5 sec</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item row="4" column="2" colspan="2">
+                <widget class="QLCDNumber" name="syncErrors">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="Window">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>255</red>
+                       <green>255</green>
+                       <blue>0</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="Window">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>255</red>
+                       <green>255</green>
+                       <blue>0</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="Window">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>255</red>
+                       <green>255</green>
+                       <blue>0</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
+                 </property>
+                 <property name="autoFillBackground">
+                  <bool>false</bool>
+                 </property>
+                 <property name="frameShape">
+                  <enum>QFrame::NoFrame</enum>
+                 </property>
+                 <property name="digitCount">
+                  <number>3</number>
+                 </property>
+                 <property name="segmentStyle">
+                  <enum>QLCDNumber::Flat</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QPushButton" name="f_minus">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Decrease the frequency with the amount specified in the selector below.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string>f-</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="7" colspan="2">
+                <widget class="QPushButton" name="f_plus">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Increment the frequency with the stepsize as given below (in Khz).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string>f+</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="5">
+                <widget class="QLabel" name="label_11">
+                 <property name="text">
+                  <string>AF</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="7" colspan="2">
+                <widget class="QLCDNumber" name="rdsAF2Display">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="Window">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>255</red>
+                       <green>255</green>
+                       <blue>0</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="Window">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>255</red>
+                       <green>255</green>
+                       <blue>0</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="Window">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>255</red>
+                       <green>255</green>
+                       <blue>0</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
+                 </property>
+                 <property name="autoFillBackground">
+                  <bool>false</bool>
+                 </property>
+                 <property name="frameShape">
+                  <enum>QFrame::NoFrame</enum>
+                 </property>
+                 <property name="segmentStyle">
+                  <enum>QLCDNumber::Flat</enum>
+                 </property>
+                </widget>
+               </item>
                <item row="5" column="5">
                 <widget class="QLabel" name="label_6">
                  <property name="text">
                   <string>PiCode</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1" colspan="3">
+                <widget class="QPushButton" name="fc_minus">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Scan downwards with frequency steps as specified (in Khz) below, in the range specified.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string>fc-</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="0">
+                <widget class="QLabel" name="label_2">
+                 <property name="text">
+                  <string>Sync errors</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="0">
+                <widget class="QLabel" name="label">
+                 <property name="text">
+                  <string>CRC errors</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="2" colspan="3">
+                <widget class="QPushButton" name="audioDump">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Write the audio as received into a file. Touching the button will cause a menu to appear with which a file(name) may be selected. Touching the button while writing, will cause the file to be closed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string>audioDump</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="8">
+                <widget class="QPushButton" name="logSaving">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save the log (button left) to a file. A menu will appear, allowing selecting a file. Pressing the button while saving will close the file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string>Save Log</string>
                  </property>
                 </widget>
                </item>
@@ -1904,15 +2035,8 @@
                  </property>
                 </widget>
                </item>
-               <item row="6" column="5">
-                <widget class="QLabel" name="label_11">
-                 <property name="text">
-                  <string>AF</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="6" column="7" colspan="2">
-                <widget class="QLCDNumber" name="rdsAFDisplay">
+               <item row="6" column="6">
+                <widget class="QLCDNumber" name="rdsAF1Display">
                  <property name="palette">
                   <palette>
                    <active>
@@ -1958,32 +2082,6 @@
                  </property>
                  <property name="segmentStyle">
                   <enum>QLCDNumber::Flat</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="6" column="0" colspan="4">
-                <widget class="QLabel" name="systemindicator">
-                 <property name="font">
-                  <font>
-                   <pointsize>10</pointsize>
-                   <weight>50</weight>
-                   <bold>false</bold>
-                  </font>
-                 </property>
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Last GIT commit SHA1&lt;/p&gt;&lt;p&gt;Copyright (C) 2016, Jan van Katwijk (J.vanKatwijk@gmail.com), Lazy Chair Programming&lt;/p&gt;&lt;p&gt;sdr-j-fm is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="frameShape">
-                  <enum>QFrame::Panel</enum>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
-                 </property>
-                 <property name="lineWidth">
-                  <number>2</number>
-                 </property>
-                 <property name="text">
-                  <string>fm software</string>
                  </property>
                 </widget>
                </item>

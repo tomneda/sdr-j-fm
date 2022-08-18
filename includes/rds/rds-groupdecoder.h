@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2014
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -8,14 +7,14 @@
  *    a rewrite and local adaptation of FMSTACK software
  *    Technical University of Munich, Institute for Integrated Systems (LIS)
  *    FMSTACK Copyright (C) 2010 Michael Feilen
- * 
+ *
  *    Author(s)       : Michael Feilen (michael.feilen@tum.de)
  *    Initial release : 01.09.2009
  *    Last changed    : 09.03.2010
- * 
+ *
  *    This file is part of the SDR-J.
  *    Many of the ideas as implemented in SDR-J are derived from
- *    other work, made available through the GNU general Public License. 
+ *    other work, made available through the GNU general Public License.
  *    All copyrights of the original authors are recognized.
  *
  *    SDR-J is free software; you can redistribute it and/or modify
@@ -33,74 +32,74 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef	__RDS_GROUP_DECODER
-#define	__RDS_GROUP_DECODER
+#ifndef __RDS_GROUP_DECODER
+#define __RDS_GROUP_DECODER
 
-#include	<QObject>
-#include	"fm-constants.h"
-#include	"rds-group.h"
+#include <QObject>
+#include "rds-group.h"
 
-class	RadioInterface;
+class RadioInterface;
 
-class	rdsGroupDecoder : public QObject {
-Q_OBJECT
+class rdsGroupDecoder : public QObject
+{
+  Q_OBJECT
+
 public:
-	rdsGroupDecoder		(RadioInterface *);
-	~rdsGroupDecoder	(void);
-bool	decode			(RDSGroup *);
-void	reset			(void);
+  rdsGroupDecoder(RadioInterface *);
+  ~rdsGroupDecoder(void);
 
-//	group 1 constants
-//
-static const uint32_t NUMBER_OF_NAME_SEGMENTS	= 4;
-static const uint32_t STATION_LABEL_SEGMENT_SIZE = 2;
-static const uint32_t STATION_LABEL_LENGTH =
-          NUMBER_OF_NAME_SEGMENTS * STATION_LABEL_SEGMENT_SIZE;
+  bool decode(RDSGroup *);
+  void reset(void);
 
-//	Group 2 constants 
-static const uint32_t NUM_CHARS_PER_RTXT_SEGMENT	= 4;
-static const uint32_t NUM_OF_FRAGMENTS			= 16;
-static const uint32_t NUM_OF_CHARS_RADIOTEXT = 
-	        NUM_CHARS_PER_RTXT_SEGMENT * NUM_OF_FRAGMENTS;
+  //	group 1 constants
+  static const uint32_t NUMBER_OF_NAME_SEGMENTS = 4;
+  static const uint32_t STATION_LABEL_SEGMENT_SIZE = 2;
+  static const uint32_t STATION_LABEL_LENGTH = NUMBER_OF_NAME_SEGMENTS * STATION_LABEL_SEGMENT_SIZE;
 
-static const char END_OF_RADIO_TEXT		= 0x0D;
+  //	Group 2 constants
+  static const uint32_t NUM_CHARS_PER_RTXT_SEGMENT = 4;
+  static const uint32_t NUM_OF_FRAGMENTS = 16;
+  static const uint32_t NUM_OF_CHARS_RADIOTEXT = NUM_CHARS_PER_RTXT_SEGMENT * NUM_OF_FRAGMENTS;
+
+  static const char END_OF_RADIO_TEXT = 0x0D;
 
 private:
-	RadioInterface	*MyRadioInterface;
+  RadioInterface * MyRadioInterface;
 
-	void		Handle_Basic_Tuning_and_Switching (RDSGroup *);
-	void		Handle_RadioText		  (RDSGroup *);
-	void		Handle_Time_and_Date		  (RDSGroup *);
-	void		addtoStationLabel	(uint32_t, uint32_t);
-	void		additionalFrequencies	(uint16_t);
-	void		addtoRadioText		(uint16_t, uint16_t, uint16_t);
-	void		prepareText		(char *, int16_t);
-	uint32_t	m_piCode;
-	uint8_t		theAlfabet;
-	bool		alfabetSwitcher		(uint8_t, uint8_t);
-	uint8_t		setAlfabetTo		(uint8_t, uint8_t);
-	uint8_t		applyAlfabet 		(uint8_t, uint8_t);
+  void Handle_Basic_Tuning_and_Switching(RDSGroup *);
+  void Handle_RadioText(RDSGroup *);
+  void Handle_Time_and_Date(RDSGroup *);
+  void addtoStationLabel(uint32_t, uint32_t);
+  void additionalFrequencies(uint16_t);
+  void addtoRadioText(uint16_t, uint16_t, uint16_t);
+  void filterAndSetRadioText(char *, int16_t);
+  uint32_t m_piCode;
+  uint8_t theAlfabet;
+  bool alfabetSwitcher(uint8_t, uint8_t);
+  uint8_t setAlfabetTo(uint8_t, uint8_t);
+  uint8_t applyAlfabet(uint8_t, uint8_t);
 
-//	Group 1 members
-	char   stationLabel [STATION_LABEL_LENGTH + 1];
-	int8_t   m_grp1_diCode;
-	uint32_t stationNameSegmentRegister;
+  //	Group 1 members
+  char stationLabel[STATION_LABEL_LENGTH + 1];
+  int8_t m_grp1_diCode;
+  uint32_t stationNameSegmentRegister;
 
-//	Group 2 members 
-	uint32_t textSegmentRegister;
-	int32_t  textABflag;
-	char   textBuffer [NUM_OF_CHARS_RADIOTEXT];
+  //	Group 2 members
+  uint32_t textSegmentRegister;
+  int32_t textABflag;
+  char textBuffer[NUM_OF_CHARS_RADIOTEXT+1];
+
 signals:
-	void	setGroup		(int);
-	void	setPTYCode		(int);
-	void	setMusicSpeechFlag	(int);
-	void	clearMusicSpeechFlag	(void);
-	void	setPiCode		(int);
-	void	clearStationLabel	(void);
-	void	setStationLabel		(const QString &);
-	void	clearRadioText		(void);
-	void	setRadioText		(const QString &);
-	void	setAFDisplay		(int);
+  void setGroup(int);
+  void setPTYCode(int);
+  void setMusicSpeechFlag(int);
+  void clearMusicSpeechFlag(void);
+  void setPiCode(int);
+  //void clearStationLabel(void);
+  void setStationLabel(const QString &);
+  //void clearRadioText(void);
+  void setRadioText(const QString &);
+  void setAFDisplay(int, int);
 };
 
 #endif

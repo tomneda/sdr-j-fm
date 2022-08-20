@@ -39,4 +39,7 @@ in radio.cpp for this.
 * The balance slider makes only one audio channel quiter but keeps the other channels loudness. So no audio overdriven may happen.
 * Instead of showing the version number the last commit SHA1 (first seven digits) is shown in the GUI.
 * There is an indicator added where the relative miss-tune of the carrier center can be seen.
+* Added an AM demodulator with smaller IF/AF filters for AM receptions. With the smaller filters also a NBFM reception is possible.
+* The AF filter uses FFT filter with more filter taps to improve the filter performance.
+* RDS provides PTY text (Program Type).
 * And finally I did many code refinings to be better suitable to my kind of thinking and better understanding the code :-).

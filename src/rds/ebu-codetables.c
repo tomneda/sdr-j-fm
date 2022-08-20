@@ -1,5 +1,45 @@
 #include <cstdint>
 
+// PTY id to text mapping (is maybe not the best place in this file...)
+const char * const pty_table[][2] =
+{
+  {"--",                    "--"},
+  {"News",                  "News"},
+  {"Current Affairs",       "Information"},
+  {"Information",           "Sports"},
+  {"Sport",                 "Talk"},
+  {"Education",             "Rock"},
+  {"Drama",                 "Classic Rock"},
+  {"Culture",               "Adult Hits"},
+  {"Science",               "Soft Rock"},
+  {"Varied",                "Top 40"},
+  {"Pop Music",             "Country"},
+  {"Rock Music",            "Oldies"},
+  {"Easy Listening",        "Soft"},
+  {"Light Classical",       "Nostalgia"},
+  {"Serious Classical",     "Jazz"},
+  {"Other Music",           "Classical"},
+  {"Weather",               "Rhythm & Blues"},
+  {"Finance",               "Soft Rhythm & Blues"},
+  {"Children’s Progs",      "Language"},
+  {"Social Affairs",        "Religious Music"},
+  {"Religion",              "Religious Talk"},
+  {"Phone-In",              "Personality"},
+  {"Travel",                "Public"},
+  {"Leisure",               "College"},
+  {"Jazz Music",            "Spanish Talk"},
+  {"Country Music",         "Spanish Music"},
+  {"National Music",        "Hip Hop"},
+  {"Oldies Music",          "Unassigned"},
+  {"Folk Music",            "Unassigned"},
+  {"Documentary",           "Weather"},
+  {"Alarm Test",            "Emergency Test"},
+  {"Alarm",                 "Emergency"}
+};
+
+constexpr uint16_t pty_locale = 0; // set to 0 for Europe (1 for USA) which will use first column instead
+
+
 //	mapping from EBU code tables to 16 bit codes for QChar
 
 const uint16_t EBU_E1[16][14] =

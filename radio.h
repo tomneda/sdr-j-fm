@@ -252,7 +252,7 @@ public slots:
   void setSyncErrors(int);
   void setbitErrorRate(double);
   void setGroup(int);
-  void setPTYCode(int);
+  void setPTYCode(int, const QString &);
   void setPiCode(int);
   //void clearStationLabel();
   void setStationLabel(const QString &);

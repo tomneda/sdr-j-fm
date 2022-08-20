@@ -73,7 +73,8 @@ private:
   void additionalFrequencies(uint16_t);
   void addtoRadioText(uint16_t, uint16_t, uint16_t);
   void filterAndSetRadioText(char *, int16_t);
-  uint32_t m_piCode;
+  int32_t mPiCode;
+  int32_t mPtyCode;
   uint8_t theAlfabet;
   bool alfabetSwitcher(uint8_t, uint8_t);
   uint8_t setAlfabetTo(uint8_t, uint8_t);
@@ -91,7 +92,7 @@ private:
 
 signals:
   void setGroup(int);
-  void setPTYCode(int);
+  void setPTYCode(int, const QString &);
   void setMusicSpeechFlag(int);
   void clearMusicSpeechFlag(void);
   void setPiCode(int);

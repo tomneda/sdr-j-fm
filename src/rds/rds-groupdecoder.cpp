@@ -47,7 +47,7 @@ rdsGroupDecoder::rdsGroupDecoder(RadioInterface * RI)
 {
   MyRadioInterface = RI;
   connect(this, SIGNAL(setGroup(int)), MyRadioInterface, SLOT(setGroup(int)));
-  connect(this, SIGNAL(setPTYCode(int)), MyRadioInterface, SLOT(setPTYCode(int)));
+  connect(this, SIGNAL(setPTYCode(int, const QString &)), MyRadioInterface, SLOT(setPTYCode(int, const QString &)));
   connect(this, SIGNAL(setPiCode(int)), MyRadioInterface, SLOT(setPiCode(int)));
   connect(this, SIGNAL(setStationLabel(const QString &)), MyRadioInterface, SLOT(setStationLabel(const QString &)));
   //connect(this, SIGNAL(clearStationLabel(void)), MyRadioInterface, SLOT(clearStationLabel(void)));
@@ -64,7 +64,8 @@ rdsGroupDecoder::~rdsGroupDecoder(void) {}
 
 void rdsGroupDecoder::reset(void)
 {
-  m_piCode = 0;
+  mPiCode = 0;
+  mPtyCode = -1;
 
   // Initialize Group 1 members
   memset(stationLabel, ' ', STATION_LABEL_LENGTH * sizeof(char));
@@ -83,7 +84,7 @@ void rdsGroupDecoder::reset(void)
   //emit clearRadioText();
   //emit clearStationLabel();
   emit clearMusicSpeechFlag();
-  emit setPTYCode(0);
+  emit setPTYCode(0, "");
   emit setPiCode(0);
   emit setAFDisplay(0, 0);
 }
@@ -92,15 +93,24 @@ bool rdsGroupDecoder::decode(RDSGroup * grp)
 {
   //	fprintf (stderr, "Got group %d\n", grp -> getGroupType ());
   emit setGroup(grp->getGroupType());
-  emit setPTYCode(grp->getProgrammeType());
-  emit setPiCode(grp->getPiCode());
+
+  const int32_t piCode = grp->getPiCode();
 
   //	PI-code has changed -> new station received
   //	Reset the decoder
-  if (grp->getPiCode() != m_piCode)
+  if (piCode != mPiCode)
   {
     reset();
-    m_piCode = grp->getPiCode();
+    emit setPiCode(piCode);
+    mPiCode = piCode;
+  }
+
+  const int32_t ptyCode = grp->getProgrammeType();
+
+  if (ptyCode != mPtyCode) // emit only changed message due to time consuming string handling
+  {
+    emit setPTYCode(ptyCode, pty_table[ptyCode][pty_locale]);
+    mPtyCode = ptyCode;
   }
 
   //	Cannot decode B type groups

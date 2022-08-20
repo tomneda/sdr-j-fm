@@ -1424,26 +1424,26 @@ void RadioInterface::setGroup(int n)
   //	rdsGroupDisplay	-> display (n);
 }
 
-void RadioInterface::setPTYCode(int n)
+void RadioInterface::setPTYCode(int n, const QString & iPtyText)
 {
   (void)n;
-  //	rdsPTYDisplay	-> display (n);
+  pty_text->setText(iPtyText);
 }
 
 void RadioInterface::setAFDisplay(int n1, int n2)
 {
-  if (n1 == 0 && n2 == 0) // reset constellation
+  if (n1 == 0 && n2 == 0) // reset constellation (n1 and n2 are set together to zero)
   {
-    rdsAF1Display->display(n1);
+    //rdsAF1Display->display(n1);
     rdsAF2Display->display(n2);
   }
-  else if (n1 > 0)
+//  else if (n1 > 0)
+//  {
+//    rdsAF1Display->display(n1);
+//  }
+  else //if (n2 > 0)
   {
-    rdsAF1Display->display(n1);
-  }
-  else if (n2 > 0)
-  {
-    rdsAF2Display->display(n2);
+    rdsAF2Display->display(n2 > 0 ? n2 : n1);
   }
 }
 

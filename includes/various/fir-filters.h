@@ -6,7 +6,7 @@
  *
  *    This file is part of the JFF SDR (JSDR).
  *    Many of the ideas as implemented in ESDR are derived from
- *    other work, made available through the GNU general Public License. 
+ *    other work, made available through the GNU general Public License.
  *    All copyrights of the original authors are recognized.
  *
  *    JSDR is free software; you can redistribute it and/or modify
@@ -37,6 +37,22 @@ class HilbertFilter;
 
 class	Basic_FIR
 {
+public:
+  // taken from GnuRadio to calculate the needed tap size
+  enum EWinType
+  {
+    WIN_HAMMING = 0,         //!< Hamming window; max attenuation 53 dB
+    WIN_HANN = 1,            //!< Hann window; max attenuation 44 dB
+    WIN_BLACKMAN = 2,        //!< Blackman window; max attenuation 74 dB
+    WIN_RECTANGULAR = 3,     //!< Basic rectangular window; max attenuation 21 dB
+    WIN_KAISER = 4,          //!< Kaiser window; max attenuation see window::max_attenuation
+    WIN_BLACKMAN_HARRIS = 5, //!< alias to WIN_BLACKMAN_hARRIS for capitalization consistency
+    WIN_BARTLETT = 6,        //!< Barlett (triangular) window; max attenuation 26 dB
+    WIN_FLATTOP = 7,         //!< flat top window; useful in FFTs; max attenuation 93 dB
+  };
+
+  static int32_t compute_ntaps(const double iSamplFreq, const double iTransitionWidth, const EWinType iWinType, const double iBetaKaiser=6.76);
+
 public:
   int16_t    filterSize;
   DSPCOMPLEX *filterKernel;

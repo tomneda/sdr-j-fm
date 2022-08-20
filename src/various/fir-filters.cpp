@@ -613,3 +613,27 @@ DSPCOMPLEX HilbertFilter::Pass(DSPCOMPLEX z)
   return tmp;
 }
 
+// taken from GnuRadio to calculate the needed tap size
+/*static*/ int32_t Basic_FIR::compute_ntaps(const double iSamplFreq, const double iTransitionWidth, const EWinType iWinType, const double iBetaKaiser/*=6.76*/)
+{
+  auto get_max_win_att = [&]() -> int32_t
+  {
+    switch(iWinType) {
+    case(WIN_HAMMING):         return 53; break;
+    case(WIN_HANN):            return 44; break;
+    case(WIN_BLACKMAN):        return 74; break;
+    case(WIN_RECTANGULAR):     return 21; break;
+    case(WIN_KAISER):          return (iBetaKaiser/0.1102 + 8.7); break;
+    case(WIN_BLACKMAN_HARRIS): return 92; break;
+    case(WIN_BARTLETT):        return 27; break;
+    case(WIN_FLATTOP):         return 93; break;
+    default:
+      throw std::out_of_range("window::max_attenuation: unknown window type provided.");
+    }
+  };
+
+  const double a = get_max_win_att();
+  int ntaps = (int)(a * iSamplFreq / (22.0 * iTransitionWidth));
+  if ((ntaps & 1) == 0) ntaps++; // ...make odd
+  return ntaps;
+}

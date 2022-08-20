@@ -123,6 +123,8 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   mpPilotBandFilter->setBand(PILOT_FREQUENCY - PILOT_WIDTH / 2, PILOT_FREQUENCY + PILOT_WIDTH / 2, fmRate);
   mpPilotRecover = new pilotRecovery(fmRate, OMEGA_PILOT, 25 * mOmegaDemod, mpMySinCos);
   mPilotDelay = (FFT_SIZE - PILOTFILTER_SIZE) * OMEGA_PILOT;
+  mpFmAudioFilter = new fftFilter(1024, 431);
+  mFmAudioFilterActive = false;
 
   mpRdsLowPassFilter = new fftFilter(FFT_SIZE, RDSLOWPASS_SIZE);
   mpRdsLowPassFilter->setLowPass(RDS_WIDTH, fmRate);
@@ -134,7 +136,6 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
 
   mK_FM           = B_FM * M_PI / F_G;
   mpTheDemodulator = new fm_Demodulator(fmRate, mpMySinCos, mK_FM);
-  mpFmAudioFilter  = NULL;
   //
   //	In the case of mono we do not assume a pilot
   //	to be available. We borrow the approach from CuteSDR
@@ -409,6 +410,7 @@ void fmProcessor::run()
   DSPCOMPLEX    *scanBuffer      = scan_fft->getVector();
   int           localP           = 0;
 
+  assert(mpMyRdsDecoder == nullptr); // check whether not calling next news twice
   mpMyRdsDecoder = new rdsDecoder(mMyRadioInterface, mFmRate / RDS_DECIMATOR, mpMySinCos);
 
   mRunning = true; // will be set from the outside
@@ -601,7 +603,22 @@ void fmProcessor::run()
       case S_LEFTminusRIGHT: result = DSPCOMPLEX(diffLRWeightend, diffLRWeightend); break;
       }
 
-      if (mpFmAudioFilter != nullptr)
+      if ((mRdsModus != rdsDecoder::ERdsMode::NO_RDS))
+      {
+        DSPFLOAT mag = 0;
+        //static DSPFLOAT magDC = 0;
+        if (++mRdsSampleCnt >= RDS_DECIMATOR) // rdsData is already bandpass filtered in process_stereo_or_mono()
+        {
+          mpMyRdsDecoder->doDecode(rdsData, &mag, mRdsModus); // data rate 32000S/s
+          //constexpr float ALPHA = 0.0001f;
+          //magDC = mag * ALPHA + magDC * (1.0f - ALPHA);
+          mRdsSampleCnt = 0;
+        }
+        //result = DSPCOMPLEX(mag - magDC, mag - magDC);
+        //result = DSPCOMPLEX(rdsData, rdsData);
+      }
+
+      if (mFmAudioFilterActive)
       {
         result = mpFmAudioFilter->Pass(result);
       }
@@ -628,16 +645,6 @@ void fmProcessor::run()
         }
       }
 
-      if ((mRdsModus != rdsDecoder::ERdsMode::NO_RDS))
-      {
-        if (++mRdsSampleCnt >= RDS_DECIMATOR) // rdsData is already bandpass filtered in process_stereo_or_mono()
-        {
-          DSPFLOAT mag;
-          mpMyRdsDecoder->doDecode(rdsData, &mag, mRdsModus);
-          mRdsSampleCnt = 0;
-        }
-      }
-
       if (++mMyCount > (mFmRate >> 1)) // each 500ms ...
       {
         mMyCount = 0;
@@ -659,7 +666,7 @@ void fmProcessor::process_mono_only(const float demod, DSPCOMPLEX *audioOut, DSP
   //	by simply am decoding it (after creating a decent complex
   //	signal by Hilbert filtering)
   DSPCOMPLEX rdsBase = DSPCOMPLEX(5 * demod, 5 * demod);
-  rdsBase = mpRdsHilbertFilter->Pass(mpRdsBandFilter->Pass(rdsBase));
+  rdsBase = mpRdsHilbertFilter->Pass(mpRdsBandFilter->Pass(rdsBase)); // hilbert with complex input data?
   mpRds_plldecoder->do_pll(rdsBase);
   DSPFLOAT rdsDelay = imag(mpRds_plldecoder->getDelay());
 
@@ -709,15 +716,15 @@ void fmProcessor::process_stereo_or_mono(const float demod, DSPCOMPLEX *audioOut
 //
 void fmProcessor::setLFcutoff(int32_t Hz)
 {
-  LowPassFIR *tempFmAudioFilter = mpFmAudioFilter;
-
-  mpFmAudioFilter = nullptr; // set to null first due to other thread is using pointer while deletion
-
-  delete tempFmAudioFilter;
-
   if (Hz > 0)
   {
-    mpFmAudioFilter = new LowPassFIR(55, Hz, mFmRate);  // 11 is too less (55 is also arbitrary) for this high sample rate fmRate = 256000S/s
+    mFmAudioFilterActive = false; // in case the filter routine works in an extra thread
+    mpFmAudioFilter->setLowPass(Hz, mFmRate);
+    mFmAudioFilterActive = true;
+  }
+  else
+  {
+    mFmAudioFilterActive = false;
   }
 }
 

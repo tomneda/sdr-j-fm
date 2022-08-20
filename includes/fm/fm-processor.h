@@ -218,7 +218,8 @@ private:
   int32_t mMaxFreqDeviation;
   int32_t mNormFreqDeviation;
   DSPFLOAT mOmegaDemod;
-  LowPassFIR * mpFmAudioFilter;
+  fftFilter * mpFmAudioFilter;
+  bool mFmAudioFilterActive;
 
   DSPFLOAT mPanorama{ 1.0f };
   int16_t mBalance{ 0 };

@@ -140,10 +140,10 @@ private:
   deviceHandler * mMyRig;
   RadioInterface * mMyRadioInterface;
   audioSink * mAudioSink;
-  int32_t mInputRate;
-  int32_t mFmRate;
-  int32_t mWorkingRate;
-  int32_t mAudioRate;
+  int32_t mInputRate;    // typ. 1536 kSpS
+  int32_t mFmRate;       // typ.  256 kSpS = mInputRate / 6
+  int32_t mWorkingRate;  // typ.   48 kSpS
+  int32_t mAudioRate;    // typ.   48 kSpS
   int32_t mDisplaySize;
   int32_t mAverageCount;
   int32_t mRepeatRate;

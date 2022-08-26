@@ -27,7 +27,7 @@
 #ifndef __SQUELCHCLASS
 #define __SQUELCHCLASS
 
-#include  "iir-filters.h"
+#include "iir-filters.h"
 //
 //	just a simple class to include elementary squelch handling
 //	The basic idea is that when there is no signal, the noise
@@ -37,112 +37,82 @@
 //	If the average signal value of the upper part is larger
 //	than factor times the average signal value of the lower part,
 //	where factor is a value between 0 .. 1, set by the user.
-#define SQUELCH_HYSTERESIS    0.01
+constexpr DSPFLOAT SQUELCH_HYSTERESIS = 0.001;
+constexpr DSPFLOAT LEVELREDUCTIONFACTOR = 0.05; // 23dB lower output level
 
-class squelch {
+class squelch
+{
 private:
-int16_t squelchThreshold;
-int32_t keyFrequency;
-int32_t holdPeriod;
-int32_t sampleRate;
-bool squelchSuppress;
-int32_t squelchCount;
-DSPFLOAT Average_High;
-DSPFLOAT Average_Low;
-HighPassIIR squelchHighpass;
-LowPassIIR squelchLowpass;
+  DSPFLOAT mSquelchThreshold; // value between 0 and 1
+  int32_t mKeyFrequency;
+  int32_t mHoldPeriod;
+  int32_t mSampleRate;
+  bool mSquelchSuppress;
+  int32_t mSquelchCount;
+  DSPFLOAT mAverage_High;
+  DSPFLOAT mAverage_Low;
+  HighPassIIR mSquelchHighpass;
+  LowPassIIR mSquelchLowpass;
+
 public:
-squelch (int32_t squelchThreshold,
-         int32_t keyFrequency,
-         int32_t bufsize,
-         int32_t sampleRate) :
-  squelchHighpass(20,
-                  keyFrequency - 100,
-                  sampleRate,
-                  S_CHEBYSHEV),
-  squelchLowpass(20,
-                 keyFrequency,
-                 sampleRate,
-                 S_CHEBYSHEV)
-{
-  this->squelchThreshold = squelchThreshold;
-  this->keyFrequency     = keyFrequency;
-  this->holdPeriod       = bufsize;
-  this->sampleRate       = sampleRate;
-
-  squelchSuppress = false;
-  squelchCount    = 0;
-  Average_High    = 0;
-  Average_Low     = 0;
-}
-
-~squelch (void)
-{
-}
-
-void setSquelchLevel(int n)
-{
-  squelchThreshold = n;
-}
-
-static inline
-DSPFLOAT decayingAverage(DSPFLOAT old, DSPFLOAT input, DSPFLOAT weight)
-{
-  if (weight <= 1)
+  squelch(const int32_t iSquelchThreshold, const int32_t iKeyFrequency, const int32_t iBufsize, const int32_t iSampleRate) :
+    mSquelchHighpass(20, iKeyFrequency - 100, iSampleRate, S_CHEBYSHEV),
+    mSquelchLowpass(20, iKeyFrequency, iSampleRate, S_CHEBYSHEV)
   {
-    return input;
+    setSquelchLevel(iSquelchThreshold); // convert 0..100 to 1.0..0.0
+    mKeyFrequency = iKeyFrequency;
+    mHoldPeriod = iBufsize;
+    mSampleRate = iSampleRate;
+
+    mSquelchSuppress = false;
+    mSquelchCount = 0;
+    mAverage_High = 0;
+    mAverage_Low = 0;
   }
-  return input * (1.0 / weight) + old * (1.0 - (1.0 / weight));
-}
 
-DSPCOMPLEX do_squelch(DSPCOMPLEX soundSample)
-{
-  DSPFLOAT val_1;
-  DSPFLOAT val_2;
+  ~squelch(void) {}
 
-  val_1 = abs(squelchHighpass.Pass(soundSample));
-  val_2 = abs(squelchLowpass.Pass(soundSample));
+  void setSquelchLevel(int n) { mSquelchThreshold = 1.0f - n / 100.0f; } // convert 0..100 to 1.0..0.0
 
-  Average_High = decayingAverage(Average_High,
-                                 val_1, sampleRate / 100);
-  Average_Low = decayingAverage(Average_Low,
-                                val_2, sampleRate / 100);
-
-  if (++squelchCount < holdPeriod)    // use current squelch state
+  static inline DSPFLOAT decayingAverage(DSPFLOAT old, DSPFLOAT input, DSPFLOAT weight)
   {
-    if (squelchSuppress)
+    if (weight <= 1)
     {
-      return DSPCOMPLEX(0.001, 0.001);
+      return input;
     }
-    else
+    return input * (1.0 / weight) + old * (1.0 - (1.0 / weight));
+  }
+
+  DSPFLOAT do_squelch(const DSPFLOAT soundSample)
+  {
+    const DSPFLOAT val_1 = abs(mSquelchHighpass.Pass(soundSample));
+    const DSPFLOAT val_2 = abs(mSquelchLowpass.Pass(soundSample));
+
+    mAverage_High = decayingAverage(mAverage_High, val_1, mSampleRate / 100);
+    mAverage_Low = decayingAverage(mAverage_Low, val_2, mSampleRate / 100);
+
+    if (++mSquelchCount >= mHoldPeriod)
     {
-      return soundSample;
+      mSquelchCount = 0;
+
+      //	looking for a new squelch state
+      if (mSquelchThreshold < SQUELCH_HYSTERESIS)   // force squelch if zero
+      {
+        mSquelchSuppress = true;
+      }
+      else if (mAverage_High < mAverage_Low * mSquelchThreshold - SQUELCH_HYSTERESIS)
+      {
+        mSquelchSuppress = false;
+      }
+      else if (mAverage_High >= mAverage_Low * mSquelchThreshold + SQUELCH_HYSTERESIS)
+      {
+        mSquelchSuppress = true;
+      }
+      //	else just keep old squelchSuppress value
     }
-  }
 
-  squelchCount = 0;
-//	o.k. looking for a new squelch state
-  if (squelchThreshold == 0)    // force squelch if zero
-  {
-    squelchSuppress = true;
+    return mSquelchSuppress ? soundSample * LEVELREDUCTIONFACTOR : soundSample;
   }
-  else  // recompute
-  if (Average_High < Average_Low * squelchThreshold / 100.0 - SQUELCH_HYSTERESIS)
-  {
-    squelchSuppress = false;
-  }
-  else
-  if (Average_High >= Average_Low * squelchThreshold / 100.0 + SQUELCH_HYSTERESIS)
-  {
-    squelchSuppress = true;
-  }
-//	else just keep old squelchSuppress value
-
-  return squelchSuppress ?
-         DSPCOMPLEX(0.001, 0.001) :
-         soundSample;
-}
 };
 
 #endif
-

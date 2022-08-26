@@ -399,10 +399,9 @@ void fmProcessor::run()
   DSPCOMPLEX    dataBuffer[bufferSize];
   double        displayBuffer_hf[mDisplaySize];
   double        displayBuffer_lf[mDisplaySize];
-  DSPCOMPLEX    pcmSample;
   int32_t       hfCount = 0;
   int32_t       lfCount = 0;
-  squelch       mySquelch(1, mWorkingRate / 10, mWorkingRate / 20, mWorkingRate);
+  squelch       mySquelch(1, 70000, mFmRate / 20, mFmRate);
   int32_t       audioAmount;
   //float         audioGainAverage = 0;
   int32_t       scanPointer      = 0;
@@ -544,7 +543,7 @@ void fmProcessor::run()
         v = mpFmFilter->Pass(v);
       }
 
-      const DSPFLOAT demod = mpTheDemodulator->demodulate(v);
+      DSPFLOAT demod = mpTheDemodulator->demodulate(v);
 
       mpSpectrumBuffer_lf[localP++] = demod;
 
@@ -578,6 +577,11 @@ void fmProcessor::run()
         lfCount = 0;
         //	and signal the GUI thread that we have data
         emit lfBufferLoaded();
+      }
+
+      if (mSquelchOn)
+      {
+        demod = mySquelch.do_squelch(demod);
       }
 
       DSPCOMPLEX result;
@@ -631,15 +635,7 @@ void fmProcessor::run()
         // here the sample rate is "workingRate" (typ. 48000Ss)
         for (int32_t k = 0; k < audioAmount; k++)
         {
-          if (mSquelchOn)
-          {
-            pcmSample = mySquelch.do_squelch(mpAudioOut[k]);
-          }
-          else
-          {
-            pcmSample = mpAudioOut[k];
-          }
-
+          const DSPCOMPLEX pcmSample = mpAudioOut[k];
           evaluatePeakLevel(pcmSample);
           sendSampletoOutput(pcmSample);
         }

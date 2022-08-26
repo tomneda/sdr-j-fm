@@ -1224,7 +1224,7 @@
                <item>
                 <widget class="QSlider" name="squelchSlider">
                  <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the level where the squelch will be activated, i.e. below that level the audio is assumed to be just noise and will be suppressed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the level where the squelch will be activated, i.e. below that level the audio is assumed to be just noise and will be reduced by 23dB.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="maximum">
                   <number>100</number>

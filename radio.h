@@ -86,11 +86,11 @@ private:
   RingBuffer<double> *lfBuffer;
   Scope *hfScope;
   Scope *lfScope;
-  int16_t scopeAmplification;
-  bool HFAverager;
   bool mAfcActive{false};
   float mAfcAlpha{1.0f};
   int32_t mAfcCurrOffFreq{0};
+
+  bool mSuppressTransient { false }; // shorttime true after frequency change to suppress volume level change
 
   keyPad *mykeyPad;
   QSettings *fmSettings;

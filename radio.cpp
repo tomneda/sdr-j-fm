@@ -1020,6 +1020,9 @@ void RadioInterface::setTuner(int32_t n)
     return;
   }
 
+  QTimer::singleShot(2000, this, [this](){ mSuppressTransient = false; } );
+  mSuppressTransient = true;
+
   if (abs(n - vfo) > inputRate / 2 - fmRate / 2)
   {
     myRig->setVFOFrequency(n);
@@ -1643,7 +1646,7 @@ void RadioInterface::showPeakLevel(const float iPeakLeft, const float iPeakRight
   thermoPeakLevelRight->setValue(iPeakRight);
 
   // simple overflow avoidance -> reduce volume slider about -0.5dB (one step)
-  if (iPeakLeft > 0.0f || iPeakRight > 0.0f)
+  if ((iPeakLeft > 0.0f || iPeakRight > 0.0f) && mSuppressTransient == false)
   {
     volumeSlider->setValue(volumeSlider->value() - 1);
   }

@@ -219,6 +219,7 @@ private slots:
   void setfmStereoBalanceSlider(int);
   void setAudioGainSlider(int n);
   void setfmLFcutoff(const QString &);
+  void setLfPlotType(const QString &s);
 
   void autoIncrement_timeout();
   void autoIncrementButton();

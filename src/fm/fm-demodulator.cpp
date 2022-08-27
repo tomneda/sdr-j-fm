@@ -121,14 +121,14 @@ DSPFLOAT fm_Demodulator::demodulate(DSPCOMPLEX z)
     res = myfm_pll->getPhaseIncr();
     fm_afc = (1 - DCAlpha) * fm_afc + DCAlpha * res;
 
-    const DSPFLOAT zAbs = abs(z) / 1;
+    const DSPFLOAT zAbs = abs(z);
 
     // get DC component or mean carrier power
     constexpr float alpha = 0.001f;
     am_carr_ampl = (1.0f - alpha) * am_carr_ampl + alpha * zAbs;
 
     // remove DC component from signal and norm level to carrier power
-    constexpr float gainLimit = 0.5f;
+    constexpr float gainLimit = 0.05f;
     res = (zAbs - am_carr_ampl) / (am_carr_ampl < gainLimit ? gainLimit : am_carr_ampl);
 
     // this avoids short spikes which would cause the auto level limitter to reduce audio level too much

@@ -842,7 +842,7 @@ void RadioInterface::make_newProcessor()
   lcd_OutputRate->display((int)this->audioRate);
   hfScope->setBitDepth(myRig->bitDepth());
 
-  setAttenuation(50);
+  setAttenuation(1);
   setfmBandwidth(fmFilterSelect->currentText());
   setfmBandwidth(fmFilterDegree->value());
   setfmMode(fmMode->currentText());
@@ -1356,6 +1356,7 @@ void RadioInterface::localConnects()
   connect(fmStereoBalanceSlider, SIGNAL(valueChanged(int)), this, SLOT(setfmStereoBalanceSlider(int)));
   connect(fmDeemphasisSelector, SIGNAL(activated(const QString&)), this, SLOT(setfmDeemphasis(const QString&)));
   connect(fmLFcutoff, SIGNAL(activated(const QString&)), this, SLOT(setfmLFcutoff(const QString&)));
+  connect(plotSelector, SIGNAL(activated(const QString&)), this, SLOT(setLfPlotType(const QString&)));
 }
 
 void RadioInterface::setfmStereoPanoramaSlider(int n)
@@ -1544,6 +1545,29 @@ void RadioInterface::setfmMode(const QString &s)
   }
 }
 
+void RadioInterface::setLfPlotType(const QString &s)
+{
+  if (myFMprocessor == nullptr)
+  {
+    return;
+  }
+
+  if      (s == "OFF")               myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::OFF);
+  else if (s == "IF Filtered")       myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::IF_FILTERED);
+  else if (s == "Multiplex")         myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::MULTIPLEX);
+  else if (s == "AF SUM")            myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::AF_SUM);
+  else if (s == "AF DIFF")           myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::AF_DIFF);
+  else if (s == "AF MONO Filtered")  myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::AF_MONO_FILTERED);
+  else if (s == "AF LEFT Filtered")  myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::AF_LEFT_FILTERED);
+  else if (s == "AF RIGHT Filtered") myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::AF_RIGHT_FILTERED);
+  else if (s == "RDS")               myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::RDS);
+  else
+  {
+    Q_ASSERT(0);
+  }
+
+  myFMprocessor->triggerDrawNewLfSpectrum(); // resets the average filter
+}
 void RadioInterface::setfmRdsSelector(const QString &s)
 {
   if (myFMprocessor == nullptr)
@@ -1981,7 +2005,7 @@ void RadioInterface::set_squelchMode()
   squelchButton->setText(squelchMode ? QString("Squelch is ON") : QString("Squelch is OFF"));
   squelchSlider->setEnabled(squelchMode);
   myFMprocessor->set_squelchMode(squelchMode);
-  setSquelchIsActive(myFMprocessor->getSquelchObj()->getSquelchActive()); // gray out squelch notification
+  setSquelchIsActive(myFMprocessor->getSquelchObj()->getSquelchActive()); // gray out squelch notification or read current state
 }
 
 void RadioInterface::setSquelchIsActive(bool active)

@@ -60,6 +60,19 @@ public:
     Mono
   };
 
+  enum class ELfPlot
+  {
+    OFF,
+    IF_FILTERED,
+    MULTIPLEX,
+    AF_SUM,
+    AF_DIFF,
+    AF_MONO_FILTERED,
+    AF_LEFT_FILTERED,
+    AF_RIGHT_FILTERED,
+    RDS
+  };
+
 public:
   fmProcessor(deviceHandler *,
               RadioInterface *,
@@ -98,6 +111,7 @@ public:
   void setFreezer(bool);
   void set_squelchMode(bool);
   void setInputMode(uint8_t);
+  void setLfPlotType(ELfPlot);
   bool ok();
   bool isPilotLocked(float & oLockStrength) const;
   squelch * getSquelchObj() const { return mMySquelch; }
@@ -131,6 +145,7 @@ private:
   void run() override;
   void mapSpectrum(const DSPCOMPLEX * const, double * const);
   void mapHalfSpectrum(const DSPCOMPLEX * const, double * const);
+  void processLfSpectrum();
   void fill_average_buffer(const double * const, double * const);
   void add_to_average(const double * const, double * const);
   void extractLevels(const double * const, const int32_t);
@@ -169,6 +184,7 @@ private:
   common_fft * mpSpectrum_fft_lf;
   DSPCOMPLEX * mpSpectrumBuffer_hf;
   DSPCOMPLEX * mpSpectrumBuffer_lf;
+  double * mpDisplayBuffer_lf = nullptr;
   //double *mpDisplayBuffer;
   double * mpLocalBuffer;
   DecimatingFIR * mpFmBandfilter;
@@ -244,6 +260,8 @@ private:
   DSPFLOAT mXkm1;
   DSPFLOAT mYkml;
   DSPFLOAT mAlpha;
+
+  ELfPlot mLfPlotType = ELfPlot::MULTIPLEX;
 
   class pilotRecovery
   {

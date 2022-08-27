@@ -419,12 +419,6 @@
            <property name="autoFillBackground">
             <bool>false</bool>
            </property>
-           <property name="frameShape">
-            <enum>QFrame::Panel</enum>
-           </property>
-           <property name="frameShadow">
-            <enum>QFrame::Raised</enum>
-           </property>
            <property name="lineWidth">
             <number>3</number>
            </property>
@@ -1014,6 +1008,72 @@
              <item>
               <layout class="QVBoxLayout" name="verticalLayout_3">
                <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_16" stretch="1,7">
+                 <item>
+                  <widget class="QLabel" name="label_10">
+                   <property name="text">
+                    <string>Plot:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="plotSelector">
+                   <property name="enabled">
+                    <bool>true</bool>
+                   </property>
+                   <property name="currentIndex">
+                    <number>2</number>
+                   </property>
+                   <item>
+                    <property name="text">
+                     <string>OFF</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>IF Filtered</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Multiplex</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>AF SUM</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>AF DIFF</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>AF MONO Filtered</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>AF LEFT Filtered</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>AF RIGHT Filtered</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>RDS</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_12">
                  <item>
                   <widget class="QCheckBox" name="cbAutoMono">
@@ -1238,7 +1298,7 @@
                 </widget>
                </item>
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="7,1">
+                <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="4,1,4,1">
                  <item>
                   <widget class="QPushButton" name="squelchButton">
                    <property name="toolTip">
@@ -1268,10 +1328,6 @@
                    </property>
                   </widget>
                  </item>
-                </layout>
-               </item>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_16" stretch="7,1">
                  <item>
                   <widget class="QComboBox" name="fmRdsSelector">
                    <property name="toolTip">
@@ -1321,7 +1377,7 @@
                 </layout>
                </item>
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="1,6">
+                <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="0,0">
                  <item>
                   <widget class="QLabel" name="label_8">
                    <property name="text">

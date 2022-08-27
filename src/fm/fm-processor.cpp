@@ -153,6 +153,8 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
 
   mMySquelch = new squelch(1, 70000, mFmRate / 20, mFmRate);
 
+  mpDisplayBuffer_lf = new double[mDisplaySize];
+
   connect(mMySquelch, &squelch::setSquelchIsActive, mMyRadioInterface, &RadioInterface::setSquelchIsActive);
   connect(this, SIGNAL(hfBufferLoaded(void)), mMyRadioInterface, SLOT(hfBufferLoaded(void)));
   connect(this, SIGNAL(lfBufferLoaded(void)), mMyRadioInterface, SLOT(lfBufferLoaded(void)));
@@ -185,6 +187,7 @@ fmProcessor::~fmProcessor()
   //	delete	mySinCos;
   //	delete	spectrum_fft_hf;
   //	delete	spectrum_fft_lf;
+  delete[] mpDisplayBuffer_lf;
   delete mpFmAudioFilter;
   delete mMySquelch;
 }
@@ -271,6 +274,11 @@ void fmProcessor::setBandfilterDegree(int32_t d)
 void fmProcessor::setfmMode(FM_Mode m)
 {
   mFmModus = m;
+}
+
+void fmProcessor::setLfPlotType(ELfPlot m)
+{
+  mLfPlotType = m;
 }
 
 void fmProcessor::setFMdecoder(int16_t d)
@@ -398,9 +406,8 @@ void fmProcessor::run()
   const int32_t bufferSize = 2 * 8192;
   DSPCOMPLEX    dataBuffer[bufferSize];
   double        displayBuffer_hf[mDisplaySize];
-  double        displayBuffer_lf[mDisplaySize];
-  int32_t       hfCount = 0;
-  int32_t       lfCount = 0;
+  int32_t       mHfCount = 0;
+  int32_t       mLfCount = 0;
   int32_t       audioAmount;
   //float         audioGainAverage = 0;
   int32_t       scanPointer      = 0;
@@ -443,7 +450,7 @@ void fmProcessor::run()
     const int32_t aa = (amount >= mSpectrumSize ? mSpectrumSize : amount);
 
     //	for the HFscope
-    if (++hfCount > (mInputRate / bufferSize) / mRepeatRate)
+    if (++mHfCount > (mInputRate / bufferSize) / mRepeatRate)
     {
       double Y_Values[mDisplaySize];
 
@@ -482,7 +489,7 @@ void fmProcessor::run()
       }
 
       mpHfBuffer->putDataIntoBuffer(displayBuffer_hf, mDisplaySize);
-      hfCount = 0;
+      mHfCount = 0;
 
       // and signal the GUI thread that we have data
       emit hfBufferLoaded();
@@ -505,7 +512,8 @@ void fmProcessor::run()
     //	the noise around it, it is better to decode mono
     for (int32_t i = 0; i < amount; i++)
     {
-      DSPCOMPLEX v = DSPCOMPLEX(real(dataBuffer[i]) * mLgain, imag(dataBuffer[i]) *mRgain);
+      DSPCOMPLEX v = DSPCOMPLEX(real(dataBuffer[i]) * mLgain, imag(dataBuffer[i]) * mRgain);
+      //DSPCOMPLEX v = dataBuffer[i];
 
       v = v * mpLocalOscillator->nextValue(mLoFrequency);
 
@@ -543,40 +551,6 @@ void fmProcessor::run()
       }
 
       DSPFLOAT demod = mpTheDemodulator->demodulate(v);
-
-      mpSpectrumBuffer_lf[localP++] = demod;
-
-      if (localP >= mSpectrumSize)
-      {
-        localP = 0;
-      }
-
-      if (++lfCount > mFmRate / mRepeatRate)
-      {
-        double Y_Values[mDisplaySize];
-        mpSpectrum_fft_lf->do_FFT();
-
-        //mapSpectrum(mpSpectrumBuffer_lf, Y_Values);
-        mapHalfSpectrum(mpSpectrumBuffer_lf, Y_Values);
-
-        if (mFillAverageLfBuffer)
-        {
-          fill_average_buffer(Y_Values, displayBuffer_lf);
-          mFillAverageLfBuffer = false;
-        }
-        else
-        {
-          add_to_average(Y_Values, displayBuffer_lf);
-        }
-
-        //extractLevels(displayBuffer_lf, mFmRate);
-        extractLevelsHalfSpectrum(displayBuffer_lf, mFmRate);
-
-        mpLfBuffer->putDataIntoBuffer(displayBuffer_lf, mDisplaySize);
-        lfCount = 0;
-        //	and signal the GUI thread that we have data
-        emit lfBufferLoaded();
-      }
 
       if (mSquelchOn)
       {
@@ -626,6 +600,25 @@ void fmProcessor::run()
         result = mpFmAudioFilter->Pass(result);
       }
 
+      switch (mLfPlotType)
+      {
+      case ELfPlot::OFF:               mpSpectrumBuffer_lf[localP++] = 0; break;
+      case ELfPlot::IF_FILTERED:       mpSpectrumBuffer_lf[localP++] = v; break;
+      case ELfPlot::MULTIPLEX:         mpSpectrumBuffer_lf[localP++] = demod; break;
+      case ELfPlot::AF_SUM:            mpSpectrumBuffer_lf[localP++] = sumLR; break;
+      case ELfPlot::AF_DIFF:           mpSpectrumBuffer_lf[localP++] = diffLR; break;
+      case ELfPlot::AF_MONO_FILTERED:  mpSpectrumBuffer_lf[localP++] = (result.real() + result.imag()); break;
+      case ELfPlot::AF_LEFT_FILTERED:  mpSpectrumBuffer_lf[localP++] = result.real(); break;
+      case ELfPlot::AF_RIGHT_FILTERED: mpSpectrumBuffer_lf[localP++] = result.imag(); break;
+      case ELfPlot::RDS:               mpSpectrumBuffer_lf[localP++] = rdsData; break;
+      }
+
+      if (localP >= mSpectrumSize)
+      {
+        localP = 0;
+      }
+
+
       // "result" now contains the audio sample, either stereo or mono
       result = audioGainCorrection(result);
 
@@ -640,10 +633,16 @@ void fmProcessor::run()
         }
       }
 
+      if (++mLfCount > mFmRate / mRepeatRate)
+      {
+        processLfSpectrum();
+        mLfCount = 0;
+      }
+
       if (++mMyCount > (mFmRate >> 1)) // each 500ms ...
       {
-        mMyCount = 0;
         emit showStrength(get_pilotStrength(), get_dcComponent());
+        mMyCount = 0;
       }
     }
   }
@@ -872,6 +871,33 @@ void fmProcessor::mapSpectrum(const DSPCOMPLEX * const in, double * const out)
 
     out[i] = f / factor;
   }
+}
+
+void fmProcessor::processLfSpectrum()
+{
+  double Y_Values[mDisplaySize];
+  mpSpectrum_fft_lf->do_FFT();
+
+  //mapSpectrum(mpSpectrumBuffer_lf, Y_Values);
+  mapHalfSpectrum(mpSpectrumBuffer_lf, Y_Values);
+
+  if (mFillAverageLfBuffer)
+  {
+    fill_average_buffer(Y_Values, mpDisplayBuffer_lf);
+    mFillAverageLfBuffer = false;
+  }
+  else
+  {
+    add_to_average(Y_Values, mpDisplayBuffer_lf);
+  }
+
+  //extractLevels(displayBuffer_lf, mFmRate);
+  extractLevelsHalfSpectrum(mpDisplayBuffer_lf, mFmRate);
+
+  mpLfBuffer->putDataIntoBuffer(mpDisplayBuffer_lf, mDisplaySize);
+
+  //	and signal the GUI thread that we have data
+  emit lfBufferLoaded();
 }
 
 void fmProcessor::mapHalfSpectrum(const DSPCOMPLEX * const in, double * const out)

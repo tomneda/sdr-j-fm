@@ -27,7 +27,10 @@
 #ifndef __SQUELCHCLASS
 #define __SQUELCHCLASS
 
+#include "fm-constants.h"
 #include "iir-filters.h"
+#include <QObject>
+
 //
 //	just a simple class to include elementary squelch handling
 //	The basic idea is that when there is no signal, the noise
@@ -37,17 +40,20 @@
 //	If the average signal value of the upper part is larger
 //	than factor times the average signal value of the lower part,
 //	where factor is a value between 0 .. 1, set by the user.
-constexpr DSPFLOAT SQUELCH_HYSTERESIS = 0.001;
-constexpr DSPFLOAT LEVELREDUCTIONFACTOR = 0.05; // 23dB lower output level
 
-class squelch
+class RadioInterface;
+
+class squelch : public QObject
 {
+  Q_OBJECT
+
 private:
   DSPFLOAT mSquelchThreshold; // value between 0 and 1
   int32_t mKeyFrequency;
   int32_t mHoldPeriod;
   int32_t mSampleRate;
   bool mSquelchSuppress;
+  bool mSquelchSuppressLast;
   int32_t mSquelchCount;
   DSPFLOAT mAverage_High;
   DSPFLOAT mAverage_Low;
@@ -55,64 +61,15 @@ private:
   LowPassIIR mSquelchLowpass;
 
 public:
-  squelch(const int32_t iSquelchThreshold, const int32_t iKeyFrequency, const int32_t iBufsize, const int32_t iSampleRate) :
-    mSquelchHighpass(20, iKeyFrequency - 100, iSampleRate, S_CHEBYSHEV),
-    mSquelchLowpass(20, iKeyFrequency, iSampleRate, S_CHEBYSHEV)
-  {
-    setSquelchLevel(iSquelchThreshold); // convert 0..100 to 1.0..0.0
-    mKeyFrequency = iKeyFrequency;
-    mHoldPeriod = iBufsize;
-    mSampleRate = iSampleRate;
-
-    mSquelchSuppress = false;
-    mSquelchCount = 0;
-    mAverage_High = 0;
-    mAverage_Low = 0;
-  }
-
-  ~squelch(void) {}
+  squelch(const int32_t iSquelchThreshold, const int32_t iKeyFrequency, const int32_t iBufsize, const int32_t iSampleRate);
+  ~squelch(void) = default;
 
   void setSquelchLevel(int n) { mSquelchThreshold = 1.0f - n / 100.0f; } // convert 0..100 to 1.0..0.0
+  bool getSquelchActive() const { return mSquelchSuppress; }
+  DSPFLOAT do_squelch(const DSPFLOAT soundSample);
 
-  static inline DSPFLOAT decayingAverage(DSPFLOAT old, DSPFLOAT input, DSPFLOAT weight)
-  {
-    if (weight <= 1)
-    {
-      return input;
-    }
-    return input * (1.0 / weight) + old * (1.0 - (1.0 / weight));
-  }
-
-  DSPFLOAT do_squelch(const DSPFLOAT soundSample)
-  {
-    const DSPFLOAT val_1 = abs(mSquelchHighpass.Pass(soundSample));
-    const DSPFLOAT val_2 = abs(mSquelchLowpass.Pass(soundSample));
-
-    mAverage_High = decayingAverage(mAverage_High, val_1, mSampleRate / 100);
-    mAverage_Low = decayingAverage(mAverage_Low, val_2, mSampleRate / 100);
-
-    if (++mSquelchCount >= mHoldPeriod)
-    {
-      mSquelchCount = 0;
-
-      //	looking for a new squelch state
-      if (mSquelchThreshold < SQUELCH_HYSTERESIS)   // force squelch if zero
-      {
-        mSquelchSuppress = true;
-      }
-      else if (mAverage_High < mAverage_Low * mSquelchThreshold - SQUELCH_HYSTERESIS)
-      {
-        mSquelchSuppress = false;
-      }
-      else if (mAverage_High >= mAverage_Low * mSquelchThreshold + SQUELCH_HYSTERESIS)
-      {
-        mSquelchSuppress = true;
-      }
-      //	else just keep old squelchSuppress value
-    }
-
-    return mSquelchSuppress ? soundSample * LEVELREDUCTIONFACTOR : soundSample;
-  }
+signals:
+  void setSquelchIsActive(bool);
 };
 
 #endif

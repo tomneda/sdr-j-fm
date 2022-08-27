@@ -20,7 +20,6 @@
  */
 #include "radio.h"
 #include "audiosink.h"
-#include "fft-scope.h"
 #include "fm-constants.h"
 #include "fm-demodulator.h"
 #include "fm-processor.h"
@@ -1513,7 +1512,6 @@ void RadioInterface::setRDSisSynchronized(bool syn)
     rdsSyncLabel->setStyleSheet("QLabel {background-color:green}");
   }
 }
-//
 
 void RadioInterface::setfmMode(const QString &s)
 {
@@ -1978,13 +1976,33 @@ void RadioInterface::set_squelchMode()
   {
     return;
   }
+
   squelchMode = !squelchMode;
-  squelchButton->setText(squelchMode ? QString("Squelch is On")
-                                     : QString("Squelch is Off"));
+  squelchButton->setText(squelchMode ? QString("Squelch is ON") : QString("Squelch is OFF"));
   squelchSlider->setEnabled(squelchMode);
   myFMprocessor->set_squelchMode(squelchMode);
+  setSquelchIsActive(myFMprocessor->getSquelchObj()->getSquelchActive()); // gray out squelch notification
 }
-//
+
+void RadioInterface::setSquelchIsActive(bool active)
+{
+  if (squelchMode)
+  {
+    if (active)
+    {
+      sqlStatusLabel->setStyleSheet("QLabel {background-color:red}");
+    }
+    else
+    {
+      sqlStatusLabel->setStyleSheet("QLabel {background-color:green}");
+    }
+  }
+  else
+  {
+    sqlStatusLabel->setStyleSheet("QLabel {background-color:gray}");
+  }
+}
+
 //	Just a simple routine to set the sliders and boxes
 //	to their previous values
 void RadioInterface::restoreGUIsettings(QSettings *s)

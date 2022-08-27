@@ -114,6 +114,7 @@ SOURCES += ./main.cpp \
            ./radio.cpp \
            ./src/popup-keypad.cpp \
            ./src/various/keyboardfilter.cpp \
+           ./src/various/squelchClass.cpp \
            ./src/various/fft.cpp \
            ./src/various/oscillator.cpp \
            ./src/various/pllC.cpp \

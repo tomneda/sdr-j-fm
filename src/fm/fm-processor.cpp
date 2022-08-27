@@ -29,7 +29,6 @@
 #include "radio.h"
 //#include "rds-decoder.h"
 #include "sincos.h"
-#include "squelchClass.h"
 
 #define AUDIO_FREQ_DEV_PROPORTION    0.85f
 #define PILOT_FREQUENCY              19000
@@ -152,6 +151,9 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   mDumping  = false;
   mpDumpFile = NULL;
 
+  mMySquelch = new squelch(1, 70000, mFmRate / 20, mFmRate);
+
+  connect(mMySquelch, &squelch::setSquelchIsActive, mMyRadioInterface, &RadioInterface::setSquelchIsActive);
   connect(this, SIGNAL(hfBufferLoaded(void)), mMyRadioInterface, SLOT(hfBufferLoaded(void)));
   connect(this, SIGNAL(lfBufferLoaded(void)), mMyRadioInterface, SLOT(lfBufferLoaded(void)));
   connect(this, &fmProcessor::showPeakLevel, mMyRadioInterface, &RadioInterface::showPeakLevel);
@@ -183,10 +185,8 @@ fmProcessor::~fmProcessor()
   //	delete	mySinCos;
   //	delete	spectrum_fft_hf;
   //	delete	spectrum_fft_lf;
-  if (mpFmAudioFilter != NULL)
-  {
-    delete mpFmAudioFilter;
-  }
+  delete mpFmAudioFilter;
+  delete mMySquelch;
 }
 
 void fmProcessor::stop()
@@ -401,7 +401,6 @@ void fmProcessor::run()
   double        displayBuffer_lf[mDisplaySize];
   int32_t       hfCount = 0;
   int32_t       lfCount = 0;
-  squelch       mySquelch(1, 70000, mFmRate / 20, mFmRate);
   int32_t       audioAmount;
   //float         audioGainAverage = 0;
   int32_t       scanPointer      = 0;
@@ -436,7 +435,7 @@ void fmProcessor::run()
 
     if (mSquelchValue != mOldSquelchValue)
     {
-      mySquelch.setSquelchLevel(mSquelchValue);
+      mMySquelch->setSquelchLevel(mSquelchValue);
       mOldSquelchValue = mSquelchValue;
     }
 
@@ -581,7 +580,7 @@ void fmProcessor::run()
 
       if (mSquelchOn)
       {
-        demod = mySquelch.do_squelch(demod);
+        demod = mMySquelch->do_squelch(demod);
       }
 
       DSPCOMPLEX result;

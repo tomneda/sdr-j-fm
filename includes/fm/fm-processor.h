@@ -32,6 +32,7 @@
 #include "fm-constants.h"
 #include "fm-demodulator.h"
 #include "rds-decoder.h"
+#include "squelchClass.h"
 #include "oscillator.h"
 #include "pllC.h"
 #include "ringbuffer.h"
@@ -99,6 +100,7 @@ public:
   void setInputMode(uint8_t);
   bool ok();
   bool isPilotLocked(float & oLockStrength) const;
+  squelch * getSquelchObj() const { return mMySquelch; }
   void setAutoMonoMode(const bool iAutoMonoMode) { mAutoMono = iAutoMonoMode; }
   void triggerDrawNewHfSpectrum() { mFillAverageHfBuffer = true; }
   void triggerDrawNewLfSpectrum() { mFillAverageLfBuffer = true; }
@@ -140,6 +142,7 @@ private:
   deviceHandler * mMyRig;
   RadioInterface * mMyRadioInterface;
   audioSink * mAudioSink;
+  squelch *mMySquelch;
   int32_t mInputRate;    // typ. 1536 kSpS
   int32_t mFmRate;       // typ.  256 kSpS = mInputRate / 6
   int32_t mWorkingRate;  // typ.   48 kSpS

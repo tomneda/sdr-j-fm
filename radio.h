@@ -60,7 +60,8 @@ class deviceHandler;
  *	The main gui object. It inherits from
  *	QDialog and the generated form
  */
-class RadioInterface : public QDialog, private Ui_sdr_j_fm {
+class RadioInterface : public QDialog, private Ui_sdr_j_fm
+{
   Q_OBJECT
 public:
   RadioInterface(QSettings *, QString, int32_t, QWidget *parent = nullptr);
@@ -259,6 +260,7 @@ public slots:
   //void clearRadioText();
   void setRadioText(const QString &);
   void setAFDisplay(int, int);
+  void setSquelchIsActive(bool);
   void setRDSisSynchronized(bool);
   void setMusicSpeechFlag(int);
   void clearMusicSpeechFlag();

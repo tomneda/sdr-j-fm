@@ -257,9 +257,8 @@ private:
   pllC * mpRds_plldecoder;
   DSPFLOAT mK_FM;
 
-  DSPFLOAT mXkm1;
-  DSPFLOAT mYkml;
-  DSPFLOAT mAlpha;
+  DSPCOMPLEX mLastAudioSample;
+  DSPFLOAT mDeemphAlpha;
 
   ELfPlot mLfPlotType = ELfPlot::MULTIPLEX;
 

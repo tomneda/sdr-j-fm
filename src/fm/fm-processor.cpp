@@ -144,10 +144,10 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   mpRds_plldecoder = new pllC(fmRate, RDS_FREQUENCY, RDS_FREQUENCY - 50, RDS_FREQUENCY + 50, 200, mpMySinCos);
   mRdsSampleCnt = 0;
 
-  //	for the deemphasis we use an in-line filter with
-  mXkm1     = 0;
-  mYkml     = 0;
-  mAlpha    = 1.0 / (fmRate / (1000000.0 / 50.0 + 1));
+  // for the deemphasis we use an in-line filter with
+  mLastAudioSample = 0;
+  mDeemphAlpha = 1.0 / (fmRate / (1000000.0 / 50.0 + 1));
+
   mDumping  = false;
   mpDumpFile = NULL;
 
@@ -316,7 +316,7 @@ void fmProcessor::setDeemphasis(int16_t v)
   DSPFLOAT Tau;
 
   Tau   = 1000000.0 / v;
-  mAlpha = 1.0 / (DSPFLOAT(mFmRate) / Tau + 1.0);
+  mDeemphAlpha = 1.0 / (DSPFLOAT(mFmRate) / Tau + 1.0);
 }
 
 void fmProcessor::setVolume(const float iVolGainDb)
@@ -600,6 +600,9 @@ void fmProcessor::run()
         result = mpFmAudioFilter->Pass(result);
       }
 
+      //	apply deemphasis
+      result = mLastAudioSample = (result - mLastAudioSample) * mDeemphAlpha + mLastAudioSample;
+
       switch (mLfPlotType)
       {
       case ELfPlot::OFF:               mpSpectrumBuffer_lf[localP++] = 0; break;
@@ -650,11 +653,7 @@ void fmProcessor::run()
 
 void fmProcessor::process_mono_only(const float demod, DSPCOMPLEX *audioOut, DSPFLOAT *rdsValue)
 {
-  //	deemphasize
-  const DSPFLOAT mono = mXkm1 = (demod - mXkm1) * mAlpha + mXkm1;
-  //const DSPFLOAT Im = mYkml = (demod - mYkml) * mAlpha + mYkml;
-
-  *audioOut = DSPCOMPLEX(mono, 0);
+  *audioOut = DSPCOMPLEX(demod, 0);
 
   //	fully inspired by cuteSDR, we try to decode the rds stream
   //	by simply am decoding it (after creating a decent complex
@@ -691,10 +690,6 @@ void fmProcessor::process_stereo_or_mono(const float demod, DSPCOMPLEX *audioOut
     *rdsValue = mpRdsLowPassFilter->Pass(5 * MixerValue * demod);
 
     DSPFLOAT LRPlus = demod;
-
-    //	apply deemphasis
-    LRPlus = mXkm1 = (LRPlus - mXkm1) * mAlpha + mXkm1;
-    LRDiff = mYkml = (LRDiff - mYkml) * mAlpha + mYkml;
 
     *audioOut = DSPCOMPLEX(LRPlus, LRDiff);
   }

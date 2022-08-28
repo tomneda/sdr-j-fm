@@ -458,13 +458,15 @@ void fmProcessor::run()
         mRfDC = (dataBuffer[i] - mRfDC) * rfDcAlpha + mRfDC;
 
         // limit the maximum DC correction because an AM carrier at exactly 0Hz could has been suppressed, too
-        constexpr DSPFLOAT DCRlimit = 0.02f;
-        if      (real(mRfDC) > +DCRlimit) mRfDC.real(+DCRlimit);
-        else if (real(mRfDC) < -DCRlimit) mRfDC.real(-DCRlimit);
-        if      (imag(mRfDC) > +DCRlimit) mRfDC.imag(+DCRlimit);
-        else if (imag(mRfDC) < -DCRlimit) mRfDC.imag(-DCRlimit);
+        constexpr DSPFLOAT DCRlimit = 0.01f;
+        DSPFLOAT rfDcReal = real(mRfDC);
+        DSPFLOAT rfDcImag = imag(mRfDC);
+        if      (rfDcReal > +DCRlimit) rfDcReal = +DCRlimit;
+        else if (rfDcReal < -DCRlimit) rfDcReal = -DCRlimit;
+        if      (rfDcImag > +DCRlimit) rfDcImag = +DCRlimit;
+        else if (rfDcImag < -DCRlimit) rfDcImag = -DCRlimit;
 
-        dataBuffer[i] -= mRfDC;
+        dataBuffer[i] -= DSPCOMPLEX(rfDcReal, rfDcImag);
       }
     }
 
@@ -662,8 +664,7 @@ void fmProcessor::run()
 
       if (++mMyCount > (mFmRate >> 1)) // each 500ms ...
       {
-        emit showStrength(get_pilotStrength(), get_dcComponent());
-        //emit showStrength(1000*abs(mRfDC), get_dcComponent());
+        emit showStrength((mDCREnabled ? 20 * log10(abs(mRfDC) + 1.0f/32768) : get_pilotStrength()), get_dcComponent());
         mMyCount = 0;
       }
     }

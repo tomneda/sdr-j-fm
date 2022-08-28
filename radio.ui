@@ -498,7 +498,7 @@
                     </palette>
                    </property>
                    <property name="toolTip">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Estimate of the DC offset. Small is good.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Estimate of the DC offset after the demodulator. Small is good.&lt;/p&gt;&lt;p&gt;This also works with the AM demodulator (a FM PLL works in the background to maintain AFC also for AM)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="autoFillBackground">
                     <bool>false</bool>
@@ -554,7 +554,7 @@
                     </palette>
                    </property>
                    <property name="toolTip">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Estimate of the strength of the pilot signal (still under development).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DCR off: Estimation of the strength of the pilot signal&lt;/p&gt;&lt;p&gt;DCR on: The uncompensated absolute DC level of the input signal in dBFS&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="autoFillBackground">
                     <bool>false</bool>

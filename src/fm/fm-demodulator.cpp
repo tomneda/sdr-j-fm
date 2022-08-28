@@ -128,7 +128,7 @@ DSPFLOAT fm_Demodulator::demodulate(DSPCOMPLEX z)
     am_carr_ampl = (1.0f - alpha) * am_carr_ampl + alpha * zAbs;
 
     // remove DC component from signal and norm level to carrier power
-    constexpr float gainLimit = 0.05f;
+    constexpr float gainLimit = 0.01f;
     res = (zAbs - am_carr_ampl) / (am_carr_ampl < gainLimit ? gainLimit : am_carr_ampl);
 
     // this avoids short spikes which would cause the auto level limitter to reduce audio level too much

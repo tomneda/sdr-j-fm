@@ -1377,7 +1377,7 @@
                 </layout>
                </item>
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="0,0">
+                <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="1,7">
                  <item>
                   <widget class="QLabel" name="label_8">
                    <property name="text">

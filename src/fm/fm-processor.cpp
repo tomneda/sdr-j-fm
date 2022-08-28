@@ -414,6 +414,7 @@ void fmProcessor::run()
   common_fft    *scan_fft        = new common_fft(1024);
   DSPCOMPLEX    *scanBuffer      = scan_fft->getVector();
   int           localP           = 0;
+  const float rfDcAlpha = 1.0f / mInputRate;
 
   assert(mpMyRdsDecoder == nullptr); // check whether not calling next news twice
   mpMyRdsDecoder = new rdsDecoder(mMyRadioInterface, mFmRate / RDS_DECIMATOR, mpMySinCos);
@@ -446,8 +447,26 @@ void fmProcessor::run()
       mOldSquelchValue = mSquelchValue;
     }
 
+
     const int32_t amount = mMyRig->getSamples(dataBuffer, bufferSize, mInputMode);
     const int32_t aa = (amount >= mSpectrumSize ? mSpectrumSize : amount);
+
+    if (mDCREnabled)
+    {
+      for (int32_t i = 0; i < amount; i++)
+      {
+        mRfDC = (dataBuffer[i] - mRfDC) * rfDcAlpha + mRfDC;
+
+        // limit the maximum DC correction because an AM carrier at exactly 0Hz could has been suppressed, too
+        constexpr DSPFLOAT DCRlimit = 0.02f;
+        if      (real(mRfDC) > +DCRlimit) mRfDC.real(+DCRlimit);
+        else if (real(mRfDC) < -DCRlimit) mRfDC.real(-DCRlimit);
+        if      (imag(mRfDC) > +DCRlimit) mRfDC.imag(+DCRlimit);
+        else if (imag(mRfDC) < -DCRlimit) mRfDC.imag(-DCRlimit);
+
+        dataBuffer[i] -= mRfDC;
+      }
+    }
 
     //	for the HFscope
     if (++mHfCount > (mInputRate / bufferSize) / mRepeatRate)
@@ -513,7 +532,6 @@ void fmProcessor::run()
     for (int32_t i = 0; i < amount; i++)
     {
       DSPCOMPLEX v = DSPCOMPLEX(real(dataBuffer[i]) * mLgain, imag(dataBuffer[i]) * mRgain);
-      //DSPCOMPLEX v = dataBuffer[i];
 
       v = v * mpLocalOscillator->nextValue(mLoFrequency);
 
@@ -645,6 +663,7 @@ void fmProcessor::run()
       if (++mMyCount > (mFmRate >> 1)) // each 500ms ...
       {
         emit showStrength(get_pilotStrength(), get_dcComponent());
+        //emit showStrength(1000*abs(mRfDC), get_dcComponent());
         mMyCount = 0;
       }
     }

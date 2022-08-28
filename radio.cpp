@@ -452,6 +452,7 @@ void RadioInterface::setStart()
   }
 
   connect(cbAutoMono, &QCheckBox::clicked, this, [this](bool isChecked){ myFMprocessor->setAutoMonoMode(isChecked); });
+  connect(cbDCRemove, &QCheckBox::clicked, this, [this](bool isChecked){ myFMprocessor->setDCRemove(isChecked); });
   connect(volumeSlider, &QSlider::valueChanged, this, &RadioInterface::setAudioGainSlider);
 
   volumeSlider->setValue(fmSettings->value("volumeHalfDb", -12).toInt());

@@ -116,6 +116,7 @@ public:
   bool isPilotLocked(float & oLockStrength) const;
   squelch * getSquelchObj() const { return mMySquelch; }
   void setAutoMonoMode(const bool iAutoMonoMode) { mAutoMono = iAutoMonoMode; }
+  void setDCRemove(const bool iDCREnabled) { mDCREnabled = iDCREnabled; mRfDC = 0.0f; }
   void triggerDrawNewHfSpectrum() { mFillAverageHfBuffer = true; }
   void triggerDrawNewLfSpectrum() { mFillAverageLfBuffer = true; }
 
@@ -259,6 +260,9 @@ private:
 
   DSPCOMPLEX mLastAudioSample;
   DSPFLOAT mDeemphAlpha;
+
+  bool mDCREnabled = true;
+  DSPCOMPLEX mRfDC = 0.0f;
 
   ELfPlot mLfPlotType = ELfPlot::MULTIPLEX;
 

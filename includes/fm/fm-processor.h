@@ -265,6 +265,7 @@ private:
   DSPCOMPLEX mRfDC = 0.0f;
 
   ELfPlot mLfPlotType = ELfPlot::MULTIPLEX;
+  bool mShowFullSpectrum = false; // show only half (real values) or full (complex values) spectrum
 
   class pilotRecovery
   {
@@ -344,7 +345,7 @@ private:
 signals:
   void setPLLisLocked(bool);
   void hfBufferLoaded();
-  void lfBufferLoaded();
+  void lfBufferLoaded(bool);
   void showStrength(float, float);
   void scanresult();
   void showPeakLevel(const float, const float);

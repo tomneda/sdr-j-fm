@@ -554,7 +554,7 @@
                     </palette>
                    </property>
                    <property name="toolTip">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DCR off: Estimation of the strength of the pilot signal&lt;/p&gt;&lt;p&gt;DCR on: The uncompensated absolute DC level of the input signal in dBFS&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DCR off: Estimation of the strength of the pilot signal. Works only with plot is showing the Multiplex signal.&lt;/p&gt;&lt;p&gt;DCR on: The uncompensated absolute DC level of the input signal in dBFS.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="autoFillBackground">
                     <bool>false</bool>

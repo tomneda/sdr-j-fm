@@ -245,7 +245,7 @@ public slots:
   void handle_freqButton();
   void newFrequency(int);
   void hfBufferLoaded();
-  void lfBufferLoaded();
+  void lfBufferLoaded(bool);
   void wheelEvent(QWheelEvent *) override;
   void setLogging(const QString &);
   void setLogsaving();

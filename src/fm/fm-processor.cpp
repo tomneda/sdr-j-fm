@@ -157,7 +157,7 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
 
   connect(mMySquelch, &squelch::setSquelchIsActive, mMyRadioInterface, &RadioInterface::setSquelchIsActive);
   connect(this, SIGNAL(hfBufferLoaded(void)), mMyRadioInterface, SLOT(hfBufferLoaded(void)));
-  connect(this, SIGNAL(lfBufferLoaded(void)), mMyRadioInterface, SLOT(lfBufferLoaded(void)));
+  connect(this, SIGNAL(lfBufferLoaded(bool)), mMyRadioInterface, SLOT(lfBufferLoaded(bool)));
   connect(this, &fmProcessor::showPeakLevel, mMyRadioInterface, &RadioInterface::showPeakLevel);
   connect(this, SIGNAL(showStrength(float,float)), mMyRadioInterface, SLOT(showStrength(float,float)));
   connect(this, SIGNAL(scanresult(void)), mMyRadioInterface,SLOT(scanresult(void)));
@@ -279,6 +279,7 @@ void fmProcessor::setfmMode(FM_Mode m)
 void fmProcessor::setLfPlotType(ELfPlot m)
 {
   mLfPlotType = m;
+  mShowFullSpectrum = (m == ELfPlot::IF_FILTERED);
 }
 
 void fmProcessor::setFMdecoder(int16_t d)
@@ -893,8 +894,14 @@ void fmProcessor::processLfSpectrum()
   double Y_Values[mDisplaySize];
   mpSpectrum_fft_lf->do_FFT();
 
-  //mapSpectrum(mpSpectrumBuffer_lf, Y_Values);
-  mapHalfSpectrum(mpSpectrumBuffer_lf, Y_Values);
+  if (mShowFullSpectrum)
+  {
+    mapSpectrum(mpSpectrumBuffer_lf, Y_Values);
+  }
+  else
+  {
+    mapHalfSpectrum(mpSpectrumBuffer_lf, Y_Values);
+  }
 
   if (mFillAverageLfBuffer)
   {
@@ -906,13 +913,19 @@ void fmProcessor::processLfSpectrum()
     add_to_average(Y_Values, mpDisplayBuffer_lf);
   }
 
-  //extractLevels(displayBuffer_lf, mFmRate);
-  extractLevelsHalfSpectrum(mpDisplayBuffer_lf, mFmRate);
+  if (mShowFullSpectrum)
+  {
+    extractLevels(mpDisplayBuffer_lf, mFmRate);
+  }
+  else
+  {
+    extractLevelsHalfSpectrum(mpDisplayBuffer_lf, mFmRate);
+  }
 
   mpLfBuffer->putDataIntoBuffer(mpDisplayBuffer_lf, mDisplaySize);
 
   //	and signal the GUI thread that we have data
-  emit lfBufferLoaded();
+  emit lfBufferLoaded(mShowFullSpectrum);
 }
 
 void fmProcessor::mapHalfSpectrum(const DSPCOMPLEX * const in, double * const out)

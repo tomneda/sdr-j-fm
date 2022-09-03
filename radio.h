@@ -220,6 +220,7 @@ private slots:
   void setAudioGainSlider(int n);
   void setfmLFcutoff(const QString &);
   void setLfPlotType(const QString &s);
+  void setLfPlotZoomFactor(const QString &s);
 
   void autoIncrement_timeout();
   void autoIncrementButton();

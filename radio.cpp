@@ -1357,7 +1357,8 @@ void RadioInterface::localConnects()
   connect(fmStereoBalanceSlider, SIGNAL(valueChanged(int)), this, SLOT(setfmStereoBalanceSlider(int)));
   connect(fmDeemphasisSelector, SIGNAL(activated(const QString&)), this, SLOT(setfmDeemphasis(const QString&)));
   connect(fmLFcutoff, SIGNAL(activated(const QString&)), this, SLOT(setfmLFcutoff(const QString&)));
-  connect(plotSelector, SIGNAL(activated(const QString&)), this, SLOT(setLfPlotType(const QString&)));
+  connect(plotSelector, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::setLfPlotType);
+  connect(plotFactor, qOverload<const QString &>(&QComboBox::activated), this, &RadioInterface::setLfPlotZoomFactor);
 }
 
 void RadioInterface::setfmStereoPanoramaSlider(int n)
@@ -1569,6 +1570,17 @@ void RadioInterface::setLfPlotType(const QString &s)
 
   myFMprocessor->triggerDrawNewLfSpectrum(); // resets the average filter
 }
+
+void RadioInterface::setLfPlotZoomFactor(const QString &s)
+{
+  if (myFMprocessor == nullptr)
+  {
+    return;
+  }
+
+  myFMprocessor->setLfPlotZoomFactor(std::stol(s.toStdString()));
+}
+
 void RadioInterface::setfmRdsSelector(const QString &s)
 {
   if (myFMprocessor == nullptr)

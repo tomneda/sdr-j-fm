@@ -1008,7 +1008,7 @@
              <item>
               <layout class="QVBoxLayout" name="verticalLayout_3">
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_16" stretch="1,7">
+                <layout class="QHBoxLayout" name="horizontalLayout_16" stretch="1,7,2">
                  <item>
                   <widget class="QLabel" name="label_10">
                    <property name="text">
@@ -1067,6 +1067,36 @@
                    <item>
                     <property name="text">
                      <string>RDS</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="plotFactor">
+                   <property name="enabled">
+                    <bool>true</bool>
+                   </property>
+                   <property name="currentIndex">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <property name="text">
+                     <string>1 x</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>2 x</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>4 x</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>8 x</string>
                     </property>
                    </item>
                   </widget>

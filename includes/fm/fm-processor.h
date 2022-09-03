@@ -112,6 +112,8 @@ public:
   void set_squelchMode(bool);
   void setInputMode(uint8_t);
   void setLfPlotType(ELfPlot);
+  void setLfPlotZoomFactor(int32_t);
+
   bool ok();
   bool isPilotLocked(float & oLockStrength) const;
   squelch * getSquelchObj() const { return mMySquelch; }
@@ -266,6 +268,7 @@ private:
 
   ELfPlot mLfPlotType = ELfPlot::MULTIPLEX;
   bool mShowFullSpectrum = false; // show only half (real values) or full (complex values) spectrum
+  uint32_t mZoomFactor = 1;
 
   class pilotRecovery
   {

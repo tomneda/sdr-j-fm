@@ -156,11 +156,12 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   mpDisplayBuffer_lf = new double[mDisplaySize];
 
   connect(mMySquelch, &squelch::setSquelchIsActive, mMyRadioInterface, &RadioInterface::setSquelchIsActive);
-  connect(this, SIGNAL(hfBufferLoaded(void)), mMyRadioInterface, SLOT(hfBufferLoaded(void)));
-  connect(this, SIGNAL(lfBufferLoaded(bool)), mMyRadioInterface, SLOT(lfBufferLoaded(bool)));
+  connect(this, &fmProcessor::hfBufferLoaded, mMyRadioInterface, &RadioInterface::hfBufferLoaded);
+  connect(this, &fmProcessor::lfBufferLoaded, mMyRadioInterface, &RadioInterface::lfBufferLoaded);
+  //connect(this, SIGNAL(lfBufferLoaded(uint32_t,bool)), mMyRadioInterface, SLOT(lfBufferLoaded(uint32_t,bool)));
   connect(this, &fmProcessor::showPeakLevel, mMyRadioInterface, &RadioInterface::showPeakLevel);
   connect(this, SIGNAL(showStrength(float,float)), mMyRadioInterface, SLOT(showStrength(float,float)));
-  connect(this, SIGNAL(scanresult(void)), mMyRadioInterface,SLOT(scanresult(void)));
+  connect(this, SIGNAL(scanresult()), mMyRadioInterface,SLOT(scanresult()));
 
   mSquelchValue     = 0;
   mOldSquelchValue = 0;
@@ -280,6 +281,11 @@ void fmProcessor::setLfPlotType(ELfPlot m)
 {
   mLfPlotType = m;
   mShowFullSpectrum = (m == ELfPlot::IF_FILTERED);
+}
+
+void fmProcessor::setLfPlotZoomFactor(int32_t iZoomFactor)
+{
+  mZoomFactor = iZoomFactor;
 }
 
 void fmProcessor::setFMdecoder(int16_t d)
@@ -889,6 +895,22 @@ void fmProcessor::mapSpectrum(const DSPCOMPLEX * const in, double * const out)
   }
 }
 
+void fmProcessor::mapHalfSpectrum(const DSPCOMPLEX * const in, double * const out)
+{
+  for (int32_t i = 0; i < mDisplaySize; i++)
+  {
+    const int16_t factor = mSpectrumSize / mDisplaySize / 2 / mZoomFactor;  // typ factor = 4 (whole divider)
+    double  f = 0;
+
+    for (int32_t j = 0; j < factor; j++)
+    {
+      f += abs(in[i * factor + j]); // read 0Hz to rate/2 -> map to mid to end of display
+    }
+
+    out[i] = f / factor;
+  }
+}
+
 void fmProcessor::processLfSpectrum()
 {
   double Y_Values[mDisplaySize];
@@ -928,22 +950,6 @@ void fmProcessor::processLfSpectrum()
   emit lfBufferLoaded(mShowFullSpectrum);
 }
 
-void fmProcessor::mapHalfSpectrum(const DSPCOMPLEX * const in, double * const out)
-{
-  for (int32_t i = 0; i < mDisplaySize; i++)
-  {
-    const int16_t factor = mSpectrumSize / mDisplaySize / 2;  // typ factor = 4 (whole divider)
-    double  f = 0;
-
-    for (int32_t j = 0; j < factor; j++)
-    {
-      f += abs(in[i * factor + j]); // read 0Hz to rate/2 -> map to mid to end of display
-    }
-
-    out[i] = f / factor;
-  }
-}
-
 void fmProcessor::fill_average_buffer(const double * const in, double * const buffer)
 {
   for (int32_t i = 0; i < mDisplaySize; i++)
@@ -962,7 +968,7 @@ void fmProcessor::add_to_average(const double * const in, double * const buffer)
 
 void fmProcessor::extractLevels(const double * const in, const int32_t range)
 {
-  const float binWidth = (float)range / mDisplaySize;
+  const float binWidth = (float)range / mZoomFactor / mDisplaySize;
   const int32_t pilotOffset = mDisplaySize / 2 - 19000 / binWidth;
   const int32_t rdsOffset   = mDisplaySize / 2 - 57000 / binWidth;
   const int32_t noiseOffset = mDisplaySize / 2 - 70000 / binWidth;
@@ -995,7 +1001,7 @@ void fmProcessor::extractLevels(const double * const in, const int32_t range)
 
 void fmProcessor::extractLevelsHalfSpectrum(const double * const in, const int32_t range)
 {
-  const float binWidth = (float)range / mDisplaySize / 2;
+  const float binWidth = (float)range / mZoomFactor / mDisplaySize / 2;
   const int32_t pilotOffset = 19000 / binWidth;
   const int32_t rdsOffset   = 57000 / binWidth;
   const int32_t noiseOffset = 70000 / binWidth;

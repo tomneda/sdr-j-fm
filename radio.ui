@@ -1076,6 +1076,9 @@
                    <property name="enabled">
                     <bool>true</bool>
                    </property>
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Zoom into the spectrum as far the zoom factor is possible&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
                    <property name="currentIndex">
                     <number>0</number>
                    </property>
@@ -1092,11 +1095,6 @@
                    <item>
                     <property name="text">
                      <string>4 x</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>8 x</string>
                     </property>
                    </item>
                   </widget>

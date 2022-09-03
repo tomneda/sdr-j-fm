@@ -872,6 +872,42 @@ DSPFLOAT fmProcessor::getNoise(DSPCOMPLEX *v, int32_t size)
   return sum / 40;
 }
 
+//void fmProcessor::mapSpectrum(const DSPCOMPLEX * const in, double * const out, int32_t &ioZoomFactor)
+//{
+//  int16_t factor = mSpectrumSize / mDisplaySize;  // typ factor = 4 (whole divider)
+
+//  if (factor / ioZoomFactor >= 1)
+//  {
+//    factor /= ioZoomFactor;
+//  }
+//  else
+//  {
+//    ioZoomFactor = factor;
+//    factor = 1;
+//  }
+
+//  for (int32_t i = 0; i < mDisplaySize / 2; i++)
+//  {
+//    double  f = 0;
+
+//    for (int32_t j = 0; j < factor; j++)
+//    {
+//      f += abs(in[i * factor + j]); // read 0Hz to rate/2 -> map to mid to end of display
+//    }
+
+//    out[mDisplaySize / 2 + i] = f / factor;
+
+//    f = 0;
+
+//    for (int32_t j = 0; j < factor; j++)
+//    {
+//      f += abs(in[mSpectrumSize / 2 + i * factor + j]); // read rate/2 down to 0Hz -> map to begin to mid of display
+//    }
+
+//    out[i] = f / factor;
+//  }
+//}
+
 void fmProcessor::mapSpectrum(const DSPCOMPLEX * const in, double * const out, int32_t &ioZoomFactor)
 {
   int16_t factor = mSpectrumSize / mDisplaySize;  // typ factor = 4 (whole divider)
@@ -886,9 +922,10 @@ void fmProcessor::mapSpectrum(const DSPCOMPLEX * const in, double * const out, i
     factor = 1;
   }
 
+  // work from inside (0Hz) to outside for filling display data
   for (int32_t i = 0; i < mDisplaySize / 2; i++)
   {
-    double  f = 0;
+    double f = 0;
 
     for (int32_t j = 0; j < factor; j++)
     {
@@ -901,10 +938,10 @@ void fmProcessor::mapSpectrum(const DSPCOMPLEX * const in, double * const out, i
 
     for (int32_t j = 0; j < factor; j++)
     {
-      f += abs(in[mSpectrumSize / 2 + i * factor + j]); // read rate/2 down to 0Hz -> map to begin to mid of display
+      f += abs(in[mSpectrumSize - 1 - (i * factor + j)]); // read rate/2 down to 0Hz -> map to begin to mid of display
     }
 
-    out[i] = f / factor;
+    out[mDisplaySize / 2 - 1 - i] = f / factor;
   }
 }
 
@@ -924,7 +961,7 @@ void fmProcessor::mapHalfSpectrum(const DSPCOMPLEX * const in, double * const ou
 
   for (int32_t i = 0; i < mDisplaySize; i++)
   {
-    double  f = 0;
+    double f = 0;
 
     for (int32_t j = 0; j < factor; j++)
     {

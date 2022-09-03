@@ -1579,6 +1579,7 @@ void RadioInterface::setLfPlotZoomFactor(const QString &s)
   }
 
   myFMprocessor->setLfPlotZoomFactor(std::stol(s.toStdString()));
+  myFMprocessor->triggerDrawNewLfSpectrum(); // resets the average filter
 }
 
 void RadioInterface::setfmRdsSelector(const QString &s)
@@ -1956,7 +1957,7 @@ void RadioInterface::hfBufferLoaded()
 //	in the GUI environment. The FM processor prepares "views"
 //	and punt these views into a shared buffer. If the buffer is
 //	full, a signal is sent.
-void RadioInterface::lfBufferLoaded(bool iShowFullSpectrum)
+void RadioInterface::lfBufferLoaded(bool iShowFullSpectrum, int iZoomFactor)
 {
   double  *X_axis   = (double *)alloca(displaySize * sizeof(double));
   double  *Y_values = (double *)alloca(displaySize * sizeof(double));
@@ -1968,14 +1969,14 @@ void RadioInterface::lfBufferLoaded(bool iShowFullSpectrum)
   {
     for (i = 0; i < displaySize; i++)
     {
-      X_axis[i] = (-(fmRate / 2.0) + (2 * i * temp)) / ((double)Khz(1)); // two side spectrum
+      X_axis[i] = (-(fmRate / 2.0) + (2 * i * temp)) / ((double)Khz(1)) / iZoomFactor; // two side spectrum
     }
   }
   else
   {
     for (i = 0; i < displaySize; i++)
     {
-      X_axis[i] = (i * temp) / ((double)Khz(1)); // one-side spectrum
+      X_axis[i] = (i * temp) / ((double)Khz(1)) / iZoomFactor; // one-side spectrum
     }
   }
 

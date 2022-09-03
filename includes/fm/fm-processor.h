@@ -146,8 +146,8 @@ public:
 
 private:
   void run() override;
-  void mapSpectrum(const DSPCOMPLEX * const, double * const);
-  void mapHalfSpectrum(const DSPCOMPLEX * const, double * const);
+  void mapSpectrum(const DSPCOMPLEX * const, double * const, int32_t &);
+  void mapHalfSpectrum(const DSPCOMPLEX * const, double * const, int32_t &);
   void processLfSpectrum();
   void fill_average_buffer(const double * const, double * const);
   void add_to_average(const double * const, double * const);
@@ -268,7 +268,7 @@ private:
 
   ELfPlot mLfPlotType = ELfPlot::MULTIPLEX;
   bool mShowFullSpectrum = false; // show only half (real values) or full (complex values) spectrum
-  uint32_t mZoomFactor = 1;
+  int32_t mZoomFactor = 1;
 
   class pilotRecovery
   {
@@ -348,7 +348,7 @@ private:
 signals:
   void setPLLisLocked(bool);
   void hfBufferLoaded();
-  void lfBufferLoaded(bool);
+  void lfBufferLoaded(bool, int);
   void showStrength(float, float);
   void scanresult();
   void showPeakLevel(const float, const float);

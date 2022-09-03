@@ -493,7 +493,9 @@ void fmProcessor::run()
       }
 
       mpSpectrum_fft_hf->do_FFT();
-      mapSpectrum(mpSpectrumBuffer_hf, Y_Values);
+
+      int32_t zoomFactor = 1;
+      mapSpectrum(mpSpectrumBuffer_hf, Y_Values, zoomFactor);
 
 //      if (freezer > 0)
 //      {
@@ -870,11 +872,22 @@ DSPFLOAT fmProcessor::getNoise(DSPCOMPLEX *v, int32_t size)
   return sum / 40;
 }
 
-void fmProcessor::mapSpectrum(const DSPCOMPLEX * const in, double * const out)
+void fmProcessor::mapSpectrum(const DSPCOMPLEX * const in, double * const out, int32_t &ioZoomFactor)
 {
+  int16_t factor = mSpectrumSize / mDisplaySize;  // typ factor = 4 (whole divider)
+
+  if (factor / ioZoomFactor >= 1)
+  {
+    factor /= ioZoomFactor;
+  }
+  else
+  {
+    ioZoomFactor = factor;
+    factor = 1;
+  }
+
   for (int32_t i = 0; i < mDisplaySize / 2; i++)
   {
-    const int16_t factor = mSpectrumSize / mDisplaySize;  // typ factor = 4 (whole divider)
     double  f = 0;
 
     for (int32_t j = 0; j < factor; j++)
@@ -895,11 +908,22 @@ void fmProcessor::mapSpectrum(const DSPCOMPLEX * const in, double * const out)
   }
 }
 
-void fmProcessor::mapHalfSpectrum(const DSPCOMPLEX * const in, double * const out)
+void fmProcessor::mapHalfSpectrum(const DSPCOMPLEX * const in, double * const out, int32_t &ioZoomFactor)
 {
+  int16_t factor = mSpectrumSize / mDisplaySize / 2;  // typ factor = 2 (whole divider)
+
+  if (factor / ioZoomFactor >= 1)
+  {
+    factor /= ioZoomFactor;
+  }
+  else
+  {
+    ioZoomFactor = factor;
+    factor = 1;
+  }
+
   for (int32_t i = 0; i < mDisplaySize; i++)
   {
-    const int16_t factor = mSpectrumSize / mDisplaySize / 2 / mZoomFactor;  // typ factor = 4 (whole divider)
     double  f = 0;
 
     for (int32_t j = 0; j < factor; j++)
@@ -914,15 +938,18 @@ void fmProcessor::mapHalfSpectrum(const DSPCOMPLEX * const in, double * const ou
 void fmProcessor::processLfSpectrum()
 {
   double Y_Values[mDisplaySize];
+
   mpSpectrum_fft_lf->do_FFT();
+
+  int32_t zoomFactor = mZoomFactor; // copy value because it may be changed
 
   if (mShowFullSpectrum)
   {
-    mapSpectrum(mpSpectrumBuffer_lf, Y_Values);
+    mapSpectrum(mpSpectrumBuffer_lf, Y_Values, zoomFactor);
   }
   else
   {
-    mapHalfSpectrum(mpSpectrumBuffer_lf, Y_Values);
+    mapHalfSpectrum(mpSpectrumBuffer_lf, Y_Values, zoomFactor);
   }
 
   if (mFillAverageLfBuffer)
@@ -947,7 +974,7 @@ void fmProcessor::processLfSpectrum()
   mpLfBuffer->putDataIntoBuffer(mpDisplayBuffer_lf, mDisplaySize);
 
   //	and signal the GUI thread that we have data
-  emit lfBufferLoaded(mShowFullSpectrum);
+  emit lfBufferLoaded(mShowFullSpectrum, zoomFactor);
 }
 
 void fmProcessor::fill_average_buffer(const double * const in, double * const buffer)

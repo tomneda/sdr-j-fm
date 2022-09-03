@@ -1556,7 +1556,7 @@ void RadioInterface::setLfPlotType(const QString &s)
 
   if      (s == "OFF")               myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::OFF);
   else if (s == "IF Filtered")       myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::IF_FILTERED);
-  else if (s == "Multiplex")         myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::MULTIPLEX);
+  else if (s == "Demodulator")       myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::DEMODULATOR);
   else if (s == "AF SUM")            myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::AF_SUM);
   else if (s == "AF DIFF")           myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::AF_DIFF);
   else if (s == "AF MONO Filtered")  myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::AF_MONO_FILTERED);

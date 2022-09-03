@@ -64,7 +64,7 @@ public:
   {
     OFF,
     IF_FILTERED,
-    MULTIPLEX,
+    DEMODULATOR,
     AF_SUM,
     AF_DIFF,
     AF_MONO_FILTERED,
@@ -266,7 +266,7 @@ private:
   bool mDCREnabled = true;
   DSPCOMPLEX mRfDC = 0.0f;
 
-  ELfPlot mLfPlotType = ELfPlot::MULTIPLEX;
+  ELfPlot mLfPlotType = ELfPlot::DEMODULATOR;
   bool mShowFullSpectrum = false; // show only half (real values) or full (complex values) spectrum
   int32_t mZoomFactor = 1;
 

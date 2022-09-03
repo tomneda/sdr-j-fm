@@ -636,7 +636,7 @@ void fmProcessor::run()
       {
       case ELfPlot::OFF:               mpSpectrumBuffer_lf[localP++] = 0; break;
       case ELfPlot::IF_FILTERED:       mpSpectrumBuffer_lf[localP++] = v; break;
-      case ELfPlot::MULTIPLEX:         mpSpectrumBuffer_lf[localP++] = demod; break;
+      case ELfPlot::DEMODULATOR:       mpSpectrumBuffer_lf[localP++] = demod; break;
       case ELfPlot::AF_SUM:            mpSpectrumBuffer_lf[localP++] = sumLR; break;
       case ELfPlot::AF_DIFF:           mpSpectrumBuffer_lf[localP++] = diffLR; break;
       case ELfPlot::AF_MONO_FILTERED:  mpSpectrumBuffer_lf[localP++] = (result.real() + result.imag()); break;
@@ -871,42 +871,6 @@ DSPFLOAT fmProcessor::getNoise(DSPCOMPLEX *v, int32_t size)
   }
   return sum / 40;
 }
-
-//void fmProcessor::mapSpectrum(const DSPCOMPLEX * const in, double * const out, int32_t &ioZoomFactor)
-//{
-//  int16_t factor = mSpectrumSize / mDisplaySize;  // typ factor = 4 (whole divider)
-
-//  if (factor / ioZoomFactor >= 1)
-//  {
-//    factor /= ioZoomFactor;
-//  }
-//  else
-//  {
-//    ioZoomFactor = factor;
-//    factor = 1;
-//  }
-
-//  for (int32_t i = 0; i < mDisplaySize / 2; i++)
-//  {
-//    double  f = 0;
-
-//    for (int32_t j = 0; j < factor; j++)
-//    {
-//      f += abs(in[i * factor + j]); // read 0Hz to rate/2 -> map to mid to end of display
-//    }
-
-//    out[mDisplaySize / 2 + i] = f / factor;
-
-//    f = 0;
-
-//    for (int32_t j = 0; j < factor; j++)
-//    {
-//      f += abs(in[mSpectrumSize / 2 + i * factor + j]); // read rate/2 down to 0Hz -> map to begin to mid of display
-//    }
-
-//    out[i] = f / factor;
-//  }
-//}
 
 void fmProcessor::mapSpectrum(const DSPCOMPLEX * const in, double * const out, int32_t &ioZoomFactor)
 {

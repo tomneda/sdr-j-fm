@@ -427,8 +427,8 @@ void RadioInterface::setStart()
   //	and finally: recall that starting overrules pausing
   pauseButton->setText(QString("Pause"));
 
-  set_squelchMode(); // toggle sequelch on
-  set_squelchMode(); // toggle sequelch off (TODO: make this nicer)
+  set_squelchMode("NSQ"); // toggle sequelch on
+  set_squelchMode("SQ OFF"); // toggle sequelch off (TODO: make this nicer)
 
   // populate FM decoder combo box
   {
@@ -1335,7 +1335,7 @@ void RadioInterface::localConnects()
   connect(dumpButton, SIGNAL(clicked()), this, SLOT(set_dumping()));
   connect(audioDump, SIGNAL(clicked()), this, SLOT(set_audioDump()));
 
-  connect(squelchButton, SIGNAL(clicked()), this, SLOT(set_squelchMode()));
+  connect(squelchSelector, SIGNAL(activated(const QString&)), this, SLOT(set_squelchMode(const QString&)));
   connect(squelchSlider, SIGNAL(valueChanged(int)), this, SLOT(set_squelchValue(int)));
 
   connect(IQbalanceSlider, SIGNAL(valueChanged(int)), this, SLOT(setIQBalance(int)));
@@ -2017,17 +2017,27 @@ void RadioInterface::setup_LFScope()
 }
 
 //
-void RadioInterface::set_squelchMode()
+void RadioInterface::set_squelchMode(const QString& s)
 {
   if (myFMprocessor == nullptr)
   {
     return;
   }
 
-  squelchMode = !squelchMode;
-  squelchButton->setText(squelchMode ? QString("Squelch is ON") : QString("Squelch is OFF"));
+  fmProcessor::ESqMode sqMode = fmProcessor::ESqMode::OFF;
+
+  if      (s == "SQ OFF") sqMode = fmProcessor::ESqMode::OFF;
+  else if (s == "NSQ")    sqMode = fmProcessor::ESqMode::NSQ;
+  else if (s == "LSQ")    sqMode = fmProcessor::ESqMode::LSQ;
+  else
+  {
+    Q_ASSERT(0);
+  }
+
+  squelchMode = (sqMode != fmProcessor::ESqMode::OFF);
+  //squelchButton->setText(squelchMode ? QString("Squelch is ON") : QString("Squelch is OFF"));
   squelchSlider->setEnabled(squelchMode);
-  myFMprocessor->set_squelchMode(squelchMode);
+  myFMprocessor->set_squelchMode(sqMode);
   setSquelchIsActive(myFMprocessor->getSquelchObj()->getSquelchActive()); // gray out squelch notification or read current state
 }
 

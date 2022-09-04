@@ -29,12 +29,12 @@
 
 fm_Demodulator::TDecoderListNames fm_Demodulator::sIdx2DecoderName =
 {
- "AM (experimental)",
- "PLL Decoder",
- "Mixed Demod",
- "Complex Baseband Delay",
- "Real Baseband Delay",
- "Difference Based"
+ "AM",
+ "FM PLL Decoder",
+ "FM Mixed Demod",
+ "FM Complex Baseband Delay",
+ "FM Real Baseband Delay",
+ "FM Difference Based"
 };
 
 //	Just to play around a little, I implemented 5 common
@@ -99,19 +99,24 @@ const char * fm_Demodulator::nameofDecoder() const
 
 DSPFLOAT fm_Demodulator::demodulate(DSPCOMPLEX z)
 {
-  constexpr DSPFLOAT DCAlpha = 0.0001;
+  constexpr float fmDcAlpha    = 0.0001f; // DC filter after FM demodulator (frequency offset)
+  constexpr float carrierAlpha = 0.0010f; // DC filter after AM demodulator (carrier level)
+
+  // get DC component or mean carrier power (needed also for level squelch)
+  const DSPFLOAT zAbs = abs(z);
+  am_carr_ampl = (1.0f - carrierAlpha) * am_carr_ampl + carrierAlpha * zAbs;
 
   DSPFLOAT res;
   DSPFLOAT I, Q;
 
-  if (abs(z) <= 0.001)
+  if (zAbs <= 0.001)
   {
     I = Q = 0.001;  // do not make these 0 too often
   }
   else
   {
-    I = real(z) / abs(z);
-    Q = imag(z) / abs(z);
+    I = real(z) / zAbs;
+    Q = imag(z) / zAbs;
   }
 
   if (selectedDecoder == 0) // AM
@@ -119,13 +124,7 @@ DSPFLOAT fm_Demodulator::demodulate(DSPCOMPLEX z)
     // get carrier offset to have AFC for AM, too
     myfm_pll->do_pll(DSPCOMPLEX(I, Q));
     res = myfm_pll->getPhaseIncr();
-    fm_afc = (1 - DCAlpha) * fm_afc + DCAlpha * res;
-
-    const DSPFLOAT zAbs = abs(z);
-
-    // get DC component or mean carrier power
-    constexpr float alpha = 0.001f;
-    am_carr_ampl = (1.0f - alpha) * am_carr_ampl + alpha * zAbs;
+    fm_afc = (1 - fmDcAlpha) * fm_afc + fmDcAlpha * res;
 
     // remove DC component from signal and norm level to carrier power
     constexpr float gainLimit = 0.01f;
@@ -177,7 +176,7 @@ DSPFLOAT fm_Demodulator::demodulate(DSPCOMPLEX z)
     break;
   }
 
-  fm_afc = (1 - DCAlpha) * fm_afc + DCAlpha * res;
+  fm_afc = (1 - fmDcAlpha) * fm_afc + fmDcAlpha * res;
   res = 20.0f * (res - fm_afc) * fm_cvt / K_FM;
 
   // and shift ...

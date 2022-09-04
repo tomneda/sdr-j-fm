@@ -73,6 +73,13 @@ public:
     RDS
   };
 
+  enum class ESqMode
+  {
+    OFF,
+    NSQ,
+    LSQ
+  };
+
 public:
   fmProcessor(deviceHandler *,
               RadioInterface *,
@@ -109,7 +116,7 @@ public:
   void resetRds();
   void set_localOscillator(int32_t);
   void setFreezer(bool);
-  void set_squelchMode(bool);
+  void set_squelchMode(ESqMode iSqMode);
   void setInputMode(uint8_t);
   void setLfPlotType(ELfPlot);
   void setLfPlotZoomFactor(int32_t);
@@ -181,7 +188,7 @@ private:
   DSPFLOAT getSignal(DSPCOMPLEX *, int32_t);
   DSPFLOAT getNoise(DSPCOMPLEX *, int32_t);
 
-  bool mSquelchOn;
+  ESqMode mSquelchMode;
   int32_t mSpectrumSize;
   common_fft * mpSpectrum_fft_hf;
   common_fft * mpSpectrum_fft_lf;

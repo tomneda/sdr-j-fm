@@ -67,7 +67,7 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   mFilterDepth      = filterDepth;
   mThresHold        = thresHold;
   //freezer          = 0;
-  mSquelchOn        = false;
+  mSquelchMode      = ESqMode::OFF;
   mScanning         = false;
   mLgain            = 20;
   mRgain            = 20;
@@ -581,9 +581,12 @@ void fmProcessor::run()
 
       DSPFLOAT demod = mpTheDemodulator->demodulate(v);
 
-      if (mSquelchOn)
+
+      switch (mSquelchMode)
       {
-        demod = mMySquelch->do_squelch(demod);
+      case ESqMode::NSQ: demod = mMySquelch->do_noise_squelch(demod); break;
+      case ESqMode::LSQ: demod = mMySquelch->do_level_squelch(demod, mpTheDemodulator->get_carrier_ampl()); break;
+      default:;
       }
 
       DSPCOMPLEX result;
@@ -674,6 +677,7 @@ void fmProcessor::run()
       if (++mMyCount > (mFmRate >> 1)) // each 500ms ...
       {
         emit showStrength((mDCREnabled ? 20 * log10(abs(mRfDC) + 1.0f/32768) : get_pilotStrength()), get_dcComponent());
+        //emit showStrength( 20 * log10(mpTheDemodulator->get_carrier_ampl()), get_dcComponent());
         mMyCount = 0;
       }
     }
@@ -830,9 +834,9 @@ bool fmProcessor::isPilotLocked(float & oLockStrength) const
 //  freezer = (b ? 10 : 0);
 //}
 
-void fmProcessor::set_squelchMode(bool b)
+void fmProcessor::set_squelchMode(ESqMode iSqMode)
 {
-  mSquelchOn = b;
+  mSquelchMode = iSqMode;
 }
 
 void fmProcessor::setInputMode(uint8_t m)

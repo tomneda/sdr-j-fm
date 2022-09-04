@@ -48,7 +48,8 @@ class squelch : public QObject
   Q_OBJECT
 
 private:
-  DSPFLOAT mSquelchThreshold; // value between 0 and 1
+  DSPFLOAT mNoiseSquelchThreshold; // value between 0 (audio suppressed) and 1 (audio open)
+  DSPFLOAT mLevelSquelchThreshold; // value between 0 (audio open) and 1 (audio suppressed)
   int32_t mKeyFrequency;
   int32_t mHoldPeriod;
   int32_t mSampleRate;
@@ -64,9 +65,10 @@ public:
   squelch(const int32_t iSquelchThreshold, const int32_t iKeyFrequency, const int32_t iBufsize, const int32_t iSampleRate);
   ~squelch(void) = default;
 
-  void setSquelchLevel(int n) { mSquelchThreshold = 1.0f - n / 100.0f; } // convert 0..100 to 1.0..0.0
+  void setSquelchLevel(int n);
   bool getSquelchActive() const { return mSquelchSuppress; }
-  DSPFLOAT do_squelch(const DSPFLOAT soundSample);
+  DSPFLOAT do_noise_squelch(const DSPFLOAT soundSample);
+  DSPFLOAT do_level_squelch(const DSPFLOAT soundSample, const DSPFLOAT iCarrierLevel);
 
 signals:
   void setSquelchIsActive(bool);

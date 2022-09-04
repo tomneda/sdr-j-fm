@@ -233,7 +233,7 @@ private slots:
 
   bool setupSoundOut(QComboBox *, audioSink *, int32_t, int16_t *);
   void set_squelchValue(int);
-  void set_squelchMode();
+  void set_squelchMode(const QString &);
   void set_freqSave();
   void handle_myLine();
 

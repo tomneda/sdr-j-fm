@@ -74,5 +74,6 @@ public:
   const char * nameofDecoder() const;
   DSPFLOAT demodulate(DSPCOMPLEX);
   DSPFLOAT get_DcComponent();
+  inline DSPFLOAT get_carrier_ampl() { return am_carr_ampl; }
 };
 #endif

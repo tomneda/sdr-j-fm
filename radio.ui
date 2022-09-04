@@ -1312,7 +1312,7 @@
                <item>
                 <widget class="QSlider" name="squelchSlider">
                  <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the level where the squelch will be activated, i.e. below that level the audio is assumed to be just noise and will be reduced by 23dB.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the level where the squelch will be activated, i.e. below that level the audio is assumed to be just noise and will be reduced by 32dB.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="maximum">
                   <number>100</number>
@@ -1328,13 +1328,25 @@
                <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="4,1,4,1">
                  <item>
-                  <widget class="QPushButton" name="squelchButton">
+                  <widget class="QComboBox" name="squelchSelector">
                    <property name="toolTip">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Switch the squelch on or off.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Squelch selection:&lt;/p&gt;&lt;p&gt;SQ OFF: no squelch active&lt;/p&gt;&lt;p&gt;NSQ: Noise Squelch (weighting low and high frequency bands)&lt;/p&gt;&lt;p&gt;LSQ: Level Squelch (evaluating the carrier level)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
-                   <property name="text">
-                    <string>squelchOff</string>
-                   </property>
+                   <item>
+                    <property name="text">
+                     <string>SQ OFF</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>NSQ</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>LSQ</string>
+                    </property>
+                   </item>
                   </widget>
                  </item>
                  <item>

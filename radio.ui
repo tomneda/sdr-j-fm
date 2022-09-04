@@ -1352,7 +1352,7 @@
                  <item>
                   <widget class="QLabel" name="sqlStatusLabel">
                    <property name="toolTip">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;GREY: Squelch is OFF&lt;br/&gt;GREEN: No squelch active, audio is on&lt;br/&gt;RED: Squelch active, audio is reduced by 23dB&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;GREY: Squelch is OFF&lt;br/&gt;GREEN: No squelch active, audio is on&lt;br/&gt;RED: Squelch active, audio is muted&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="frameShape">
                     <enum>QFrame::Panel</enum>

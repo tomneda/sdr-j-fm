@@ -2,7 +2,8 @@
 #include "radio.h"
 
 constexpr DSPFLOAT SQUELCH_HYSTERESIS = 0.001;
-constexpr DSPFLOAT LEVELREDUCTIONFACTOR = 0.00; // 32dB lower output level
+constexpr DSPFLOAT LEVELREDUCTIONFACTOR = 0.000; // no output level while squelch active
+//constexpr DSPFLOAT LEVELREDUCTIONFACTOR = 0.025; // 32dB lower output level
 
 squelch::squelch(const int32_t iSquelchThreshold, const int32_t iKeyFrequency, const int32_t iBufsize, const int32_t iSampleRate) :
   mSquelchHighpass(20, iKeyFrequency - 100, iSampleRate, S_CHEBYSHEV),

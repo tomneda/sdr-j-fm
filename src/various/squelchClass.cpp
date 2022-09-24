@@ -1,7 +1,8 @@
 #include "squelchClass.h"
 #include "radio.h"
 
-constexpr DSPFLOAT SQUELCH_HYSTERESIS = 0.001;
+constexpr DSPFLOAT SQUELCH_HYSTERESIS_NSQ = 0.001;
+constexpr DSPFLOAT SQUELCH_HYSTERESIS_LSQ = 0.000;
 constexpr DSPFLOAT LEVELREDUCTIONFACTOR = 0.000; // no output level while squelch active
 //constexpr DSPFLOAT LEVELREDUCTIONFACTOR = 0.025; // 32dB lower output level
 
@@ -51,15 +52,15 @@ DSPFLOAT squelch::do_noise_squelch(const DSPFLOAT soundSample)
     mSquelchCount = 0;
 
     //	looking for a new squelch state
-    if (mNoiseSquelchThreshold < SQUELCH_HYSTERESIS)   // force squelch if zero
+    if (mNoiseSquelchThreshold < SQUELCH_HYSTERESIS_NSQ)   // force squelch if zero
     {
       mSquelchSuppress = true;
     }
-    else if (mAverage_High < mAverage_Low * mNoiseSquelchThreshold - SQUELCH_HYSTERESIS)
+    else if (mAverage_High < mAverage_Low * mNoiseSquelchThreshold - SQUELCH_HYSTERESIS_NSQ)
     {
       mSquelchSuppress = false;
     }
-    else if (mAverage_High >= mAverage_Low * mNoiseSquelchThreshold + SQUELCH_HYSTERESIS)
+    else if (mAverage_High >= mAverage_Low * mNoiseSquelchThreshold + SQUELCH_HYSTERESIS_NSQ)
     {
       mSquelchSuppress = true;
     }
@@ -82,11 +83,11 @@ DSPFLOAT squelch::do_level_squelch(const DSPFLOAT soundSample, const DSPFLOAT iC
     mSquelchCount = 0;
 
     //	looking for a new squelch state
-    if (iCarrierLevel < mLevelSquelchThreshold - SQUELCH_HYSTERESIS)
+    if (iCarrierLevel < mLevelSquelchThreshold - SQUELCH_HYSTERESIS_LSQ)
     {
       mSquelchSuppress = true;
     }
-    else if (iCarrierLevel >= mLevelSquelchThreshold + SQUELCH_HYSTERESIS)
+    else if (iCarrierLevel >= mLevelSquelchThreshold + SQUELCH_HYSTERESIS_LSQ)
     {
       mSquelchSuppress = false;
     }

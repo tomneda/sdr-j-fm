@@ -29,7 +29,8 @@
 #include "fft.h"
 #include "fm-constants.h"
 
-class fftFilter {
+class fftFilter
+{
 public:
   fftFilter(int32_t, int16_t);
   ~fftFilter(void);
@@ -40,20 +41,38 @@ public:
   DSPCOMPLEX Pass(DSPCOMPLEX);
   DSPFLOAT Pass(DSPFLOAT);
 
-private:
+protected:
   int32_t mFftSize;
   int16_t mFilterDegree;
   int16_t mOverlapSize;
   int16_t mNumofSamples;
-  common_fft *mpMyFFT;
-  DSPCOMPLEX *mpFFT_A;
-  common_ifft *mpMyIFFT;
-  DSPCOMPLEX *mpFFT_C;
-  common_fft *mpFilterFFT;
-  DSPCOMPLEX *mpFilterVector;
-  DSPFLOAT *mpRfilterVector;
-  DSPCOMPLEX *mpOverloop;
+
+  common_fft * mpMyFFT;
+  DSPCOMPLEX * mpMyFFTVec;
+
+  common_ifft * mpMyIFFT;
+  DSPCOMPLEX * mpMyIFFTVec;
+
+  common_fft * mpFilterFFT;
+  DSPCOMPLEX * mpFilterVector;
+
+  DSPFLOAT * mpRfilterVector;
+  DSPCOMPLEX * mpOverloop;
+
   int32_t mInpIdx;
+};
+
+class fftFilterHilbert : public fftFilter
+{
+public:
+  fftFilterHilbert() = delete;
+  fftFilterHilbert(int32_t, int16_t);
+  ~fftFilterHilbert() = default;
+
+  DSPCOMPLEX Pass(DSPFLOAT);   // hilbert has real input but complex output
+
+private:
+  void setHilbert();
 };
 
 #endif

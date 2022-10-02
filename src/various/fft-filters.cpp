@@ -33,10 +33,11 @@ fftFilter::fftFilter(int32_t size, int16_t degree)
   mOverlapSize  = mFilterDegree;
   mNumofSamples = mFftSize - mOverlapSize;
 
-  mpMyFFT  = new common_fft(mFftSize);
-  mpFFT_A  = mpMyFFT->getVector();
+  mpMyFFT = new common_fft(mFftSize);
+  mpMyFFTVec = mpMyFFT->getVector();
+
   mpMyIFFT = new common_ifft(mFftSize);
-  mpFFT_C  = mpMyIFFT->getVector();
+  mpMyIFFTVec = mpMyIFFT->getVector();
 
   mpFilterFFT     = new common_fft(mFftSize);
   mpFilterVector  = mpFilterFFT->getVector();
@@ -47,8 +48,8 @@ fftFilter::fftFilter(int32_t size, int16_t degree)
 
   for (i = 0; i < mFftSize; i++)
   {
-    mpFFT_A[i]         = 0;
-    mpFFT_C[i]         = 0;
+    mpMyFFTVec[i]         = 0;
+    mpMyIFFTVec[i]         = 0;
     mpFilterVector[i]  = 0;
     mpRfilterVector[i] = 0;
   }
@@ -76,8 +77,6 @@ void fftFilter::setSimple(int32_t low, int32_t high, int32_t rate)
   {
     mpFilterVector[i] = 0.0f;
   }
-
-  //memset(&filterVector[filterDegree], 0, (fftSize - filterDegree) * sizeof(DSPCOMPLEX));
 
   mpFilterFFT->do_FFT();
 
@@ -135,10 +134,8 @@ void fftFilter::setLowPass(int32_t low, int32_t rate)
 
 DSPFLOAT fftFilter::Pass(DSPFLOAT x)
 {
-  DSPFLOAT sample;
-
-  sample = real(mpFFT_C[mInpIdx]);
-  mpFFT_A[mInpIdx] = x;
+  const DSPFLOAT sample = real(mpMyIFFTVec[mInpIdx]);
+  mpMyFFTVec[mInpIdx] = x;
 
   if (++mInpIdx >= mNumofSamples)
   {
@@ -146,25 +143,23 @@ DSPFLOAT fftFilter::Pass(DSPFLOAT x)
 
     for (int32_t i = mNumofSamples; i < mFftSize; i++)
     {
-      mpFFT_A[i] = 0.0f;
+      mpMyFFTVec[i] = 0.0f;
     }
-
-    //memset(&FFT_A[NumofSamples], 0, (fftSize - NumofSamples) * sizeof(DSPCOMPLEX));
 
     mpMyFFT->do_FFT();
 
     for (int32_t j = 0; j < mFftSize; j++)
     {
-      mpFFT_C[j] = mpFFT_A[j] * mpFilterVector[j];
-      mpFFT_C[j] = DSPCOMPLEX(real(mpFFT_C[j]) * 3, imag(mpFFT_C[j]) * 3);
+      mpMyIFFTVec[j] = mpMyFFTVec[j] * mpFilterVector[j];
+      mpMyIFFTVec[j] = DSPCOMPLEX(real(mpMyIFFTVec[j]) * 3, imag(mpMyIFFTVec[j]) * 3); // ?!?!?
     }
 
     mpMyIFFT->do_IFFT();
 
     for (int32_t j = 0; j < mOverlapSize; j++)
     {
-      mpFFT_C[j]   += mpOverloop[j];
-      mpOverloop[j] = mpFFT_C[mNumofSamples + j];
+      mpMyIFFTVec[j] += mpOverloop[j];
+      mpOverloop[j] = mpMyIFFTVec[mNumofSamples + j];
     }
   }
 
@@ -173,10 +168,8 @@ DSPFLOAT fftFilter::Pass(DSPFLOAT x)
 
 DSPCOMPLEX fftFilter::Pass(DSPCOMPLEX z)
 {
-  DSPCOMPLEX sample;
-
-  sample     = mpFFT_C[mInpIdx];
-  mpFFT_A[mInpIdx] = DSPCOMPLEX(real(z), imag(z));
+  const DSPCOMPLEX sample = mpMyIFFTVec[mInpIdx];
+  mpMyFFTVec[mInpIdx] = z;
 
   if (++mInpIdx >= mNumofSamples)
   {
@@ -184,26 +177,74 @@ DSPCOMPLEX fftFilter::Pass(DSPCOMPLEX z)
 
     for (int32_t i = mNumofSamples; i < mFftSize; i++)
     {
-      mpFFT_A[i] = 0.0f;
+      mpMyFFTVec[i] = 0.0f;
     }
 
-    //memset(&FFT_A[NumofSamples], 0, (fftSize - NumofSamples) * sizeof(DSPCOMPLEX));
 
     mpMyFFT->do_FFT();
 
     for (int32_t j = 0; j < mFftSize; j++)
     {
-      mpFFT_C[j] = mpFFT_A[j] * mpFilterVector[j];
+      mpMyIFFTVec[j] = mpMyFFTVec[j] * mpFilterVector[j];
     }
 
     mpMyIFFT->do_IFFT();
 
     for (int32_t j = 0; j < mOverlapSize; j++)
     {
-      mpFFT_C[j]   += mpOverloop[j];
-      mpOverloop[j] = mpFFT_C[mNumofSamples + j];
+      mpMyIFFTVec[j] += mpOverloop[j];
+      mpOverloop[j] = mpMyIFFTVec[mNumofSamples + j];
     }
   }
 
   return sample;
 }
+
+fftFilterHilbert::fftFilterHilbert(int32_t size, int16_t degree)
+  : fftFilter(size, degree)
+{
+  setHilbert();
+}
+
+DSPCOMPLEX fftFilterHilbert::Pass(DSPFLOAT x)
+{
+  return fftFilter::Pass(DSPCOMPLEX(x, 0));
+}
+
+void fftFilterHilbert::setHilbert()
+{
+  // set the frequency coefficients directly (set negative spectrum to zero)
+  if ((mFftSize & 0x1) == 0)
+  {
+    mpFilterVector[0] = 1.0f;
+
+    for (int32_t i = 1; i < mFftSize / 2; i++)
+    {
+      mpFilterVector[i] = 2.0f;
+    }
+
+    mpFilterVector[mFftSize / 2] = 1.0f;
+
+    for (int32_t i = mFftSize / 2 + 1; i < mFftSize; i++)
+    {
+      mpFilterVector[i] = 0.0f;
+    }
+  }
+  else
+  {
+    mpFilterVector[0] = 1.0f;
+
+    for (int32_t i = 1; i < (mFftSize + 1) / 2; i++)
+    {
+      mpFilterVector[i] = 2.0f;
+    }
+
+    for (int32_t i = (mFftSize - 1) / 2 + 1; i < mFftSize; i++)
+    {
+      mpFilterVector[i] = 0.0f;
+    }
+  }
+
+  mInpIdx = 0;
+}
+

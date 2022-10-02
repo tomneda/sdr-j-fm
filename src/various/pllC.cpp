@@ -24,7 +24,9 @@
  *
  *	This is the version for complex values
  */
-#include  "pllC.h"
+
+#include "pllC.h"
+
 //#include	"utilities.h"
 //
 //	rate	is the samplerate
@@ -32,50 +34,39 @@
 //	kept in between,
 //	bandwidth the bandwidth of the signal to be received
 
-pllC::pllC (int32_t rate,
-            DSPFLOAT freq,
-            DSPFLOAT lofreq, DSPFLOAT hifreq,
-            DSPFLOAT bandwidth,
-            SinCos  *Table)
+pllC::pllC(int32_t rate, DSPFLOAT freq, DSPFLOAT lofreq, DSPFLOAT hifreq, DSPFLOAT bandwidth, SinCos * Table)
 {
   DSPFLOAT fac = 2.0 * M_PI / rate;
 
   this->rate = rate;
-  this->cf   = freq;
-//	for the control lowpass filter
-  Beta       = exp(-2.0 * M_PI * bandwidth / 2 / rate);
-  NcoPhase   = 0;
+  this->cf = freq;
+  //	for the control lowpass filter
+  Beta = exp(-2.0 * M_PI * bandwidth / 2 / rate);
+  NcoPhase = 0;
   phaseError = 0;
-  phaseIncr  = freq * fac;   // this will change during runs
-  NcoLLimit  = lofreq * fac; // boundary for changes
-  NcoHLimit  = hifreq * fac;
+  phaseIncr = freq * fac;     // this will change during runs
+  NcoLLimit = lofreq * fac;   // boundary for changes
+  NcoHLimit = hifreq * fac;
 
   this->mySinCos = Table;
-
-  oldNcoSignal = 0;
-  pll_lock     = false;
+  //pll_lock     = false;
 }
 //
-pllC::~pllC()
-{
-}
+pllC::~pllC() {}
 //
 //	It turned out that under Fedora we had from time
 //	to time an infinite value for signal. Still have
 //	to constrain this value
 void pllC::do_pll(DSPCOMPLEX signal)
 {
-  DSPCOMPLEX NcoSignal;
+  DSPCOMPLEX NcoSignal = (mySinCos != NULL) ? mySinCos->getComplex(NcoPhase)
+                                            : DSPCOMPLEX(cos(NcoPhase), sin(NcoPhase));
 
-  NcoSignal = (mySinCos != NULL) ?
-              mySinCos->getComplex(NcoPhase) :
-              DSPCOMPLEX(cos(NcoPhase), sin(NcoPhase));
+  pll_Delay = conj(NcoSignal) * signal; // NCO is on same frequency side, so mix conj. complex
 
-  pll_Delay = NcoSignal * signal;
-//
-//	we use a pretty fast atan here
-  phaseError = -myAtan.atan2(imag(pll_Delay), real(pll_Delay));
-//	... and a pretty simple filter
+  //	we use a pretty fast atan here
+  phaseError = myAtan.atan2(imag(pll_Delay), real(pll_Delay));
+  //	... and a pretty simple filter
   phaseIncr = (1 - Beta) * phaseError + Beta * phaseIncr;
   if (phaseIncr < NcoLLimit || phaseIncr > NcoHLimit)
   {
@@ -96,28 +87,14 @@ void pllC::do_pll(DSPCOMPLEX signal)
   }
 }
 
-DSPCOMPLEX pllC::getDelay()
-{
-  return pll_Delay;
-}
+DSPCOMPLEX pllC::getDelay() const { return pll_Delay; }
 
-DSPFLOAT pllC::getPhaseIncr()
-{
-  return phaseIncr;
-}
+DSPFLOAT pllC::getPhaseIncr() const { return phaseIncr; }
 
-DSPFLOAT pllC::getNco()
-{
-  return NcoPhase;
-}
+DSPFLOAT pllC::getNcoPhase() const { return NcoPhase; }
 
-DSPFLOAT pllC::getPhaseError()
-{
-  return phaseError;
-}
+DSPCOMPLEX pllC::getNco() const { return (mySinCos != NULL) ? mySinCos->getComplex(NcoPhase) : DSPCOMPLEX(cos(NcoPhase), sin(NcoPhase)); }
 
-bool pllC::isLocked()
-{
-  return pll_lock;
-}
+DSPFLOAT pllC::getPhaseError() const { return phaseError; }
 
+//bool pllC::isLocked() { return pll_lock; }

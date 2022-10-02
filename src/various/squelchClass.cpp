@@ -1,5 +1,4 @@
 #include "squelchClass.h"
-#include "radio.h"
 
 constexpr DSPFLOAT SQUELCH_HYSTERESIS_NSQ = 0.001;
 constexpr DSPFLOAT SQUELCH_HYSTERESIS_LSQ = 0.000;

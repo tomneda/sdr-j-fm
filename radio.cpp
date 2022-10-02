@@ -1725,13 +1725,13 @@ void RadioInterface::showStrength(float the_pilotStrength, float the_dcComponent
   dc_component->display(QString("%1").arg(the_dcComponent, 0, 'f', 2)); // allow tow fix digit after decimal point
 
   static const float w = 1.0f / std::log10(2.0f);
-  const float dcVal = (the_dcComponent < 0.0f ? -1 : 1) * w * std::log10(std::abs(the_dcComponent) + 1.0f);
+  const float dcVal = (the_dcComponent < 0.0f ? 1 : -1) * w * std::log10(std::abs(the_dcComponent) + 1.0f);
   thermoDcComponent->setValue(dcVal);
 
   // some kind of AFC
   if (mAfcActive)
   {
-    const int32_t afcOffFreq = -the_dcComponent * 10000; // the_dcComponent is negative with too little frequency
+    const int32_t afcOffFreq = the_dcComponent * 10000; // the_dcComponent is positive with too little frequency
     mAfcCurrOffFreq = (1 - mAfcAlpha) * mAfcCurrOffFreq + mAfcAlpha * afcOffFreq;
 
 //    constexpr int32_t limitOffFreq = 20000;

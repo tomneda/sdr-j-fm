@@ -138,9 +138,12 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   //
   //	In the case of mono we do not assume a pilot
   //	to be available. We borrow the approach from CuteSDR
-  mpRdsHilbertFilter = new HilbertFilter(HILBERT_SIZE, (DSPFLOAT)RDS_FREQUENCY / fmRate, fmRate);
+  //mpRdsHilbertFilter = new HilbertFilter(HILBERT_SIZE, (DSPFLOAT)RDS_FREQUENCY / fmRate, fmRate);
+  mpRdsHilbertFilter = new fftFilterHilbert(FFT_SIZE, RDSBANDFILTER_SIZE);
+
   mpRdsBandFilter = new fftFilter(FFT_SIZE, RDSBANDFILTER_SIZE);
   mpRdsBandFilter->setSimple(RDS_FREQUENCY - RDS_WIDTH / 2, RDS_FREQUENCY + RDS_WIDTH / 2, fmRate);
+
   mpRds_plldecoder = new pllC(fmRate, RDS_FREQUENCY, RDS_FREQUENCY - 50, RDS_FREQUENCY + 50, 200, mpMySinCos);
   mRdsSampleCnt = 0;
 
@@ -280,7 +283,7 @@ void fmProcessor::setfmMode(FM_Mode m)
 void fmProcessor::setLfPlotType(ELfPlot m)
 {
   mLfPlotType = m;
-  mShowFullSpectrum = (m == ELfPlot::IF_FILTERED);
+  mShowFullSpectrum = (m == ELfPlot::IF_FILTERED || m == ELfPlot::RDS);
 }
 
 void fmProcessor::setLfPlotZoomFactor(int32_t iZoomFactor)
@@ -591,8 +594,9 @@ void fmProcessor::run()
 
       DSPCOMPLEX result;
       DSPFLOAT rdsData;
+      DSPCOMPLEX rdsDataCmpl;
 
-      process_stereo_or_mono(demod, &result, &rdsData);
+      process_stereo_or_mono(demod, &result, &rdsData, &rdsDataCmpl);
 
       const DSPFLOAT sumLR  = real(result);
       const DSPFLOAT diffLR = imag(result);
@@ -645,7 +649,7 @@ void fmProcessor::run()
       case ELfPlot::AF_MONO_FILTERED:  mpSpectrumBuffer_lf[localP++] = (result.real() + result.imag()); break;
       case ELfPlot::AF_LEFT_FILTERED:  mpSpectrumBuffer_lf[localP++] = result.real(); break;
       case ELfPlot::AF_RIGHT_FILTERED: mpSpectrumBuffer_lf[localP++] = result.imag(); break;
-      case ELfPlot::RDS:               mpSpectrumBuffer_lf[localP++] = rdsData; break;
+      case ELfPlot::RDS:               mpSpectrumBuffer_lf[localP++] = rdsDataCmpl; break;
       }
 
       if (localP >= mSpectrumSize)
@@ -684,22 +688,20 @@ void fmProcessor::run()
   }
 }
 
-void fmProcessor::process_mono_only(const float demod, DSPCOMPLEX *audioOut, DSPFLOAT *rdsValue)
+void fmProcessor::process_mono_only(const float demod, DSPCOMPLEX *audioOut, DSPFLOAT *rdsValue, DSPCOMPLEX *rdsValueCmpl)
 {
   *audioOut = DSPCOMPLEX(demod, 0);
 
-  //	fully inspired by cuteSDR, we try to decode the rds stream
-  //	by simply am decoding it (after creating a decent complex
-  //	signal by Hilbert filtering)
-  DSPCOMPLEX rdsBase = DSPCOMPLEX(5 * demod, 5 * demod);
-  rdsBase = mpRdsHilbertFilter->Pass(mpRdsBandFilter->Pass(rdsBase)); // hilbert with complex input data?
-  mpRds_plldecoder->do_pll(rdsBase);
-  DSPFLOAT rdsDelay = imag(mpRds_plldecoder->getDelay());
-
+  const DSPFLOAT rdsBaseBp = mpRdsBandFilter->Pass(7 * demod);
+  const DSPCOMPLEX rdsBaseHilb = mpRdsHilbertFilter->Pass(rdsBaseBp);
+  mpRds_plldecoder->do_pll(rdsBaseHilb);
+  DSPCOMPLEX rdsDelayCplx = mpRds_plldecoder->getDelay();
+  DSPFLOAT rdsDelay = imag(rdsDelayCplx);
   *rdsValue = mpRdsLowPassFilter->Pass(5 * rdsDelay);
+  *rdsValueCmpl = rdsBaseHilb;
 }
 
-void fmProcessor::process_stereo_or_mono(const float demod, DSPCOMPLEX *audioOut, DSPFLOAT *rdsValue)
+void fmProcessor::process_stereo_or_mono(const float demod, DSPCOMPLEX *audioOut, DSPFLOAT *rdsValue, DSPCOMPLEX *rdsValueCmpl)
 {
   /*
    *	get the phase for the "carrier to be inserted" right
@@ -728,7 +730,7 @@ void fmProcessor::process_stereo_or_mono(const float demod, DSPCOMPLEX *audioOut
   }
   else
   {
-    process_mono_only(demod, audioOut, rdsValue);
+    process_mono_only(demod, audioOut, rdsValue, rdsValueCmpl);
   }
 }
 //

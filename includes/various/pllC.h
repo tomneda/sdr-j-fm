@@ -6,7 +6,7 @@
  *
  *    This file is part of the SDR-J
  *    Many of the ideas as implemented in SDR-J are derived from
- *    other work, made available through the GNU general Public License. 
+ *    other work, made available through the GNU general Public License.
  *    All copyrights of the original authors are recognized.
  *
  *    SDR-J is free software; you can redistribute it and/or modify
@@ -23,44 +23,41 @@
  *    along with SDR-J; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef	__PLL_CH
-#define	__PLL_CH
+#ifndef __PLL_CH
+#define __PLL_CH
 /*
  */
-#include	"fm-constants.h"
-#include	"sincos.h"
-#include	"Xtan2.h"
+#include "fm-constants.h"
+#include "sincos.h"
+#include "Xtan2.h"
 
-class	pllC {
+class pllC
+{
 private:
-	int32_t		rate;
-	int32_t		cf;		// center frequency
-	DSPFLOAT	NcoPhase;
-	DSPFLOAT	phaseIncr;
-	DSPFLOAT	NcoHLimit;
-	DSPFLOAT	NcoLLimit;
-	DSPFLOAT	Beta;
-	DSPCOMPLEX	pll_Delay;
-	SinCos		*mySinCos;
-	DSPFLOAT	phaseError;
-	compAtan	myAtan;
-	DSPCOMPLEX	oldNcoSignal;
-	bool		pll_lock;
+  int32_t rate;
+  int32_t cf;   // center frequency
+  DSPFLOAT NcoPhase;
+  DSPFLOAT phaseIncr;
+  DSPFLOAT NcoHLimit;
+  DSPFLOAT NcoLLimit;
+  DSPFLOAT Beta;
+  DSPCOMPLEX pll_Delay;
+  SinCos * mySinCos;
+  DSPFLOAT phaseError;
+  compAtan myAtan;
+  //bool pll_lock;
+
 public:
-			pllC (int32_t	rate,
-	                DSPFLOAT freq, DSPFLOAT lofreq, DSPFLOAT hifreq,
-	                DSPFLOAT bandwidth,
-	                SinCos *Table	= NULL);
+  pllC(int32_t rate, DSPFLOAT freq, DSPFLOAT lofreq, DSPFLOAT hifreq, DSPFLOAT bandwidth, SinCos * Table = NULL);
+  ~pllC(void);
 
-		        ~pllC (void);
-
-	void		do_pll 		(DSPCOMPLEX signal);
-	DSPCOMPLEX	getDelay	(void);
-	DSPFLOAT	getPhaseIncr	(void);
-	DSPFLOAT	getNco		(void);
-	DSPFLOAT	getPhaseError	(void);
-	bool		isLocked	(void);
+  void do_pll(DSPCOMPLEX signal);
+  DSPCOMPLEX getDelay() const;
+  DSPFLOAT getPhaseIncr() const;
+  DSPFLOAT getNcoPhase() const;
+  DSPCOMPLEX getNco() const;
+  DSPFLOAT getPhaseError() const;
+  //bool isLocked();
 };
 
 #endif
-

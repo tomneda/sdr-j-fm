@@ -229,13 +229,14 @@ private:
   DSPCOMPLEX * mpAudioOut;
   rdsDecoder * mpMyRdsDecoder;
 
-  void process_stereo_or_mono(const float, DSPCOMPLEX *, DSPFLOAT *);
-  void process_mono_only(const float, DSPCOMPLEX *, DSPFLOAT *);
+  void process_stereo_or_mono(const float, DSPCOMPLEX *, DSPFLOAT *, DSPCOMPLEX * rdsValueCmpl);
+  void process_mono_only(const float, DSPCOMPLEX *, DSPFLOAT *, DSPCOMPLEX * rdsValueCmpl);
 
   fftFilter * mpPilotBandFilter;
   fftFilter * mpRdsBandFilter;
   fftFilter * mpRdsLowPassFilter;
-  HilbertFilter * mpRdsHilbertFilter;
+  fftFilterHilbert * mpRdsHilbertFilter;
+  //HilbertFilter * mpRdsHilbertFilter;
   int32_t mRdsSampleCnt;
 
   DSPFLOAT mPilotDelay;

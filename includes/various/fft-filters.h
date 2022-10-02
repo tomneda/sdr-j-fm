@@ -41,19 +41,19 @@ public:
   DSPFLOAT Pass(DSPFLOAT);
 
 private:
-  int32_t fftSize;
-  int16_t filterDegree;
-  int16_t OverlapSize;
-  int16_t NumofSamples;
-  common_fft *MyFFT;
-  DSPCOMPLEX *FFT_A;
-  common_ifft *MyIFFT;
-  DSPCOMPLEX *FFT_C;
-  common_fft *FilterFFT;
-  DSPCOMPLEX *filterVector;
-  DSPFLOAT *RfilterVector;
-  DSPCOMPLEX *Overloop;
-  int32_t inp;
+  int32_t mFftSize;
+  int16_t mFilterDegree;
+  int16_t mOverlapSize;
+  int16_t mNumofSamples;
+  common_fft *mpMyFFT;
+  DSPCOMPLEX *mpFFT_A;
+  common_ifft *mpMyIFFT;
+  DSPCOMPLEX *mpFFT_C;
+  common_fft *mpFilterFFT;
+  DSPCOMPLEX *mpFilterVector;
+  DSPFLOAT *mpRfilterVector;
+  DSPCOMPLEX *mpOverloop;
+  int32_t mInpIdx;
 };
 
 #endif

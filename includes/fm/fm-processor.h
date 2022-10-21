@@ -48,6 +48,8 @@ class RadioInterface;
 class audioSink;
 class newConverter;
 
+//#define USE_EXTRACT_LEVELS
+
 class fmProcessor : public QThread
 {
   Q_OBJECT
@@ -129,10 +131,13 @@ public:
   void triggerDrawNewHfSpectrum() { mFillAverageHfBuffer = true; }
   void triggerDrawNewLfSpectrum() { mFillAverageLfBuffer = true; }
 
+#ifdef USE_EXTRACT_LEVELS
   DSPFLOAT get_pilotStrength();
   DSPFLOAT get_rdsStrength();
   DSPFLOAT get_noiseStrength();
-  DSPFLOAT get_dcComponent();
+#endif
+
+  DSPFLOAT get_demodDcComponent();
 
   void startScanning();
   void stopScanning();
@@ -260,10 +265,12 @@ private:
 
   rdsDecoder::ERdsMode mRdsModus{ rdsDecoder::ERdsMode::NO_RDS };
 
+#ifdef USE_EXTRACT_LEVELS
   float mNoiseLevel;
   float mPilotLevel;
   float mRdsLevel;
-  //int8_t viewSelector;
+#endif
+
   pllC * mpRds_plldecoder;
   DSPFLOAT mK_FM;
 
@@ -356,7 +363,7 @@ signals:
   void setPLLisLocked(bool);
   void hfBufferLoaded();
   void lfBufferLoaded(bool, int);
-  void showStrength(float, float);
+  void showDcComponents(float, float);
   void scanresult();
   void showPeakLevel(const float, const float);
 };

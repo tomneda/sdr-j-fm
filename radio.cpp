@@ -1690,7 +1690,7 @@ void RadioInterface::showPeakLevel(const float iPeakLeft, const float iPeakRight
 
 //
 //	This signal will arrive once every "inputRate" samples
-void RadioInterface::showStrength(float the_pilotStrength, float the_dcComponent)
+void RadioInterface::showDcComponents(float iRfDcComponent, float ifDemodDcComponent)
 {
   static std::array<char, 1024> s{};
   static int teller = 0;
@@ -1719,19 +1719,19 @@ void RadioInterface::showStrength(float the_pilotStrength, float the_dcComponent
 
   //pilotStrength->display(lockStrength);
   //pilotStrength->display(the_pilotStrength);
-  pilotStrength->display(QString("%1").arg(the_pilotStrength, 0, 'f', 1)); // allow one fix digit after decimal point
+  rf_dc_component->display(QString("%1").arg(iRfDcComponent, 0, 'f', 1)); // allow one fix digit after decimal point
 
   //dc_component->display(the_dcComponent);
-  dc_component->display(QString("%1").arg(the_dcComponent, 0, 'f', 2)); // allow tow fix digit after decimal point
+  demod_dc_component->display(QString("%1").arg(ifDemodDcComponent, 0, 'f', 2)); // allow tow fix digit after decimal point
 
   static const float w = 1.0f / std::log10(2.0f);
-  const float dcVal = (the_dcComponent < 0.0f ? 1 : -1) * w * std::log10(std::abs(the_dcComponent) + 1.0f);
+  const float dcVal = (ifDemodDcComponent < 0.0f ? 1 : -1) * w * std::log10(std::abs(ifDemodDcComponent) + 1.0f);
   thermoDcComponent->setValue(dcVal);
 
   // some kind of AFC
   if (mAfcActive)
   {
-    const int32_t afcOffFreq = the_dcComponent * 10000; // the_dcComponent is positive with too little frequency
+    const int32_t afcOffFreq = ifDemodDcComponent * 10000; // the_dcComponent is positive with too little frequency
     mAfcCurrOffFreq = (1 - mAfcAlpha) * mAfcCurrOffFreq + mAfcAlpha * afcOffFreq;
 
 //    constexpr int32_t limitOffFreq = 20000;
@@ -1749,7 +1749,7 @@ void RadioInterface::showStrength(float the_pilotStrength, float the_dcComponent
     if (triggerLog)
     {
       fprintf(stderr, "AFC:  DC %f, NewFreq %d = CurrFreq %d + AfcOffFreq %d (unfiltered %d), AFC_Alpha %f\n",
-              the_dcComponent, newFreq, currentFreq, mAfcCurrOffFreq, afcOffFreq, mAfcAlpha);
+              ifDemodDcComponent, newFreq, currentFreq, mAfcCurrOffFreq, afcOffFreq, mAfcAlpha);
     }
 
     if (absAfcCurrOffFreq > 3) // avoid re-tunings of HW when only a residual frequency offset remains
@@ -1766,7 +1766,7 @@ void RadioInterface::showStrength(float the_pilotStrength, float the_dcComponent
             currentTime.toString(QString("dd.MM.yy hh:mm:ss"))
             .toStdString()
             .c_str(),
-            currentFreq, currentPIcode, the_pilotStrength);
+            currentFreq, currentPIcode, iRfDcComponent);
 
     fputs(s.cbegin(), stderr);
     //	and into the logfile

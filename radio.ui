@@ -455,7 +455,7 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLCDNumber" name="dc_component">
+                  <widget class="QLCDNumber" name="demod_dc_component">
                    <property name="palette">
                     <palette>
                      <active>
@@ -511,7 +511,7 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLCDNumber" name="pilotStrength">
+                  <widget class="QLCDNumber" name="rf_dc_component">
                    <property name="palette">
                     <palette>
                      <active>
@@ -550,7 +550,7 @@
                     </palette>
                    </property>
                    <property name="toolTip">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DCR off: Estimation of the strength of the pilot signal. Works only with plot is showing the Multiplex signal.&lt;/p&gt;&lt;p&gt;DCR on: The uncompensated absolute DC level of the input signal in dBFS.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The uncompensated absolute DC level of the input signal in dBFS.&lt;/p&gt;&lt;p&gt;This works only with DCR enabled (-99.9 dBFS is shown else)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="autoFillBackground">
                     <bool>false</bool>

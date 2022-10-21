@@ -107,9 +107,13 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   mNormFreqDeviation = 0.6 * mMaxFreqDeviation;
   //this->audioGain           = 0;
   //
+
+#ifdef USE_EXTRACT_LEVELS
   mNoiseLevel = 0;
   mPilotLevel = 0;
   mRdsLevel   = 0;
+#endif
+
   //	Since data is coming with a pretty high rate, we need to filter
   //	and decimate in an efficient way. We have an optimized
   //	decimating filter (optimized or not, it takes quite some
@@ -163,7 +167,7 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   connect(this, &fmProcessor::lfBufferLoaded, mMyRadioInterface, &RadioInterface::lfBufferLoaded);
   //connect(this, SIGNAL(lfBufferLoaded(uint32_t,bool)), mMyRadioInterface, SLOT(lfBufferLoaded(uint32_t,bool)));
   connect(this, &fmProcessor::showPeakLevel, mMyRadioInterface, &RadioInterface::showPeakLevel);
-  connect(this, SIGNAL(showStrength(float,float)), mMyRadioInterface, SLOT(showStrength(float,float)));
+  connect(this, SIGNAL(showDcComponents(float,float)), mMyRadioInterface, SLOT(showDcComponents(float,float)));
   connect(this, SIGNAL(scanresult()), mMyRadioInterface,SLOT(scanresult()));
 
   mSquelchValue     = 0;
@@ -208,6 +212,8 @@ void fmProcessor::stop()
   }
 }
 
+#ifdef USE_EXTRACT_LEVELS
+
 DSPFLOAT fmProcessor::get_pilotStrength()
 {
   if (mRunning)
@@ -235,13 +241,14 @@ DSPFLOAT fmProcessor::get_noiseStrength()
   }
   return 0.0;
 }
+#endif
 
 void fmProcessor::set_squelchValue(int16_t n)
 {
   mSquelchValue = n;
 }
 
-DSPFLOAT fmProcessor::get_dcComponent()
+DSPFLOAT fmProcessor::get_demodDcComponent()
 {
   if (mRunning)
   {
@@ -680,8 +687,12 @@ void fmProcessor::run()
 
       if (++mMyCount > (mFmRate >> 1)) // each 500ms ...
       {
-        emit showStrength((mDCREnabled ? 20 * log10(abs(mRfDC) + 1.0f/32768) : get_pilotStrength()), get_dcComponent());
-        //emit showStrength( 20 * log10(mpTheDemodulator->get_carrier_ampl()), get_dcComponent());
+#ifdef USE_EXTRACT_LEVELS
+        emit showDcComponents((mDCREnabled ? 20 * log10(abs(mRfDC) + 1.0f/32768) : get_pilotStrength()), get_demodDcComponent());
+#else
+        emit showDcComponents((mDCREnabled ? 20 * log10(abs(mRfDC) + 1.0f/32768) : -99.9), get_demodDcComponent());
+#endif
+        //emit showStrength( 20 * log10(mpTheDemodulator->get_carrier_ampl()), get_demodDcComponent());
         mMyCount = 0;
       }
     }
@@ -964,6 +975,7 @@ void fmProcessor::processLfSpectrum()
     add_to_average(Y_Values, mpDisplayBuffer_lf);
   }
 
+#ifdef USE_EXTRACT_LEVELS
   if (mShowFullSpectrum)
   {
     extractLevels(mpDisplayBuffer_lf, mFmRate);
@@ -972,6 +984,7 @@ void fmProcessor::processLfSpectrum()
   {
     extractLevelsHalfSpectrum(mpDisplayBuffer_lf, mFmRate);
   }
+#endif
 
   mpLfBuffer->putDataIntoBuffer(mpDisplayBuffer_lf, mDisplaySize);
 
@@ -995,6 +1008,7 @@ void fmProcessor::add_to_average(const double * const in, double * const buffer)
   }
 }
 
+#ifdef USE_EXTRACT_LEVELS
 void fmProcessor::extractLevels(const double * const in, const int32_t range)
 {
   const float binWidth = (float)range / mZoomFactor / mDisplaySize;
@@ -1056,3 +1070,4 @@ void fmProcessor::extractLevelsHalfSpectrum(const double * const in, const int32
   mPilotLevel = (1.0f - ALPHA) * mPilotLevel + ALPHA * pilotAvg / avgPilotSize;
   mRdsLevel   = (1.0f - ALPHA) * mRdsLevel   + ALPHA * rdsAvg / avgNoiseRdsSize;
 }
+#endif

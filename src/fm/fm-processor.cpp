@@ -596,7 +596,7 @@ void fmProcessor::run()
       DSPFLOAT rdsData;
       DSPCOMPLEX rdsDataCmpl;
 
-      process_stereo_or_mono(demod, &result, &rdsData, &rdsDataCmpl);
+      process_stereo_or_mono_with_rds(demod, &result, &rdsData, &rdsDataCmpl);
 
       const DSPFLOAT sumLR  = real(result);
       const DSPFLOAT diffLR = imag(result);
@@ -688,41 +688,25 @@ void fmProcessor::run()
   }
 }
 
-void fmProcessor::process_mono_only(const float demod, DSPCOMPLEX *audioOut, DSPFLOAT *rdsValue, DSPCOMPLEX *rdsValueCmpl)
+void fmProcessor::process_stereo_or_mono_with_rds(const float demod, DSPCOMPLEX *audioOut, DSPFLOAT *rdsValue, DSPCOMPLEX *rdsValueCmpl)
 {
-  *audioOut = DSPCOMPLEX(demod, 0);
-
-  const DSPFLOAT rdsBaseBp = mpRdsBandFilter->Pass(7 * demod);
-  const DSPCOMPLEX rdsBaseHilb = mpRdsHilbertFilter->Pass(rdsBaseBp);
-  mpRds_plldecoder->do_pll(rdsBaseHilb);
-  DSPCOMPLEX rdsDelayCplx = mpRds_plldecoder->getDelay();
-  DSPFLOAT rdsDelay = imag(rdsDelayCplx);
-  *rdsValue = mpRdsLowPassFilter->Pass(5 * rdsDelay);
-  *rdsValueCmpl = rdsBaseHilb;
-}
-
-void fmProcessor::process_stereo_or_mono(const float demod, DSPCOMPLEX *audioOut, DSPFLOAT *rdsValue, DSPCOMPLEX *rdsValueCmpl)
-{
-  /*
-   *	get the phase for the "carrier to be inserted" right
-   */
+  // Get the phase for the "carrier to be inserted" right.
+  // Do this alwas to be able to check of a locked pilot PLL.
   const DSPFLOAT pilot = mpPilotBandFilter->Pass(5 * demod);
   const DSPFLOAT currentPilotPhase = mpPilotRecover->getPilotPhase(5 * pilot);
 
   if (mFmModus != FM_Mode::Mono && (mpPilotRecover->isLocked() || mAutoMono == false))
   {
-    /*
-     *	Now we have the right - i.e. synchronized - signal to work with
-     */
+    // Now we have the right - i.e. synchronized - signal to work with
     const DSPFLOAT PhaseforLRDiff = 2 * (currentPilotPhase + mPilotDelay);
-    const DSPFLOAT PhaseforRds = 3 * (currentPilotPhase + mPilotDelay);
+    //const DSPFLOAT PhaseforRds = 3 * (currentPilotPhase + mPilotDelay);
 
     //	Due to filtering the real amplitude of the LRDiff might have
     //	to be adjusted, we guess
     DSPFLOAT LRDiff = 2.0 * mpMySinCos->getCos(PhaseforLRDiff) * demod;
-    const DSPFLOAT MixerValue = mpMySinCos->getCos(PhaseforRds);
+    //const DSPFLOAT MixerValue = mpMySinCos->getCos(PhaseforRds);
 
-    *rdsValue = mpRdsLowPassFilter->Pass(5 * MixerValue * demod);
+    //*rdsValue = mpRdsLowPassFilter->Pass(5 * MixerValue * demod);
 
     DSPFLOAT LRPlus = demod;
 
@@ -730,7 +714,18 @@ void fmProcessor::process_stereo_or_mono(const float demod, DSPCOMPLEX *audioOut
   }
   else
   {
-    process_mono_only(demod, audioOut, rdsValue, rdsValueCmpl);
+    *audioOut = DSPCOMPLEX(demod, 0);
+  }
+
+  // process RDS
+  {
+    const DSPFLOAT rdsBaseBp = mpRdsBandFilter->Pass(7 * demod);
+    const DSPCOMPLEX rdsBaseHilb = mpRdsHilbertFilter->Pass(rdsBaseBp);
+    mpRds_plldecoder->do_pll(rdsBaseHilb);
+    DSPCOMPLEX rdsDelayCplx = mpRds_plldecoder->getDelay();
+    DSPFLOAT rdsDelay = imag(rdsDelayCplx);
+    *rdsValue = mpRdsLowPassFilter->Pass(5 * rdsDelay);
+    *rdsValueCmpl = rdsBaseHilb;
   }
 }
 //

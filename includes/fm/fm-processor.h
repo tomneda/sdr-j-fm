@@ -229,8 +229,7 @@ private:
   DSPCOMPLEX * mpAudioOut;
   rdsDecoder * mpMyRdsDecoder;
 
-  void process_stereo_or_mono(const float, DSPCOMPLEX *, DSPFLOAT *, DSPCOMPLEX * rdsValueCmpl);
-  void process_mono_only(const float, DSPCOMPLEX *, DSPFLOAT *, DSPCOMPLEX * rdsValueCmpl);
+  void process_stereo_or_mono_with_rds(const float, DSPCOMPLEX *, DSPFLOAT *, DSPCOMPLEX * rdsValueCmpl);
 
   fftFilter * mpPilotBandFilter;
   fftFilter * mpRdsBandFilter;

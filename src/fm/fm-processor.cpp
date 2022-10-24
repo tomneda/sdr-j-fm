@@ -86,6 +86,7 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   mpSpectrumBuffer_lf = mpSpectrum_fft_lf->getVector();
 
   mpLocalOscillator = new Oscillator(inputRate);
+  mpRdsOscillator = new Oscillator(fmRate);
   mpMySinCos        = new SinCos(fmRate);
   mLoFrequency      = 0;
   mOmegaDemod       = 2 * M_PI / fmRate;
@@ -626,14 +627,23 @@ void fmProcessor::run()
       if ((mRdsModus != rdsDecoder::ERdsMode::NO_RDS))
       {
         DSPFLOAT mag = 0;
+        static DSPCOMPLEX magCplx = 0;
         //static DSPFLOAT magDC = 0;
         if (++mRdsSampleCnt >= RDS_DECIMATOR) // rdsData is already bandpass filtered in process_stereo_or_mono()
         {
-          mpMyRdsDecoder->doDecode(rdsData, &mag, mRdsModus); // data rate 32000S/s
+          if ((mRdsModus != rdsDecoder::ERdsMode::RDS3))
+          {
+            mpMyRdsDecoder->doDecode(rdsData, &mag, mRdsModus); // data rate 32000S/s
+          }
+          else
+          {
+            mpMyRdsDecoder->doDecode(rdsDataCmpl, &magCplx); // data rate 32000S/s
+          }
           //constexpr float ALPHA = 0.0001f;
           //magDC = mag * ALPHA + magDC * (1.0f - ALPHA);
           mRdsSampleCnt = 0;
         }
+        rdsDataCmpl = ((mRdsModus == rdsDecoder::ERdsMode::RDS3) ? magCplx : rdsDataCmpl); // repeat last value (simple interpolation)
         //result = DSPCOMPLEX(mag - magDC, mag - magDC);
         //result = DSPCOMPLEX(rdsData, rdsData);
       }
@@ -730,13 +740,20 @@ void fmProcessor::process_stereo_or_mono_with_rds(const float demod, DSPCOMPLEX 
 
   // process RDS
   {
-    const DSPFLOAT rdsBaseBp = mpRdsBandFilter->Pass(7 * demod);
+    const DSPFLOAT rdsBaseBp = mpRdsBandFilter->Pass(35 * demod);
     const DSPCOMPLEX rdsBaseHilb = mpRdsHilbertFilter->Pass(rdsBaseBp);
-    mpRds_plldecoder->do_pll(rdsBaseHilb);
-    DSPCOMPLEX rdsDelayCplx = mpRds_plldecoder->getDelay();
+    //mpRds_plldecoder->do_pll(rdsBaseHilb);
+    //DSPCOMPLEX rdsDelayCplx = mpRds_plldecoder->getDelay();
+
+    DSPCOMPLEX rdsDelayCplx = rdsBaseHilb * mpRdsOscillator->nextValue(RDS_FREQUENCY); // the oscillator works other direction (== -57000 Hz shift)
+    rdsDelayCplx = mpRdsLowPassFilter->Pass(rdsDelayCplx);
+
     DSPFLOAT rdsDelay = imag(rdsDelayCplx);
-    *rdsValue = mpRdsLowPassFilter->Pass(5 * rdsDelay);
-    *rdsValueCmpl = rdsBaseHilb;
+    //*rdsValue = mpRdsLowPassFilter->Pass(rdsDelay);
+    *rdsValue = rdsDelay;
+    //*rdsValueCmpl = *rdsValue;
+    //*rdsValueCmpl = rdsDelay;
+    *rdsValueCmpl = rdsDelayCplx;
   }
 }
 //

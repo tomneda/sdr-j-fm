@@ -232,16 +232,18 @@ private:
 
   newConverter * mpAudioDecimator;
   DSPCOMPLEX * mpAudioOut;
-  rdsDecoder * mpMyRdsDecoder;
 
   void process_stereo_or_mono_with_rds(const float, DSPCOMPLEX *, DSPFLOAT *, DSPCOMPLEX * rdsValueCmpl);
 
+  // RDS
+  rdsDecoder * mpMyRdsDecoder;
   fftFilter * mpPilotBandFilter;
   fftFilter * mpRdsBandFilter;
   fftFilter * mpRdsLowPassFilter;
   fftFilterHilbert * mpRdsHilbertFilter;
   //HilbertFilter * mpRdsHilbertFilter;
   int32_t mRdsSampleCnt;
+  Oscillator * mpRdsOscillator;
 
   DSPFLOAT mPilotDelay;
 

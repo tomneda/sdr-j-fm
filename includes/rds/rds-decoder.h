@@ -65,6 +65,7 @@ public:
   };
 
   void doDecode(const DSPFLOAT, DSPFLOAT * const, const ERdsMode);
+  void doDecode(const DSPCOMPLEX, DSPCOMPLEX * const);
   void reset(void);
 
 private:
@@ -90,11 +91,13 @@ private:
   bool mResync;
 
   DSPFLOAT * mpRdsBuffer;
+  DSPCOMPLEX * mpRdsBufferCplx;
   DSPFLOAT * mpRdsKernel;
   int16_t mCurRdsBufferIdx;
   int16_t mRdsfilterSize;
 
   DSPFLOAT doMatchFiltering(DSPFLOAT);
+  DSPCOMPLEX doMatchFiltering(DSPCOMPLEX);
 
   BandPassIIR * mpSharpFilter;
   DSPFLOAT mRdsLastSyncSlope;

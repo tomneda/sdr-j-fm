@@ -71,7 +71,9 @@ rdsDecoder::rdsDecoder(RadioInterface * iRadioIf, int32_t iRate, SinCos * ipSinC
   length = (mSymbolCeiling & ~01) + 1;
   mRdsfilterSize = 2 * length + 1;
   mpRdsBuffer = new DSPFLOAT[mRdsfilterSize];
+  mpRdsBufferCplx = new DSPCOMPLEX[mRdsfilterSize];
   memset(mpRdsBuffer, 0, mRdsfilterSize * sizeof(DSPFLOAT));
+  memset(mpRdsBufferCplx, 0, mRdsfilterSize * sizeof(DSPCOMPLEX));
   mCurRdsBufferIdx = 0;
   mpRdsKernel = new DSPFLOAT[mRdsfilterSize];
   mpRdsKernel[length] = 0;
@@ -108,6 +110,7 @@ rdsDecoder::~rdsDecoder(void)
   delete mpRdsBlockSync;
   delete mpRdsKernel;
   delete mpRdsBuffer;
+  delete mpRdsBufferCplx;
   delete mpSharpFilter;
 }
 
@@ -135,6 +138,29 @@ DSPFLOAT rdsDecoder::doMatchFiltering(DSPFLOAT v)
 
   return tmp;
 }
+
+DSPCOMPLEX rdsDecoder::doMatchFiltering(DSPCOMPLEX v)
+{
+  DSPCOMPLEX tmp = 0;
+
+  mpRdsBufferCplx[mCurRdsBufferIdx] = v;
+
+  for (int16_t i = 0; i < mRdsfilterSize; i++)
+  {
+    int16_t index = (mCurRdsBufferIdx - i); // read data backwards from current position
+
+    if (index < 0)
+    {
+      index += mRdsfilterSize; // wrap around index
+    }
+
+    tmp += mpRdsBufferCplx[index] * mpRdsKernel[i];
+  }
+
+  mCurRdsBufferIdx = (mCurRdsBufferIdx + 1) % mRdsfilterSize;
+
+  return tmp;
+}
 /*
  *	Signal (i.e. "v") is already downconverted and lowpass filtered
  *	when entering this stage. The return value stored in "*m" is used
@@ -155,6 +181,32 @@ void rdsDecoder::doDecode(const DSPFLOAT v, DSPFLOAT * const m, const ERdsMode m
   {
     doDecode2(v, m);
   }
+}
+
+void rdsDecoder::doDecode(const DSPCOMPLEX v, DSPCOMPLEX * const m)
+{
+  const DSPCOMPLEX vMF = doMatchFiltering(v);
+
+  //const DSPCOMPLEX rdsMag = mpSharpFilter->Pass((vMF * vMF));
+  const DSPCOMPLEX rdsMag = vMF * conj(vMF);
+
+  *m = vMF;
+//  //*m = (20 * rdsMag + 1.0);
+//  const DSPFLOAT rdsSlope = rdsMag - mRdsLastSync;
+//  mRdsLastSync = rdsMag;
+
+//  if ((rdsSlope < 0.0) && (mRdsLastSyncSlope >= 0.0))
+//  {
+//    //	top of the sine wave: get the data
+//    const bool bit = mRdsLastData >= 0;
+//    processBit(bit ^ mPreviousBit);
+//    //*m = (bit ^ mPreviousBit ? 0.5 : -0.5);
+//    mPreviousBit = bit;
+//  }
+
+//  mRdsLastData = v;
+//  mRdsLastSyncSlope = rdsSlope;
+//  mpRdsBlockSync->resetResyncErrorCounter();
 }
 
 void rdsDecoder::doDecode1(const DSPFLOAT v, DSPFLOAT * const m)

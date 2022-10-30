@@ -9,7 +9,7 @@ TARGET = fmreceiver
 QT += widgets
 QMAKE_CXXFLAGS += -std=c++14
 
-win32 {
+win {
   include ($(QWT_ROOT)\features\qwt.prf)
   #CONFIG += qwt
 
@@ -25,8 +25,15 @@ win32 {
 }
 
 unix {
-  QMAKE_CFLAGS += -O3 -ffast-math
-  QMAKE_CXXFLAGS += -O3 -ffast-math
+  # works bad without optimization in debug version
+  CONFIG(debug, debug|release) {
+    QMAKE_CFLAGS += -ffast-math
+    QMAKE_CXXFLAGS += -ffast-math
+  }
+  else {
+    QMAKE_CFLAGS += -O3 -ffast-math
+    QMAKE_CXXFLAGS += -O3 -ffast-math
+  }
 }
 
 #QMAKE_CXXFLAGS	+= -g

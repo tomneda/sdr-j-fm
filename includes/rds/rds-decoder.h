@@ -72,7 +72,6 @@ private:
   void processBit(bool);
   void doDecode1(const DSPFLOAT, DSPFLOAT * const);
   void doDecode2(const DSPFLOAT, DSPFLOAT * const);
-  void doDecode3(const DSPFLOAT, DSPFLOAT * const);
 
   int32_t mSampleRate;
   int32_t mNumOfFrames;
@@ -89,6 +88,8 @@ private:
   DSPFLOAT mBitClkPhase;
   DSPFLOAT mPrev_clkState;
   bool mResync;
+
+  std::vector<DSPFLOAT> mRrcImpMancVec;
 
   DSPFLOAT * mpRdsBuffer;
   DSPCOMPLEX * mpRdsBufferCplx;

@@ -33,10 +33,11 @@
 #define AUDIO_FREQ_DEV_PROPORTION    0.85f
 #define PILOT_FREQUENCY              19000
 #define RDS_FREQUENCY                (3 * PILOT_FREQUENCY)
+#define RDS_RATE                     19000   // 16 samples for one RDS sympols
 #define OMEGA_DEMOD                  2 * M_PI / fmRate
 #define OMEGA_PILOT                  ((DSPFLOAT(PILOT_FREQUENCY)) / fmRate) * (2 * M_PI)
 #define OMEGA_RDS                    ((DSPFLOAT)RDS_FREQUENCY / fmRate) * (2 * M_PI)
-#define RDS_DECIMATOR                8
+//#define RDS_DECIMATOR                8
 
 //
 //	Note that no decimation done as yet: the samplestream is still
@@ -86,14 +87,14 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   mpSpectrumBuffer_lf = mpSpectrum_fft_lf->getVector();
 
   mpLocalOscillator = new Oscillator(inputRate);
-  mpRdsOscillator = new Oscillator(fmRate);
+  mpRdsOscillator   = new Oscillator(fmRate);
   mpMySinCos        = new SinCos(fmRate);
   mLoFrequency      = 0;
   mOmegaDemod       = 2 * M_PI / fmRate;
-  mFmBandwidth     = 0.95 * fmRate;
-  mFmFilterDegree  = 21;
+  mFmBandwidth      = 0.95 * fmRate;
+  mFmFilterDegree   = 21;
   mpFmFilter        = new LowPassFIR(21, 0.95 * fmRate / 2, fmRate);
-  mNewFilter       = false;
+  mNewFilter        = false;
   /*
    *	default values, will be set through the user interface
    *	to their appropriate values
@@ -132,6 +133,9 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
 
   mpRdsLowPassFilter = new fftFilter(FFT_SIZE, RDSLOWPASS_SIZE);
   mpRdsLowPassFilter->setLowPass(RDS_WIDTH, fmRate);
+  mpRdsDecimator = new newConverter(fmRate, RDS_RATE, RDS_RATE / 200);
+  mpRdsOut = new DSPCOMPLEX[mpRdsDecimator->getOutputsize()];
+
   //
   //	the constant K_FM is still subject to many questions
   DSPFLOAT F_G     = 0.65 * fmRate / 2;// highest freq in message
@@ -150,7 +154,7 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   mpRdsBandFilter->setSimple(RDS_FREQUENCY - RDS_WIDTH / 2, RDS_FREQUENCY + RDS_WIDTH / 2, fmRate);
 
   mpRds_plldecoder = new pllC(fmRate, RDS_FREQUENCY, RDS_FREQUENCY - 50, RDS_FREQUENCY + 50, 200, mpMySinCos);
-  mRdsSampleCnt = 0;
+  //mRdsSampleCnt = 0;
 
   // for the deemphasis we use an in-line filter with
   mLastAudioSample = 0;
@@ -379,7 +383,7 @@ DSPCOMPLEX fmProcessor::audioGainCorrection(DSPCOMPLEX z)
   }
 #endif
 
-  return DSPCOMPLEX(left, right);
+  return { left, right };
   //return DSPCOMPLEX(mVolumeFactor * leftChannel * real(z), mVolumeFactor * rightChannel * imag(z));
 }
 
@@ -426,7 +430,6 @@ void fmProcessor::run()
   double        displayBuffer_hf[mDisplaySize];
   int32_t       mHfCount = 0;
   int32_t       mLfCount = 0;
-  int32_t       audioAmount;
   //float         audioGainAverage = 0;
   int32_t       scanPointer      = 0;
   common_fft    *scan_fft        = new common_fft(1024);
@@ -435,7 +438,8 @@ void fmProcessor::run()
   const float rfDcAlpha = 1.0f / mInputRate;
 
   assert(mpMyRdsDecoder == nullptr); // check whether not calling next news twice
-  mpMyRdsDecoder = new rdsDecoder(mMyRadioInterface, mFmRate / RDS_DECIMATOR, mpMySinCos);
+  //mpMyRdsDecoder = new rdsDecoder(mMyRadioInterface, mFmRate / RDS_DECIMATOR, mpMySinCos);
+  mpMyRdsDecoder = new rdsDecoder(mMyRadioInterface, RDS_RATE, mpMySinCos);
 
   mRunning = true; // will be set from the outside
 
@@ -624,28 +628,36 @@ void fmProcessor::run()
       case S_LEFTminusRIGHT: result = DSPCOMPLEX(diffLRWeightend, diffLRWeightend); break;
       }
 
-      if ((mRdsModus != rdsDecoder::ERdsMode::NO_RDS))
+      if (mRdsModus != rdsDecoder::ERdsMode::NO_RDS)
       {
-        DSPFLOAT mag = 0;
-        static DSPCOMPLEX magCplx = 0;
-        //static DSPFLOAT magDC = 0;
-        if (++mRdsSampleCnt >= RDS_DECIMATOR) // rdsData is already bandpass filtered in process_stereo_or_mono()
+        int32_t rdsAmount;
+
+        int abc = mpRdsDecimator->getOutputsize();
+        ++mRdsSampleCntSrc;
+
+        if (mpRdsDecimator->convert(result, mpRdsOut, &rdsAmount))
         {
-          if ((mRdsModus != rdsDecoder::ERdsMode::RDS3))
+          mRdsSampleCntDst += rdsAmount;
+          double ratio = (double)mRdsSampleCntDst / (double)mRdsSampleCntSrc;
+          double rate = ratio * mFmRate;
+
+          // here the sample rate is rdsRate (typ. 19000S/s)
+          for (int32_t k = 0; k < rdsAmount; k++)
           {
-            mpMyRdsDecoder->doDecode(rdsData, &mag, mRdsModus); // data rate 32000S/s
+            const DSPCOMPLEX pcmSample = mpRdsOut[k];
+
+            if ((mRdsModus != rdsDecoder::ERdsMode::RDS3))
+            {
+              DSPFLOAT mag;
+              mpMyRdsDecoder->doDecode(imag(pcmSample), &mag, mRdsModus); // data rate 19000S/s
+            }
+            else
+            {
+              DSPCOMPLEX magCplx;
+              mpMyRdsDecoder->doDecode(pcmSample, &magCplx); // data rate 19000S/s
+            }
           }
-          else
-          {
-            mpMyRdsDecoder->doDecode(rdsDataCmpl, &magCplx); // data rate 32000S/s
-          }
-          //constexpr float ALPHA = 0.0001f;
-          //magDC = mag * ALPHA + magDC * (1.0f - ALPHA);
-          mRdsSampleCnt = 0;
         }
-        rdsDataCmpl = ((mRdsModus == rdsDecoder::ERdsMode::RDS3) ? magCplx : rdsDataCmpl); // repeat last value (simple interpolation)
-        //result = DSPCOMPLEX(mag - magDC, mag - magDC);
-        //result = DSPCOMPLEX(rdsData, rdsData);
       }
 
       if (mFmAudioFilterActive)
@@ -678,6 +690,7 @@ void fmProcessor::run()
       // "result" now contains the audio sample, either stereo or mono
       result = audioGainCorrection(result);
 
+      int32_t audioAmount;
       if (mpAudioDecimator->convert(result, mpAudioOut, &audioAmount))
       {
         // here the sample rate is "workingRate" (typ. 48000Ss)
@@ -740,13 +753,13 @@ void fmProcessor::process_stereo_or_mono_with_rds(const float demod, DSPCOMPLEX 
 
   // process RDS
   {
-    const DSPFLOAT rdsBaseBp = mpRdsBandFilter->Pass(35 * demod);
+    const DSPFLOAT rdsBaseBp = mpRdsBandFilter->Pass(5 * demod);
     const DSPCOMPLEX rdsBaseHilb = mpRdsHilbertFilter->Pass(rdsBaseBp);
     //mpRds_plldecoder->do_pll(rdsBaseHilb);
     //DSPCOMPLEX rdsDelayCplx = mpRds_plldecoder->getDelay();
 
     DSPCOMPLEX rdsDelayCplx = rdsBaseHilb * mpRdsOscillator->nextValue(RDS_FREQUENCY); // the oscillator works other direction (== -57000 Hz shift)
-    rdsDelayCplx = mpRdsLowPassFilter->Pass(rdsDelayCplx);
+    //rdsDelayCplx = mpRdsLowPassFilter->Pass(rdsDelayCplx);
 
     DSPFLOAT rdsDelay = imag(rdsDelayCplx);
     //*rdsValue = mpRdsLowPassFilter->Pass(rdsDelay);

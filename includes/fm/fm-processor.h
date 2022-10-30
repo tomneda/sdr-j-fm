@@ -242,8 +242,11 @@ private:
   fftFilter * mpRdsLowPassFilter;
   fftFilterHilbert * mpRdsHilbertFilter;
   //HilbertFilter * mpRdsHilbertFilter;
-  int32_t mRdsSampleCnt;
+  uint32_t mRdsSampleCntSrc = 0;
+  uint32_t mRdsSampleCntDst = 0;
   Oscillator * mpRdsOscillator;
+  newConverter * mpRdsDecimator;
+  DSPCOMPLEX * mpRdsOut;
 
   DSPFLOAT mPilotDelay;
 

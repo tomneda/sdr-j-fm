@@ -75,7 +75,7 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   mRgain            = 20;
 
   mPeakLevelSampleMax = workingRate / 5;  // workingRate is typ. 48000Ss -> so eval each 9600 samples for 200ms for peak level meter
-  mpMyRdsDecoder = NULL;
+  mpMyRdsDecoder = nullptr;
 
   mpLocalBuffer = new double[displaySize];
   //	we trust that neither displaySize nor SpectrumSize are 0
@@ -154,7 +154,7 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   mpRdsBandFilter = new fftFilter(FFT_SIZE, RDSBANDFILTER_SIZE);
   mpRdsBandFilter->setSimple(RDS_FREQUENCY - RDS_WIDTH / 2, RDS_FREQUENCY + RDS_WIDTH / 2, fmRate);
 
-  mpRds_plldecoder = new pllC(fmRate, RDS_FREQUENCY, RDS_FREQUENCY - 50, RDS_FREQUENCY + 50, 200, mpMySinCos);
+  //mpRds_plldecoder = new pllC(fmRate, RDS_FREQUENCY, RDS_FREQUENCY - 50, RDS_FREQUENCY + 50, 200, mpMySinCos);
   //mRdsSampleCnt = 0;
 
   // for the deemphasis we use an in-line filter with
@@ -162,7 +162,7 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   mDeemphAlpha = 1.0 / (fmRate / (1000000.0 / 50.0 + 1));
 
   mDumping  = false;
-  mpDumpFile = NULL;
+  mpDumpFile = nullptr;
 
   mMySquelch = new squelch(1, 70000, mFmRate / 20, mFmRate);
 
@@ -179,7 +179,7 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   mSquelchValue     = 0;
   mOldSquelchValue = 0;
 
-  mpTheConverter = NULL;
+  mpTheConverter = nullptr;
   if (audioRate != workingRate)
   {
     mpTheConverter = new newConverter(workingRate, audioRate, workingRate / 20);
@@ -848,7 +848,7 @@ void fmProcessor::setfmRdsSelector(rdsDecoder::ERdsMode m)
 
 void fmProcessor::resetRds()
 {
-  if (mpMyRdsDecoder == NULL)
+  if (mpMyRdsDecoder == nullptr)
   {
     return;
   }

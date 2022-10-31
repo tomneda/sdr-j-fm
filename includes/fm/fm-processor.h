@@ -276,7 +276,7 @@ private:
   float mRdsLevel;
 #endif
 
-  pllC * mpRds_plldecoder;
+  //pllC * mpRds_plldecoder;
   DSPFLOAT mK_FM;
 
   DSPCOMPLEX mLastAudioSample;

@@ -360,8 +360,8 @@ void rdsDecoder::doDecode(const DSPCOMPLEX v, DSPCOMPLEX * const m)
   const DSPCOMPLEX vMF = doMatchFiltering(v);
   const DSPCOMPLEX vMF_scaled = mAGC.scale(vMF);
 
-  //const DSPCOMPLEX rdsMag = mpSharpFilter->Pass((vMF * vMF));
-  //const DSPCOMPLEX rdsMag = vMF * conj(vMF);
+//  const DSPCOMPLEX rdsMag = mpSharpFilter->Pass((vMF * vMF));
+//  const DSPCOMPLEX rdsMag = vMF * conj(vMF);
 
   *m = vMF_scaled;
 //  //*m = (20 * rdsMag + 1.0);

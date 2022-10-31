@@ -30,13 +30,13 @@
 //#include "rds-decoder.h"
 #include "sincos.h"
 
-#define AUDIO_FREQ_DEV_PROPORTION    0.85f
+//#define AUDIO_FREQ_DEV_PROPORTION    0.85f
 #define PILOT_FREQUENCY              19000
 #define RDS_FREQUENCY                (3 * PILOT_FREQUENCY)
 #define RDS_RATE                     19000   // 16 samples for one RDS sympols
-#define OMEGA_DEMOD                  2 * M_PI / fmRate
+//#define OMEGA_DEMOD                  (2 * M_PI / fmRate)
 #define OMEGA_PILOT                  ((DSPFLOAT(PILOT_FREQUENCY)) / fmRate) * (2 * M_PI)
-#define OMEGA_RDS                    ((DSPFLOAT)RDS_FREQUENCY / fmRate) * (2 * M_PI)
+//#define OMEGA_RDS                    ((DSPFLOAT)RDS_FREQUENCY / fmRate) * (2 * M_PI)
 //#define RDS_DECIMATOR                8
 
 //
@@ -103,7 +103,7 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   mFmModus        = FM_Mode::Stereo;
   mSelector       = S_STEREO;
   mInputMode      = IandQ;
-  mpAudioDecimator = new newConverter(fmRate, workingRate, workingRate / 200);
+  mpAudioDecimator = new newConverter(fmRate, workingRate, fmRate / 1000);
   mpAudioOut = new DSPCOMPLEX[mpAudioDecimator->getOutputsize()];
 
   mMaxFreqDeviation  = 0.95 * (0.5 * fmRate);
@@ -134,7 +134,7 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
 
   mpRdsLowPassFilter = new fftFilter(FFT_SIZE, RDSLOWPASS_SIZE);
   mpRdsLowPassFilter->setLowPass(RDS_WIDTH, fmRate);
-  mpRdsDecimator = new newConverter(fmRate, RDS_RATE, RDS_RATE / 200);
+  mpRdsDecimator = new newConverter(fmRate, RDS_RATE, fmRate / 1000);
   mpRdsOut = new DSPCOMPLEX[mpRdsDecimator->getOutputsize()];
 
   //
@@ -606,14 +606,14 @@ void fmProcessor::run()
       default:;
       }
 
-      DSPCOMPLEX result;
+      DSPCOMPLEX audio;
       DSPFLOAT rdsData;
       DSPCOMPLEX rdsDataCmpl;
 
-      process_stereo_or_mono_with_rds(demod, &result, &rdsData, &rdsDataCmpl);
+      process_stereo_or_mono_with_rds(demod, &audio, &rdsData, &rdsDataCmpl);
 
-      const DSPFLOAT sumLR  = real(result);
-      const DSPFLOAT diffLR = imag(result);
+      const DSPFLOAT sumLR  = real(audio);
+      const DSPFLOAT diffLR = imag(audio);
       const DSPFLOAT diffLRWeightend = diffLR * (mFmModus == FM_Mode::StereoPano ? mPanorama : 1.0f);
 
       const DSPFLOAT left  = sumLR + diffLRWeightend;  // 2L = (L+R) + (L-R)
@@ -622,12 +622,12 @@ void fmProcessor::run()
       switch (mSelector)
       {
       default:
-      case S_STEREO:         result = DSPCOMPLEX(left,  right); break;
-      case S_STEREO_SWAPPED: result = DSPCOMPLEX(right, left); break;
-      case S_LEFT:           result = DSPCOMPLEX(left,  left); break;
-      case S_RIGHT:          result = DSPCOMPLEX(right, right); break;
-      case S_LEFTplusRIGHT:  result = DSPCOMPLEX(sumLR, sumLR); break;
-      case S_LEFTminusRIGHT: result = DSPCOMPLEX(diffLRWeightend, diffLRWeightend); break;
+      case S_STEREO:         audio = DSPCOMPLEX(left,  right); break;
+      case S_STEREO_SWAPPED: audio = DSPCOMPLEX(right, left); break;
+      case S_LEFT:           audio = DSPCOMPLEX(left,  left); break;
+      case S_RIGHT:          audio = DSPCOMPLEX(right, right); break;
+      case S_LEFTplusRIGHT:  audio = DSPCOMPLEX(sumLR, sumLR); break;
+      case S_LEFTminusRIGHT: audio = DSPCOMPLEX(diffLRWeightend, diffLRWeightend); break;
       }
 
       if (mRdsModus != rdsDecoder::ERdsMode::NO_RDS)
@@ -635,13 +635,13 @@ void fmProcessor::run()
         int32_t rdsAmount;
 
         int abc = mpRdsDecimator->getOutputsize();
-        ++mRdsSampleCntSrc;
+        //++mRdsSampleCntSrc;
 
-        if (mpRdsDecimator->convert(result, mpRdsOut, &rdsAmount))
+        if (mpRdsDecimator->convert(rdsDataCmpl, mpRdsOut, &rdsAmount))
         {
-          mRdsSampleCntDst += rdsAmount;
-          double ratio = (double)mRdsSampleCntDst / (double)mRdsSampleCntSrc;
-          double rate = ratio * mFmRate;
+          //mRdsSampleCntDst += rdsAmount;
+          //double ratio = (double)mRdsSampleCntDst / (double)mRdsSampleCntSrc;
+          //double rate = ratio * mFmRate;
 
           // here the sample rate is rdsRate (typ. 19000S/s)
           for (int32_t k = 0; k < rdsAmount; k++)
@@ -652,33 +652,29 @@ void fmProcessor::run()
             {
               DSPFLOAT mag;
               mpMyRdsDecoder->doDecode(imag(pcmSample), &mag, mRdsModus); // data rate 19000S/s
-
-              if (mLfPlotType == ELfPlot::RDS)
-              {
-                mpSpectrumBuffer_lf[localP++] = pcmSample;
-              }
+              if (mLfPlotType == ELfPlot::RDS) { mpSpectrumBuffer_lf[localP++] = mag; }
             }
             else
             {
               DSPCOMPLEX magCplx;
-              //mpMyRdsDecoder->doDecode(pcmSample, &magCplx); // data rate 19000S/s
-
-              if (mLfPlotType == ELfPlot::RDS)
-              {
-                mpSpectrumBuffer_lf[localP++] = pcmSample;
-              }
+              mpMyRdsDecoder->doDecode(pcmSample, &magCplx); // data rate 19000S/s
+              if (mLfPlotType == ELfPlot::RDS) { mpSpectrumBuffer_lf[localP++] = magCplx; }
             }
           }
         }
       }
+      else
+      {
+        if (mLfPlotType == ELfPlot::RDS) { mpSpectrumBuffer_lf[localP++] = 0; }
+      }
 
       if (mFmAudioFilterActive)
       {
-        result = mpFmAudioFilter->Pass(result);
+        audio = mpFmAudioFilter->Pass(audio);
       }
 
       //	apply deemphasis
-      result = mLastAudioSample = (result - mLastAudioSample) * mDeemphAlpha + mLastAudioSample;
+      audio = mLastAudioSample = (audio - mLastAudioSample) * mDeemphAlpha + mLastAudioSample;
 
       switch (mLfPlotType)
       {
@@ -687,10 +683,11 @@ void fmProcessor::run()
       case ELfPlot::DEMODULATOR:       mpSpectrumBuffer_lf[localP++] = demod; break;
       case ELfPlot::AF_SUM:            mpSpectrumBuffer_lf[localP++] = sumLR; break;
       case ELfPlot::AF_DIFF:           mpSpectrumBuffer_lf[localP++] = diffLR; break;
-      case ELfPlot::AF_MONO_FILTERED:  mpSpectrumBuffer_lf[localP++] = (result.real() + result.imag()); break;
-      case ELfPlot::AF_LEFT_FILTERED:  mpSpectrumBuffer_lf[localP++] = result.real(); break;
-      case ELfPlot::AF_RIGHT_FILTERED: mpSpectrumBuffer_lf[localP++] = result.imag(); break;
+      case ELfPlot::AF_MONO_FILTERED:  mpSpectrumBuffer_lf[localP++] = (audio.real() + audio.imag()); break;
+      case ELfPlot::AF_LEFT_FILTERED:  mpSpectrumBuffer_lf[localP++] = audio.real(); break;
+      case ELfPlot::AF_RIGHT_FILTERED: mpSpectrumBuffer_lf[localP++] = audio.imag(); break;
       //case ELfPlot::RDS:               mpSpectrumBuffer_lf[localP++] = rdsDataCmpl; break;
+      default:;
       }
 
       if (localP >= mSpectrumSize)
@@ -700,10 +697,10 @@ void fmProcessor::run()
 
 
       // "result" now contains the audio sample, either stereo or mono
-      result = audioGainCorrection(result);
+      audio = audioGainCorrection(audio);
 
       int32_t audioAmount;
-      if (mpAudioDecimator->convert(result, mpAudioOut, &audioAmount))
+      if (mpAudioDecimator->convert(audio, mpAudioOut, &audioAmount))
       {
         // here the sample rate is "workingRate" (typ. 48000Ss)
         for (int32_t k = 0; k < audioAmount; k++)

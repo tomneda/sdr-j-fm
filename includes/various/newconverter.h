@@ -34,26 +34,26 @@
 #include  <samplerate.h>
 #include  "fm-constants.h"
 
-class	newConverter
+class newConverter
 {
 private:
-  int32_t   inRate;
-  int32_t   outRate;
-  double    ratio;
-  int32_t   outputLimit;
-  int32_t   inputLimit;
-  SRC_STATE *converter;
-  SRC_DATA  *src_data;
-  float     *inBuffer;
-  float     *outBuffer;
-  int32_t   inp;
+int32_t mInRate;
+int32_t mOutRate;
+double mRatio;
+int32_t mOutputLimit;
+int32_t mInputLimit;
+SRC_STATE * mpConverter;
+SRC_DATA * mpSrc_data;
+float * mpInBuffer;
+float * mpOutBuffer;
+int32_t mInpIdx;
 
 public:
-  newConverter(int32_t inRate, int32_t outRate, int32_t inSize);
-  ~newConverter();
+newConverter(int32_t inRate, int32_t outRate, int32_t inSize);
+~newConverter();
 
-  bool convert(DSPCOMPLEX v, DSPCOMPLEX *out, int32_t *amount);
-  int32_t getOutputsize(void);
+bool convert(DSPCOMPLEX v, DSPCOMPLEX *out, int32_t *amount);
+int32_t getOutputsize(void);
 };
 
 #endif

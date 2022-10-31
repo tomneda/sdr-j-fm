@@ -21,73 +21,78 @@
  */
 
 #include  "newconverter.h"
+#include <assert.h>
 
-newConverter::newConverter (int32_t inRate, int32_t outRate,
-                            int32_t inSize)
+newConverter::newConverter (int32_t inRate, int32_t outRate, int32_t inSize)
 {
-  int err;
 
-  this->inRate  = inRate;
-  this->outRate = outRate;
-  inputLimit    = inSize;
-  ratio         = double(outRate) / inRate;
-  fprintf(stderr, "ratio = %f\n", ratio);
-  outputLimit = inSize * ratio;
-//	converter		= src_new (SRC_SINC_BEST_QUALITY, 2, &err);
-//	converter		= src_new (SRC_LINEAR, 2, &err);
-  converter              = src_new(SRC_SINC_MEDIUM_QUALITY, 2, &err);
-  src_data               = new SRC_DATA;
-  inBuffer               = new float [2 * inputLimit + 20];
-  outBuffer              = new float [2 * outputLimit + 20];
-  src_data->data_in      = inBuffer;
-  src_data->data_out     = outBuffer;
-  src_data->src_ratio    = ratio;
-  src_data->end_of_input = 0;
-  inp                    = 0;
+  mInRate     = inRate;
+  mOutRate    = outRate;
+  mInputLimit = inSize;
+  mRatio      = double(outRate) / inRate;
+  //fprintf(stderr, "ratio = %f\n", mRatio);
+  mOutputLimit = inSize * mRatio;
+
+  int err = 0;
+  //mpConverter		= src_new (SRC_SINC_BEST_QUALITY, 2, &err);
+  //mpConverter		= src_new (SRC_LINEAR, 2, &err);
+  mpConverter = src_new(SRC_SINC_MEDIUM_QUALITY, 2, &err);
+  assert(err == 0);
+
+  mpSrc_data               = new SRC_DATA;
+  mpInBuffer               = new float [2 * mInputLimit + 20];
+  mpOutBuffer              = new float [2 * mOutputLimit + 20];
+  mpSrc_data->data_in      = mpInBuffer;
+  mpSrc_data->data_out     = mpOutBuffer;
+  mpSrc_data->src_ratio    = mRatio;
+  mpSrc_data->end_of_input = 0;
+  mInpIdx                  = 0;
 }
 
 newConverter::~newConverter (void)
 {
-  src_delete(converter);
-  delete [] inBuffer;
-  delete [] outBuffer;
-  delete    src_data;
+  src_delete(mpConverter);
+  delete [] mpInBuffer;
+  delete [] mpOutBuffer;
+  delete    mpSrc_data;
 }
 
 bool newConverter::convert(DSPCOMPLEX v, DSPCOMPLEX *out, int32_t *amount)
 {
-  int32_t i;
-  int32_t framesOut;
-  int     res;
+  mpInBuffer [2 * mInpIdx]     = real(v);
+  mpInBuffer [2 * mInpIdx + 1] = imag(v);
+  mInpIdx++;
 
-  inBuffer [2 * inp]     = real(v);
-  inBuffer [2 * inp + 1] = imag(v);
-  inp++;
-  if (inp < inputLimit)
+  if (mInpIdx < mInputLimit)
   {
     return false;
   }
 
-  src_data->input_frames  = inp;
-  src_data->output_frames = outputLimit + 10;
-  res                     = src_process(converter, src_data);
+  mpSrc_data->input_frames  = mInpIdx;
+  mpSrc_data->output_frames = mOutputLimit + 10;
+  const int res = src_process(mpConverter, mpSrc_data);
+
   if (res != 0)
   {
     fprintf(stderr, "error %s\n", src_strerror(res));
     return false;
   }
-  inp       = 0;
-  framesOut = src_data->output_frames_gen;
-  for (i = 0; i < framesOut; i++)
+
+  mInpIdx = 0;
+  const int32_t framesOut = mpSrc_data->output_frames_gen;
+
+  for (int32_t i = 0; i < framesOut; i++)
   {
-    out [i] = DSPCOMPLEX(outBuffer [2 * i], outBuffer [2 * i + 1]);
+    out [i] = DSPCOMPLEX(mpOutBuffer[2 * i], mpOutBuffer[2 * i + 1]);
   }
+
   *amount = framesOut;
+
   return true;
 }
 
 int32_t newConverter::getOutputsize(void)
 {
-  return outputLimit;
+  return mOutputLimit;
 }
 

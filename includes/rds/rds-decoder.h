@@ -47,6 +47,34 @@
 #include "iir-filters.h"
 #include "sincos.h"
 
+class AGC
+{
+public:
+  AGC(float rate = 1e-4, float reference = 1.0, float gain = 1.0, float max_gain = 0.0);
+  AGC() = delete;
+  ~AGC() = default;
+
+  float rate() const { return _rate; }
+  float reference() const { return _reference; }
+  float gain() const { return _gain; }
+  float max_gain() const { return _max_gain; }
+
+  void set_rate(float rate) { _rate = rate; }
+  void set_reference(float reference) { _reference = reference; }
+  void set_gain(float gain) { _gain = gain; }
+  void set_max_gain(float max_gain) { _max_gain = max_gain; }
+
+  DSPCOMPLEX scale(DSPCOMPLEX input);
+  void scaleN(DSPCOMPLEX output[], const DSPCOMPLEX input[], uint32_t n);
+
+protected:
+  float _rate;     // adjustment rate
+  float _reference;// reference value
+  float _gain;     // current gain
+  float _max_gain; // max allowable gain
+};
+
+
 class RadioInterface;
 
 class rdsDecoder : public QObject
@@ -73,6 +101,7 @@ private:
   void doDecode1(const DSPFLOAT, DSPFLOAT * const);
   void doDecode2(const DSPFLOAT, DSPFLOAT * const);
 
+  AGC mAGC;
   int32_t mSampleRate;
   int32_t mNumOfFrames;
   SinCos * mpSinCos;

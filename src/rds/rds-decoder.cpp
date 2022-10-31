@@ -87,6 +87,88 @@ static std::vector<float> root_raised_cosine(double gain, double sampling_freq, 
 }
 
 
+
+AGC::AGC(float rate, float reference, float gain, float max_gain)
+  : _rate(rate)
+  , _reference(reference)
+  , _gain(gain)
+  , _max_gain(max_gain)
+{
+}
+
+DSPCOMPLEX AGC::scale(DSPCOMPLEX input)
+{
+  DSPCOMPLEX output = input * _gain;
+
+  _gain += _rate * (_reference - sqrt(output.real() * output.real() +
+                                      output.imag() * output.imag()));
+  if (_max_gain > 0.0 && _gain > _max_gain)
+  {
+    _gain = _max_gain;
+  }
+
+  return output;
+}
+
+void AGC::scaleN(DSPCOMPLEX output[], const DSPCOMPLEX input[], uint32_t n)
+{
+  for (uint32_t i = 0; i < n; i++)
+  {
+    output[i] = scale(input[i]);
+  }
+}
+
+
+
+
+//agc_cc::sptr
+// agc_cc::make(float rate, float reference, float gain)
+// {
+//   return gnuradio::get_initial_sptr
+//(new agc_cc_impl(rate, reference, gain));
+// }
+
+// agc_cc_impl::agc_cc_impl(float rate, float reference, float gain)
+//   : sync_block("agc_cc",
+//                io_signature::make(1, 1, sizeof(gr_complex)),
+//                io_signature::make(1, 1, sizeof(gr_complex))),
+//kernel::agc_cc(rate, reference, gain, 65536)
+// {
+//   const int alignment_multiple =
+//volk_get_alignment() / sizeof(gr_complex);
+//   set_alignment(std::max(1, alignment_multiple));
+// }
+
+// agc_cc_impl::~agc_cc_impl()
+// {
+// }
+
+// int
+// agc_cc_impl::work(int noutput_items,
+//       gr_vector_const_void_star &input_items,
+//       gr_vector_void_star &output_items)
+// {
+//   const gr_complex *in = (const gr_complex*)input_items[0];
+//   gr_complex *out = (gr_complex*)output_items[0];
+//   scaleN(out, in, noutput_items);
+//   return noutput_items;
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 constexpr uint32_t SMP_PER_MANC_SYM = 16;  // a manchaster sympol has 2 times the samples of a single RDS symbol
 constexpr uint32_t TAPS_MF_RRC = 151;
 constexpr uint32_t TAPS_MF_RRC_MANC = TAPS_MF_RRC - SMP_PER_MANC_SYM / 2;
@@ -102,11 +184,9 @@ constexpr DSPFLOAT RDS_BITCLK_HZ = 1187.5;
  *	Notice that mixing to zero IF has been done
  */
 rdsDecoder::rdsDecoder(RadioInterface * iRadioIf, int32_t iRate, SinCos * ipSinCos)
+  : mAGC(2e-34, 0.585, 53, 1000)
 {
   (void)ipSinCos;
-
-  int16_t i;
-  //int16_t length;
 
   mpRadioInterface = iRadioIf;
   mSampleRate = iRate;
@@ -278,11 +358,12 @@ void rdsDecoder::doDecode(const DSPFLOAT v, DSPFLOAT * const m, const ERdsMode m
 void rdsDecoder::doDecode(const DSPCOMPLEX v, DSPCOMPLEX * const m)
 {
   const DSPCOMPLEX vMF = doMatchFiltering(v);
+  const DSPCOMPLEX vMF_scaled = mAGC.scale(vMF);
 
   //const DSPCOMPLEX rdsMag = mpSharpFilter->Pass((vMF * vMF));
   //const DSPCOMPLEX rdsMag = vMF * conj(vMF);
 
-  *m = vMF;
+  *m = vMF_scaled;
 //  //*m = (20 * rdsMag + 1.0);
 //  const DSPFLOAT rdsSlope = rdsMag - mRdsLastSync;
 //  mRdsLastSync = rdsMag;

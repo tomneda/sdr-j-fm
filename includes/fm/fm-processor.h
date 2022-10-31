@@ -287,6 +287,7 @@ private:
 
   ELfPlot mLfPlotType = ELfPlot::DEMODULATOR;
   bool mShowFullSpectrum = false; // show only half (real values) or full (complex values) spectrum
+  int32_t mSpectrumSampleRate = 0;
   int32_t mZoomFactor = 1;
 
   class pilotRecovery

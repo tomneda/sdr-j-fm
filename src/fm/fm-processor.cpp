@@ -57,6 +57,7 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   mAudioSink        = mySink;
   mInputRate        = inputRate;
   mFmRate           = fmRate;
+  mSpectrumSampleRate = fmRate;
   mDecimatingScale  = inputRate / fmRate;
   mWorkingRate      = workingRate;
   mAudioRate        = audioRate;
@@ -296,6 +297,7 @@ void fmProcessor::setLfPlotType(ELfPlot m)
 {
   mLfPlotType = m;
   mShowFullSpectrum = (m == ELfPlot::IF_FILTERED || m == ELfPlot::RDS);
+  mSpectrumSampleRate = (m == ELfPlot::RDS ? RDS_RATE : mFmRate);
 }
 
 void fmProcessor::setLfPlotZoomFactor(int32_t iZoomFactor)
@@ -650,11 +652,21 @@ void fmProcessor::run()
             {
               DSPFLOAT mag;
               mpMyRdsDecoder->doDecode(imag(pcmSample), &mag, mRdsModus); // data rate 19000S/s
+
+              if (mLfPlotType == ELfPlot::RDS)
+              {
+                mpSpectrumBuffer_lf[localP++] = pcmSample;
+              }
             }
             else
             {
               DSPCOMPLEX magCplx;
-              mpMyRdsDecoder->doDecode(pcmSample, &magCplx); // data rate 19000S/s
+              //mpMyRdsDecoder->doDecode(pcmSample, &magCplx); // data rate 19000S/s
+
+              if (mLfPlotType == ELfPlot::RDS)
+              {
+                mpSpectrumBuffer_lf[localP++] = pcmSample;
+              }
             }
           }
         }
@@ -678,7 +690,7 @@ void fmProcessor::run()
       case ELfPlot::AF_MONO_FILTERED:  mpSpectrumBuffer_lf[localP++] = (result.real() + result.imag()); break;
       case ELfPlot::AF_LEFT_FILTERED:  mpSpectrumBuffer_lf[localP++] = result.real(); break;
       case ELfPlot::AF_RIGHT_FILTERED: mpSpectrumBuffer_lf[localP++] = result.imag(); break;
-      case ELfPlot::RDS:               mpSpectrumBuffer_lf[localP++] = rdsDataCmpl; break;
+      //case ELfPlot::RDS:               mpSpectrumBuffer_lf[localP++] = rdsDataCmpl; break;
       }
 
       if (localP >= mSpectrumSize)
@@ -1019,7 +1031,7 @@ void fmProcessor::processLfSpectrum()
   mpLfBuffer->putDataIntoBuffer(mpDisplayBuffer_lf, mDisplaySize);
 
   //	and signal the GUI thread that we have data
-  emit lfBufferLoaded(mShowFullSpectrum, zoomFactor);
+  emit lfBufferLoaded(mShowFullSpectrum, mSpectrumSampleRate / zoomFactor);
 }
 
 void fmProcessor::fill_average_buffer(const double * const in, double * const buffer)

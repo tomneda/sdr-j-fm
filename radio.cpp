@@ -1567,8 +1567,6 @@ void RadioInterface::setLfPlotType(const QString &s)
   {
     Q_ASSERT(0);
   }
-
-  myFMprocessor->triggerDrawNewLfSpectrum(); // resets the average filter
 }
 
 void RadioInterface::setLfPlotZoomFactor(const QString &s)
@@ -1579,7 +1577,6 @@ void RadioInterface::setLfPlotZoomFactor(const QString &s)
   }
 
   myFMprocessor->setLfPlotZoomFactor(std::stol(s.toStdString()));
-  myFMprocessor->triggerDrawNewLfSpectrum(); // resets the average filter
 }
 
 void RadioInterface::setfmRdsSelector(const QString &s)

@@ -50,6 +50,50 @@ class newConverter;
 
 //#define USE_EXTRACT_LEVELS
 
+template<class T> class DataBufferCtrl
+{
+public:
+  DataBufferCtrl() = default;
+
+  void set_data_ptr(T * const ipData, const int32_t iDataSize)
+  {
+    mpData = ipData;
+    mDataSize = iDataSize;
+    clear_content();
+  }
+
+  ~DataBufferCtrl() = default;
+
+  void operator=(const T & rhs)
+  {
+    if (mCurIdx < mDataSize)
+    {
+      //assert(mpData);
+      mpData[mCurIdx] = rhs;
+      ++mCurIdx;
+    }
+  }
+
+  T * get_ptr() const { return mpData; }
+  bool is_full() const { return (mCurIdx >= mDataSize); }
+  void reset_write_pointer() { mCurIdx = 0; }
+  void clear_content()
+  {
+    for (int32_t idx = 0; idx < mDataSize; ++idx)
+    {
+      mpData[idx] = T();
+    }
+    mCurIdx = 0;
+  }
+
+private:
+  T * mpData = nullptr;
+  int32_t mDataSize;
+  int32_t mCurIdx = 0;
+};
+
+
+
 class fmProcessor : public QThread
 {
   Q_OBJECT
@@ -129,7 +173,7 @@ public:
   void setAutoMonoMode(const bool iAutoMonoMode) { mAutoMono = iAutoMonoMode; }
   void setDCRemove(const bool iDCREnabled) { mDCREnabled = iDCREnabled; mRfDC = 0.0f; }
   void triggerDrawNewHfSpectrum() { mFillAverageHfBuffer = true; }
-  void triggerDrawNewLfSpectrum() { mFillAverageLfBuffer = true; }
+  void triggerDrawNewLfSpectrum() { mpSpectrumBuffer_lf.clear_content(); mFillAverageLfBuffer = true; }
 
 #ifdef USE_EXTRACT_LEVELS
   DSPFLOAT get_pilotStrength();
@@ -198,8 +242,7 @@ private:
   common_fft * mpSpectrum_fft_hf;
   common_fft * mpSpectrum_fft_lf;
   DSPCOMPLEX * mpSpectrumBuffer_hf;
-  DSPCOMPLEX * mpSpectrumBuffer_lf;
-  int32_t mSpecBufferLfIdx = 0;
+  DataBufferCtrl<DSPCOMPLEX> mpSpectrumBuffer_lf;
 
   double * mpDisplayBuffer_lf = nullptr;
   //double *mpDisplayBuffer;

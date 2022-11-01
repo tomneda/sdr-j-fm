@@ -9,7 +9,7 @@ TARGET = fmreceiver
 QT += widgets
 QMAKE_CXXFLAGS += -std=c++14
 
-win {
+win32 {
   include ($(QWT_ROOT)\features\qwt.prf)
   #CONFIG += qwt
 

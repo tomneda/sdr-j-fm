@@ -412,7 +412,7 @@ void fmProcessor::stopDumping(void)
   mDumping = false;
 }
 
-void fmProcessor::setAttenuation(int16_t l, int16_t r)
+void fmProcessor::setAttenuation(DSPFLOAT l, DSPFLOAT r)
 {
   mLgain = l;
   mRgain = r;
@@ -657,19 +657,22 @@ void fmProcessor::run()
             if ((mRdsModus != rdsDecoder::ERdsMode::RDS3))
             {
               DSPFLOAT mag;
+              DSPCOMPLEX magCplx;
               mpMyRdsDecoder->doDecode(imag(pcmSample), &mag, mRdsModus); // data rate 19000S/s
               if (mLfPlotType == ELfPlot::RDS) { mpSpectrumBuffer_lf = mag; }
-              mpIqBuffer->putDataIntoBuffer(&mag, 1);
+              magCplx = DSPCOMPLEX(mag, mag);
+              mpIqBuffer->putDataIntoBuffer(&magCplx, 1);
             }
             else
             {
               DSPCOMPLEX magCplx;
               mpMyRdsDecoder->doDecode(pcmSample, &magCplx); // data rate 19000S/s
               if (mLfPlotType == ELfPlot::RDS) { mpSpectrumBuffer_lf = magCplx; }
+              //magCplx += DSPCOMPLEX(1, 1);
               mpIqBuffer->putDataIntoBuffer(&magCplx, 1);
             }
           }
-          //emit iqBufferLoaded();
+          emit iqBufferLoaded();
         }
       }
       else

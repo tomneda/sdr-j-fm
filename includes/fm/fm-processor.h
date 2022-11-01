@@ -158,7 +158,7 @@ public:
   void stopDumping();
   void setBandwidth(int32_t);
   void setBandfilterDegree(int32_t);
-  void setAttenuation(int16_t, int16_t);
+  void setAttenuation(DSPFLOAT, DSPFLOAT);
   void setfmRdsSelector(rdsDecoder::ERdsMode);
   void resetRds();
   void set_localOscillator(int32_t);
@@ -269,8 +269,8 @@ private:
   int32_t mDecimatingScale;
 
   int32_t mMyCount;
-  int16_t mLgain;
-  int16_t mRgain;
+  DSPFLOAT mLgain;
+  DSPFLOAT mRgain;
 
   int32_t mPeakLevelCurSampleCnt{ 0 };
   int32_t mPeakLevelSampleMax{ 0x7FFFFFFF };

@@ -932,13 +932,15 @@ void RadioInterface::setfmChannelSelector(const QString &s)
 void RadioInterface::setAttenuation(int n)
 {
   int16_t f = IQBalanceDisplay->value();
-  int16_t bl, br;
 
-  bl                 = 100 - 2 * f;
-  br                 = 100 + 2 * f;
+  const int16_t bl = 100 - f;
+  const int16_t br = 100 + f;
+
   currAttSliderValue = 2 * n;
-  attValueL          = currAttSliderValue * (float)bl / 100;
-  attValueR          = currAttSliderValue * (float)br / 100;
+
+  attValueL = currAttSliderValue * (float)bl / 100;
+  attValueR = currAttSliderValue * (float)br / 100;
+
   if (myFMprocessor != nullptr)
   {
     myFMprocessor->setAttenuation(attValueL, attValueR);
@@ -949,13 +951,14 @@ void RadioInterface::setAttenuation(int n)
  */
 void RadioInterface::setIQBalance(int n)
 {
-  int16_t bl, br;
-
   IQBalanceDisplay->display(n);
-  bl        = 100 - 2 * n;
-  br        = 100 + 2 * n;
+
+  const int16_t bl = 100 - n;
+  const int16_t br = 100 + n;
+
   attValueL = currAttSliderValue * (float)bl / 100;
   attValueR = currAttSliderValue * (float)br / 100;
+
   if (myFMprocessor != nullptr)
   {
     myFMprocessor->setAttenuation(attValueL, attValueR);
@@ -1989,8 +1992,8 @@ void RadioInterface::lfBufferLoaded(bool iShowFullSpectrum, int iSampleRate)
 void RadioInterface::iqBufferLoaded()
 {
   DSPCOMPLEX * iq_values = (DSPCOMPLEX *)alloca(IQ_SCOPE_SIZE * sizeof(DSPCOMPLEX));
-  iqBuffer->getDataFromBuffer(iq_values, IQ_SCOPE_SIZE);
-  iqScope->DisplayIQVec(iq_values, 100);
+  const int32_t sizeRead = iqBuffer->getDataFromBuffer(iq_values, IQ_SCOPE_SIZE);
+  iqScope->DisplayIQVec(iq_values, sizeRead, 80);
 }
 
 void RadioInterface::setHFplotterView(int offset)
@@ -2032,7 +2035,7 @@ void RadioInterface::setup_IQPlot()
   for (uint32_t i = 0; i < IQ_SCOPE_SIZE; ++i)
   {
     const float phase = 2 * M_PI * i / IQ_SCOPE_SIZE;
-    iqScope->DisplayIQ({cosf(phase), sinf(phase)}, 99);
+    iqScope->DisplayIQ({cosf(phase), sinf(phase)}, 50);
   }
 }
 

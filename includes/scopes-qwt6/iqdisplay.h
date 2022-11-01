@@ -52,8 +52,8 @@ class IQDisplay : public QObject, public QwtPlotSpectrogram
 public:
   IQDisplay(QwtPlot *, int16_t);
   ~IQDisplay(void);
-  void DisplayIQ(DSPCOMPLEX, float);
-  void DisplayIQVec(DSPCOMPLEX *, float);
+  void DisplayIQ(const DSPCOMPLEX, const float);
+  void DisplayIQVec(const DSPCOMPLEX * const, const int32_t n, const float);
 
 private:
   int32_t mAmount;

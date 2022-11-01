@@ -983,10 +983,10 @@
                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Balance the incoming I and Q parts of the samples.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="minimum">
-                    <number>-35</number>
+                    <number>-100</number>
                    </property>
                    <property name="maximum">
-                    <number>35</number>
+                    <number>100</number>
                    </property>
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>

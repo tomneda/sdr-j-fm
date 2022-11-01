@@ -85,8 +85,10 @@ private:
 
   RingBuffer<double> *hfBuffer;
   RingBuffer<double> *lfBuffer;
+  RingBuffer<DSPCOMPLEX> *iqBuffer;
   Scope *hfScope;
   Scope *lfScope;
+  IQDisplay *iqScope;
   bool mAfcActive{false};
   float mAfcAlpha{1.0f};
   int32_t mAfcCurrOffFreq{0};
@@ -146,6 +148,9 @@ private:
   int32_t Panel;
   int16_t CurrentRig;
   QTimer *displayTimer;
+
+  static constexpr uint32_t IQ_SCOPE_SIZE = 1024;
+
   /*
    *	dumping
    */
@@ -172,6 +177,7 @@ private:
 
   void setup_HFScope();
   void setup_LFScope();
+  void setup_IQPlot();
   bool squelchMode;
   void resetSelector();
   int32_t mapRates(int32_t);
@@ -247,6 +253,7 @@ public slots:
   void newFrequency(int);
   void hfBufferLoaded();
   void lfBufferLoaded(bool, int);
+  void iqBufferLoaded();
   void wheelEvent(QWheelEvent *) override;
   void setLogging(const QString &);
   void setLogsaving();

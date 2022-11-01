@@ -130,18 +130,19 @@ public:
   fmProcessor(deviceHandler *,
               RadioInterface *,
               audioSink *,
-              int32_t,                // inputRate
-              int32_t,                // decimation
-              int32_t,                // workingRate
-              int32_t,                // audioRate,
-              int32_t,                // displaySize
-              int32_t,                // spectrumSize
-              int32_t,                // averageCount
-              int32_t,                // repeatRate
-              RingBuffer<double> *,   // HFScope
-              RingBuffer<double> *,   // LFScope
-              int16_t,                // filterDepth
-              int16_t);               // threshold scanning
+              int32_t,                  // inputRate
+              int32_t,                  // decimation
+              int32_t,                  // workingRate
+              int32_t,                  // audioRate,
+              int32_t,                  // displaySize
+              int32_t,                  // spectrumSize
+              int32_t,                  // averageCount
+              int32_t,                  // repeatRate
+              RingBuffer<double> *,     // HFScope
+              RingBuffer<double> *,     // LFScope
+              RingBuffer<DSPCOMPLEX> *, // IQScope
+              int16_t,                  // filterDepth
+              int16_t);                 // threshold scanning
   ~fmProcessor() override;
 
   void stop();   // stop the processor
@@ -228,6 +229,7 @@ private:
   bool mFillAverageLfBuffer{ true };
   RingBuffer<double> * mpHfBuffer;
   RingBuffer<double> * mpLfBuffer;
+  RingBuffer<DSPCOMPLEX> * mpIqBuffer;
   int16_t mFilterDepth;
   uint8_t mInputMode;
   //int32_t freezer;
@@ -414,6 +416,7 @@ signals:
   void setPLLisLocked(bool);
   void hfBufferLoaded();
   void lfBufferLoaded(bool, int);
+  void iqBufferLoaded();
   void showDcComponents(float, float);
   void scanresult();
   void showPeakLevel(const float, const float);

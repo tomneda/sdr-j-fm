@@ -24,7 +24,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout_8">
+      <layout class="QVBoxLayout" name="verticalLayout_8" stretch="5,1">
        <item>
         <widget class="QScrollArea" name="scrollStationList">
          <property name="toolTip">
@@ -47,6 +47,9 @@
           </property>
          </widget>
         </widget>
+       </item>
+       <item>
+        <widget class="QwtPlot" name="iqscope"/>
        </item>
       </layout>
      </item>

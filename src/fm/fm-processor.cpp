@@ -48,7 +48,9 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
                          int32_t displaySize, int32_t spectrumSize,
                          int32_t averageCount, int32_t repeatRate,
                          RingBuffer<double> *hfBuffer,
-                         RingBuffer<double> *lfBuffer, int16_t filterDepth,
+                         RingBuffer<double> *lfBuffer,
+                         RingBuffer<DSPCOMPLEX> *iqBuffer,
+                         int16_t filterDepth,
                          int16_t thresHold)
 {
   mRunning          = false;
@@ -66,6 +68,7 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   mRepeatRate       = repeatRate;
   mpHfBuffer        = hfBuffer;
   mpLfBuffer        = lfBuffer;
+  mpIqBuffer        = iqBuffer;
   mFilterDepth      = filterDepth;
   mThresHold        = thresHold;
   //freezer          = 0;
@@ -172,6 +175,7 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   connect(mMySquelch, &squelch::setSquelchIsActive, mMyRadioInterface, &RadioInterface::setSquelchIsActive);
   connect(this, &fmProcessor::hfBufferLoaded, mMyRadioInterface, &RadioInterface::hfBufferLoaded);
   connect(this, &fmProcessor::lfBufferLoaded, mMyRadioInterface, &RadioInterface::lfBufferLoaded);
+  connect(this, &fmProcessor::iqBufferLoaded, mMyRadioInterface, &RadioInterface::iqBufferLoaded);
   //connect(this, SIGNAL(lfBufferLoaded(uint32_t,bool)), mMyRadioInterface, SLOT(lfBufferLoaded(uint32_t,bool)));
   connect(this, &fmProcessor::showPeakLevel, mMyRadioInterface, &RadioInterface::showPeakLevel);
   connect(this, SIGNAL(showDcComponents(float,float)), mMyRadioInterface, SLOT(showDcComponents(float,float)));
@@ -655,14 +659,17 @@ void fmProcessor::run()
               DSPFLOAT mag;
               mpMyRdsDecoder->doDecode(imag(pcmSample), &mag, mRdsModus); // data rate 19000S/s
               if (mLfPlotType == ELfPlot::RDS) { mpSpectrumBuffer_lf = mag; }
+              mpIqBuffer->putDataIntoBuffer(&mag, 1);
             }
             else
             {
               DSPCOMPLEX magCplx;
               mpMyRdsDecoder->doDecode(pcmSample, &magCplx); // data rate 19000S/s
               if (mLfPlotType == ELfPlot::RDS) { mpSpectrumBuffer_lf = magCplx; }
+              mpIqBuffer->putDataIntoBuffer(&magCplx, 1);
             }
           }
+          //emit iqBufferLoaded();
         }
       }
       else

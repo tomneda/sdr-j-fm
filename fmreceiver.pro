@@ -13,7 +13,7 @@ win32 {
   include ($(QWT_ROOT)\features\qwt.prf)
   #CONFIG += qwt
 
-  # works bad without optimization in debug version
+  # works badthout optimization in debug version
   CONFIG(debug, debug|release) {
     QMAKE_CFLAGS += -ffast-math
     QMAKE_CXXFLAGS += -ffast-math
@@ -101,6 +101,7 @@ HEADERS += ./radio.h \
            ./includes/various/iir-filters.h \
            ./includes/various/Xtan2.h \
            ./includes/output/audiosink.h \
+           ./includes/scopes-qwt6/iqdisplay.h \
            ./includes/scopes-qwt6/scope.h \
            ./includes/scopes-qwt6/spectrogramdata.h \
            ./includes/scopes-qwt6/fft-scope.h \
@@ -132,6 +133,7 @@ SOURCES += ./main.cpp \
            ./src/various/iir-filters.cpp \
            ./src/various/Xtan2.cpp \
            ./src/output/audiosink.cpp \
+           ./src/scopes-qwt6/iqdisplay.cpp \
            ./src/scopes-qwt6/scope.cpp \
            ./src/scopes-qwt6/fft-scope.cpp \
            ./src/fm/fm-demodulator.cpp \

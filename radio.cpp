@@ -25,6 +25,7 @@
 #include "fm-processor.h"
 #include "popup-keypad.h"
 #include "rds-decoder.h"
+#include "iqdisplay.h"
 #include "scope.h"
 #include <QDateTime>
 #include <QDebug>
@@ -233,6 +234,8 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
 
   setup_HFScope();
   setup_LFScope();
+  setup_IQPlot();
+
   sourceDumping    = false;
   audioDumping     = false;
   dumpfilePointer  = nullptr;
@@ -347,6 +350,7 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
 //	The end of all
 RadioInterface::~RadioInterface()
 {
+  delete iqScope;
   delete hfScope;
   delete lfScope;
 
@@ -836,7 +840,7 @@ void RadioInterface::make_newProcessor()
   myFMprocessor = new fmProcessor(myRig, this, our_audioSink, inputRate, fmRate,
                                   workingRate, audioRate, displaySize,
                                   spectrumSize, averageCount, repeatRate,
-                                  hfBuffer, lfBuffer, filterDepth, thresHold);
+                                  hfBuffer, lfBuffer, iqBuffer, filterDepth, thresHold);
 
   lcd_fmRate->display((int)this->fmRate);
   lcd_inputRate->display((int)this->inputRate);
@@ -1982,6 +1986,13 @@ void RadioInterface::lfBufferLoaded(bool iShowFullSpectrum, int iSampleRate)
   lfScope->Display(X_axis, Y_values, spectrumAmplitudeSlider_lf->value());
 }
 
+void RadioInterface::iqBufferLoaded()
+{
+  DSPCOMPLEX * iq_values = (DSPCOMPLEX *)alloca(IQ_SCOPE_SIZE * sizeof(DSPCOMPLEX));
+  iqBuffer->getDataFromBuffer(iq_values, IQ_SCOPE_SIZE);
+  iqScope->DisplayIQVec(iq_values, 100);
+}
+
 void RadioInterface::setHFplotterView(int offset)
 {
   (void)offset;
@@ -2011,6 +2022,18 @@ void RadioInterface::setup_LFScope()
   lfScope    = new Scope(lfscope, this->displaySize, this->rasterSize);
   LFviewMode = SPECTRUM_MODE;
   lfScope->SelectView(SPECTRUM_MODE);
+}
+
+void RadioInterface::setup_IQPlot()
+{
+  iqBuffer = new RingBuffer<DSPCOMPLEX>(IQ_SCOPE_SIZE);
+  iqScope = new IQDisplay(iqscope, IQ_SCOPE_SIZE);
+
+  for (uint32_t i = 0; i < IQ_SCOPE_SIZE; ++i)
+  {
+    const float phase = 2 * M_PI * i / IQ_SCOPE_SIZE;
+    iqScope->DisplayIQ({cosf(phase), sinf(phase)}, 99);
+  }
 }
 
 //

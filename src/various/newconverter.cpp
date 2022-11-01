@@ -31,7 +31,7 @@ newConverter::newConverter (int32_t inRate, int32_t outRate, int32_t inSize)
   mInputLimit = inSize;
   mRatio      = double(outRate) / inRate;
   //fprintf(stderr, "ratio = %f\n", mRatio);
-  mOutputLimit = inSize * mRatio + 1; // round up as we can get an memory overflow
+  mOutputLimit = std::ceil(inSize * mRatio); // round up as we can get a memory overflow
 
   int err = 0;
   //mpConverter		= src_new (SRC_SINC_BEST_QUALITY, 2, &err);
@@ -81,6 +81,8 @@ bool newConverter::convert(DSPCOMPLEX v, DSPCOMPLEX *out, int32_t *amount)
 
   mInpIdx = 0;
   const int32_t framesOut = mpSrc_data->output_frames_gen;
+
+  assert(framesOut <= mOutputLimit);
 
   for (int32_t i = 0; i < framesOut; i++)
   {

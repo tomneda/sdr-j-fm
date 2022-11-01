@@ -103,6 +103,7 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   mFmModus        = FM_Mode::Stereo;
   mSelector       = S_STEREO;
   mInputMode      = IandQ;
+  //mpAudioDecimator = new newConverter(fmRate, workingRate, workingRate / 200);
   mpAudioDecimator = new newConverter(fmRate, workingRate, fmRate / 1000);
   mpAudioOut = new DSPCOMPLEX[mpAudioDecimator->getOutputsize()];
 
@@ -436,7 +437,7 @@ void fmProcessor::run()
   int32_t       scanPointer      = 0;
   common_fft    *scan_fft        = new common_fft(1024);
   DSPCOMPLEX    *scanBuffer      = scan_fft->getVector();
-  int           localP           = 0;
+  //int           localP           = 0;
   const float rfDcAlpha = 1.0f / mInputRate;
 
   assert(mpMyRdsDecoder == nullptr); // check whether not calling next news twice
@@ -634,7 +635,7 @@ void fmProcessor::run()
       {
         int32_t rdsAmount;
 
-        int abc = mpRdsDecimator->getOutputsize();
+        //int abc = mpRdsDecimator->getOutputsize();
         //++mRdsSampleCntSrc;
 
         if (mpRdsDecimator->convert(rdsDataCmpl, mpRdsOut, &rdsAmount))
@@ -652,20 +653,32 @@ void fmProcessor::run()
             {
               DSPFLOAT mag;
               mpMyRdsDecoder->doDecode(imag(pcmSample), &mag, mRdsModus); // data rate 19000S/s
-              if (mLfPlotType == ELfPlot::RDS) { mpSpectrumBuffer_lf[localP++] = mag; }
+              if (mLfPlotType == ELfPlot::RDS)
+              {
+                mpSpectrumBuffer_lf[mSpecBufferLfIdx++] = rdsDataCmpl;
+                if (mSpecBufferLfIdx >= mSpectrumSize) { mSpecBufferLfIdx = 0; }
+              }
             }
             else
             {
               DSPCOMPLEX magCplx;
               mpMyRdsDecoder->doDecode(pcmSample, &magCplx); // data rate 19000S/s
-              if (mLfPlotType == ELfPlot::RDS) { mpSpectrumBuffer_lf[localP++] = magCplx; }
+              if (mLfPlotType == ELfPlot::RDS)
+              {
+                mpSpectrumBuffer_lf[mSpecBufferLfIdx++] = rdsDataCmpl;
+                if (mSpecBufferLfIdx >= mSpectrumSize) { mSpecBufferLfIdx = 0; }
+              }
             }
           }
         }
       }
       else
       {
-        if (mLfPlotType == ELfPlot::RDS) { mpSpectrumBuffer_lf[localP++] = 0; }
+        if (mLfPlotType == ELfPlot::RDS)
+        {
+          mpSpectrumBuffer_lf[mSpecBufferLfIdx++] = 0;
+          if (mSpecBufferLfIdx >= mSpectrumSize) { mSpecBufferLfIdx = 0; }
+        }
       }
 
       if (mFmAudioFilterActive)
@@ -678,21 +691,21 @@ void fmProcessor::run()
 
       switch (mLfPlotType)
       {
-      case ELfPlot::OFF:               mpSpectrumBuffer_lf[localP++] = 0; break;
-      case ELfPlot::IF_FILTERED:       mpSpectrumBuffer_lf[localP++] = v; break;
-      case ELfPlot::DEMODULATOR:       mpSpectrumBuffer_lf[localP++] = demod; break;
-      case ELfPlot::AF_SUM:            mpSpectrumBuffer_lf[localP++] = sumLR; break;
-      case ELfPlot::AF_DIFF:           mpSpectrumBuffer_lf[localP++] = diffLR; break;
-      case ELfPlot::AF_MONO_FILTERED:  mpSpectrumBuffer_lf[localP++] = (audio.real() + audio.imag()); break;
-      case ELfPlot::AF_LEFT_FILTERED:  mpSpectrumBuffer_lf[localP++] = audio.real(); break;
-      case ELfPlot::AF_RIGHT_FILTERED: mpSpectrumBuffer_lf[localP++] = audio.imag(); break;
+      case ELfPlot::OFF:               mpSpectrumBuffer_lf[mSpecBufferLfIdx++] = 0; break;
+      case ELfPlot::IF_FILTERED:       mpSpectrumBuffer_lf[mSpecBufferLfIdx++] = v; break;
+      case ELfPlot::DEMODULATOR:       mpSpectrumBuffer_lf[mSpecBufferLfIdx++] = demod; break;
+      case ELfPlot::AF_SUM:            mpSpectrumBuffer_lf[mSpecBufferLfIdx++] = sumLR; break;
+      case ELfPlot::AF_DIFF:           mpSpectrumBuffer_lf[mSpecBufferLfIdx++] = diffLR; break;
+      case ELfPlot::AF_MONO_FILTERED:  mpSpectrumBuffer_lf[mSpecBufferLfIdx++] = (audio.real() + audio.imag()); break;
+      case ELfPlot::AF_LEFT_FILTERED:  mpSpectrumBuffer_lf[mSpecBufferLfIdx++] = audio.real(); break;
+      case ELfPlot::AF_RIGHT_FILTERED: mpSpectrumBuffer_lf[mSpecBufferLfIdx++] = audio.imag(); break;
       //case ELfPlot::RDS:               mpSpectrumBuffer_lf[localP++] = rdsDataCmpl; break;
       default:;
       }
 
-      if (localP >= mSpectrumSize)
+      if (mSpecBufferLfIdx >= mSpectrumSize)
       {
-        localP = 0;
+        mSpecBufferLfIdx = 0;
       }
 
 
@@ -1041,9 +1054,12 @@ void fmProcessor::fill_average_buffer(const double * const in, double * const bu
 
 void fmProcessor::add_to_average(const double * const in, double * const buffer)
 {
+  const double alpha = 1.0 / mAverageCount;
+  const double beta = (mAverageCount - 1.0) / mAverageCount;
+
   for (int32_t i = 0; i < mDisplaySize; i++)
   {
-    buffer[i] = 1.0 / mAverageCount * in[i] + (mAverageCount - 1.0) / mAverageCount * buffer[i];
+    buffer[i] = alpha * in[i] + beta * buffer[i];
   }
 }
 

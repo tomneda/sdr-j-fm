@@ -199,6 +199,8 @@ private:
   common_fft * mpSpectrum_fft_lf;
   DSPCOMPLEX * mpSpectrumBuffer_hf;
   DSPCOMPLEX * mpSpectrumBuffer_lf;
+  int32_t mSpecBufferLfIdx = 0;
+
   double * mpDisplayBuffer_lf = nullptr;
   //double *mpDisplayBuffer;
   double * mpLocalBuffer;

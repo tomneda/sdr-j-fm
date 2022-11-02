@@ -62,6 +62,7 @@ private:
   //DSPCOMPLEX * mpPoints;
   QwtPlot * mpQwtPlot;
   int32_t mNoPointsPerRadius;
+  int32_t mNoPointsColOrRow;
   int32_t mNoMaxPointsOnField;
   int32_t mInpInx;
 

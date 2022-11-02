@@ -98,4 +98,45 @@ public:
   }
 };
 
+#if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0602)
+class IqScopeData : public QwtRasterData
+{
+#else
+class IqScopeData : public QwtMatrixRasterData
+{
+#endif
+public:
+  double * data;    // pointer to actual data
+  int datawidth;    // width of matrix
+  double max;
+
+  IqScopeData(double * data, int datawidth, double max) :
+#if defined QWT_VERSION && ((QWT_VERSION >> 8) < 0x0602)
+    QwtRasterData()
+#else
+    QwtMatrixRasterData()
+#endif
+  {
+    this->data = data;
+    this->datawidth = datawidth;
+    this->max = max;
+
+    setInterval(Qt::XAxis, QwtInterval(0, datawidth, QwtInterval::ExcludeMaximum));
+    setInterval(Qt::YAxis, QwtInterval(0, datawidth, QwtInterval::ExcludeMaximum));
+    setInterval(Qt::ZAxis, QwtInterval(0, max));
+  }
+
+  void initRaster(const QRectF & x, const QSize & raster) override
+  {
+    (void)x;
+    (void)raster;
+  }
+
+  ~IqScopeData() {}
+
+  double value(double x, double y) const override
+  {
+    return data[(int)y * datawidth + (int)x];
+  }
+};
 #endif

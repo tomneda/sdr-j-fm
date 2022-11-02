@@ -963,6 +963,11 @@ void RadioInterface::setIQBalance(int n)
   {
     myFMprocessor->setAttenuation(attValueL, attValueR);
   }
+
+//  IQBalanceDisplay->display(n);
+//  int32_t x = n;
+//  int32_t y = balanceDisplay->value();
+//  iqScope->DisplayIQ(DSPCOMPLEX(x/100.0f, y/100.0f), 1.01);
 }
 //
 //	Increment frequency: with amount N, depending
@@ -1383,6 +1388,11 @@ void RadioInterface::setfmStereoBalanceSlider(int n)
     myFMprocessor->setSoundBalance(n);
     balanceDisplay->display(n);
   }
+
+//  balanceDisplay->display(n);
+//  int32_t y = n;
+//  int32_t x = IQBalanceDisplay->value();
+//  iqScope->DisplayIQ(DSPCOMPLEX(x/100.0f, y/100.0f), 1.01);
 }
 
 void RadioInterface::setAudioGainSlider(int n)
@@ -1993,7 +2003,7 @@ void RadioInterface::iqBufferLoaded()
 {
   DSPCOMPLEX * iq_values = (DSPCOMPLEX *)alloca(IQ_SCOPE_SIZE * sizeof(DSPCOMPLEX));
   const int32_t sizeRead = iqBuffer->getDataFromBuffer(iq_values, IQ_SCOPE_SIZE);
-  iqScope->DisplayIQVec(iq_values, sizeRead, 80);
+  iqScope->DisplayIQVec(iq_values, sizeRead, 1.0);
 }
 
 void RadioInterface::setHFplotterView(int offset)
@@ -2035,7 +2045,7 @@ void RadioInterface::setup_IQPlot()
   for (uint32_t i = 0; i < IQ_SCOPE_SIZE; ++i)
   {
     const float phase = 2 * M_PI * i / IQ_SCOPE_SIZE;
-    iqScope->DisplayIQ({cosf(phase), sinf(phase)}, 50);
+    iqScope->DisplayIQ({cosf(phase), sinf(phase)}, 1.0);
   }
 }
 

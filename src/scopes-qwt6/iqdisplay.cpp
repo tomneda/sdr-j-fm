@@ -28,25 +28,32 @@
 /*
  *	iq circle plotter
  */
-static SpectrogramData * sIQData = nullptr;
+static IqScopeData * sIQData = nullptr;
 
 IQDisplay::IQDisplay(QwtPlot * plot, int16_t x) : QwtPlotSpectrogram()
 {
   QwtLinearColorMap * colorMap = new QwtLinearColorMap(Qt::darkBlue, Qt::yellow);
 
   setRenderThreadCount(1);
-  mNoPointsPerRadius = 100;
-  mNoMaxPointsOnField = (2 * mNoPointsPerRadius) * (2 * mNoPointsPerRadius);
+  mNoPointsPerRadius = 50;
+  mNoPointsColOrRow = 2 * mNoPointsPerRadius + 1; // zero position is a extra row and column
+  mNoMaxPointsOnField = mNoPointsColOrRow * mNoPointsColOrRow;
   mpQwtPlot = plot;
   mAmount = x;
   mInpInx = 0;
   //mpPoints = new DSPCOMPLEX[mAmount];
   //memset(mpPoints, 0, mAmount * sizeof(DSPCOMPLEX));
   this->setColorMap(colorMap);
+
   mpPlotData1 = new double[mNoMaxPointsOnField];
   mpPlotData2 = new double[mNoMaxPointsOnField];
+
   memset(mpPlotData1, 0, mNoMaxPointsOnField * sizeof(double));
-  sIQData = new SpectrogramData(mpPlotData2, 0, 2 * mNoPointsPerRadius, 2 * mNoPointsPerRadius, 2 * mNoPointsPerRadius, 50.0);
+  memset(mpPlotData2, 0, mNoMaxPointsOnField * sizeof(double));
+
+  sIQData = new IqScopeData(mpPlotData2, mNoPointsColOrRow, 50.0);
+  //sIQData->setResampleMode(QwtMatrixRasterData::BicubicInterpolation);
+  sIQData->setAttribute(QwtMatrixRasterData::WithoutGaps);
   this->setData(sIQData);
   plot->enableAxis(QwtPlot::xBottom, false);
   plot->enableAxis(QwtPlot::yLeft, false);
@@ -54,6 +61,8 @@ IQDisplay::IQDisplay(QwtPlot * plot, int16_t x) : QwtPlotSpectrogram()
   plot->enableAxis(QwtPlot::yRight, false);
   this->setDisplayMode(QwtPlotSpectrogram::ImageMode, true);
   this->attach(mpQwtPlot);
+  mpQwtPlot->setFixedHeight(2*mNoPointsColOrRow);
+  mpQwtPlot->setFixedWidth(2*mNoPointsColOrRow);
   mpQwtPlot->replot();
 }
 
@@ -62,33 +71,45 @@ IQDisplay::~IQDisplay()
   this->detach();
   delete[] mpPlotData1;
   //delete[] mpPoints;
-  //	delete		IQData;
+  delete sIQData;
+}
+
+template<class T> inline void symmetric_limit(T & ioVal, const T iLimit)
+{
+    if      (ioVal >  iLimit) ioVal =  iLimit;
+    else if (ioVal < -iLimit) ioVal = -iLimit;
+  //if ((x) > (l)) x = (l); else if (x < -(l)) x = -(l);
 }
 
 void IQDisplay::DisplayIQ(const DSPCOMPLEX z, const float scale)
 {
-  int32_t h = (int32_t)(scale * real(z));
-  int32_t v = (int32_t)(scale * imag(z));
+  int32_t h = (int32_t)(mNoPointsPerRadius * scale * real(z));
+  int32_t v = (int32_t)(mNoPointsPerRadius * scale * imag(z));
   //int32_t v = (int32_t)(scale * -0.5);
 
-  if      (v >=  mNoPointsPerRadius) v =   mNoPointsPerRadius - 1;
-  else if (v <= -mNoPointsPerRadius) v = -(mNoPointsPerRadius - 1);
+  // the field has width of 201 and height of 201, the middle has index 100
 
-  if      (h >= mNoPointsPerRadius)  h =   mNoPointsPerRadius - 1;
-  else if (h <= -mNoPointsPerRadius) h = -(mNoPointsPerRadius - 1);
+  symmetric_limit(v, mNoPointsPerRadius);
+  symmetric_limit(h, mNoPointsPerRadius);
+
+//  if      (v >  mNoPointsPerRadius) v =  mNoPointsPerRadius;
+//  else if (v < -mNoPointsPerRadius) v = -mNoPointsPerRadius;
+
+//  if      (h >  mNoPointsPerRadius) h =  mNoPointsPerRadius;
+//  else if (h < -mNoPointsPerRadius) h = -mNoPointsPerRadius;
 
   //mpPoints[mInpInx] = DSPCOMPLEX(x, y);
-  mpPlotData1[(v + mNoPointsPerRadius - 1) * 2 * mNoPointsPerRadius + h + mNoPointsPerRadius - 1] = 50;
+  const int32_t idx = (v + mNoPointsPerRadius) * mNoPointsColOrRow + h + mNoPointsPerRadius;
+  assert(idx >= 0);
+  assert(idx < mNoMaxPointsOnField);
+  //if (mpPlotData1[idx] < 40) mpPlotData1[idx] += 10;
+  mpPlotData1[idx] = 50;
 
   if (++mInpInx < mAmount)
     return;
 
   // we need an extra data buffer as mpQwtPlot->replot() seems to take a while in the background
   memcpy(mpPlotData2, mpPlotData1, mNoMaxPointsOnField * sizeof(double));
-  //this->detach();
-  //this->setData(IQData);
-  //this->setDisplayMode(QwtPlotSpectrogram::ImageMode, true);
-  //this->attach(mpQwtPlot);
   mpQwtPlot->replot();
 
   memset(mpPlotData1, 0, mNoMaxPointsOnField * sizeof(double));

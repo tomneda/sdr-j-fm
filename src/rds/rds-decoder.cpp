@@ -366,9 +366,9 @@ void rdsDecoder::doDecode(const DSPCOMPLEX v, DSPCOMPLEX * const m)
   // ---------------------------------------------------------------
   static DSPCOMPLEX out[3] {}; // current and last 2 samples
   static DSPCOMPLEX out_rail[3] {}; // current and last 2 samples
-  static DSPFLOAT mu = 0.01; // 0.01;
+  static DSPFLOAT mu = 0.00; // 0.01;
   static DSPCOMPLEX r = 0;
-  static int32_t next_used_smpl = 3;
+  static int32_t next_used_smpl = 3;  // 2 to fill out buffer
   static int32_t smpl_cnt = 0;
 
   constexpr float alpha = 0.01;
@@ -381,7 +381,7 @@ void rdsDecoder::doDecode(const DSPCOMPLEX v, DSPCOMPLEX * const m)
   out[1] = out[2];
   out[2] = vMF_scaled;
 
-  if (++smpl_cnt > next_used_smpl)
+  if (++smpl_cnt >= next_used_smpl)
   {
     // get hard decision values (rail to rail)
     for (int32_t i = 0; i < 3; ++i)
@@ -389,9 +389,17 @@ void rdsDecoder::doDecode(const DSPCOMPLEX v, DSPCOMPLEX * const m)
       out_rail[i] = DSPCOMPLEX((real(out[i]) > 0.0f ? 1.0f : -1.0f), (imag(out[i]) > 0.0f ? 1.0f : -1.0f));
     }
 
-    const DSPCOMPLEX x = (out_rail[2] - out_rail[0]) * conj(out[1]);
-    const DSPCOMPLEX y = (out[2] - out[0]) * conj(out_rail[1]);
-    float mm_val = real(y - x);
+//    const DSPCOMPLEX x = (out_rail[2] - out_rail[0]) * conj(out[1]);
+//    const DSPCOMPLEX y = (out[2] - out[0]) * conj(out_rail[1]);
+//    const DSPFLOAT mm_val = real(y - x);
+
+//    const DSPFLOAT x = real((out_rail[2] - out_rail[0]) * conj(out[1]));
+//    const DSPFLOAT y = real((out[2] - out[0]) * conj(out_rail[1]));
+//    const DSPFLOAT mm_val = y - x;
+
+    const DSPFLOAT x = real(out_rail[2] - out_rail[0]) * real(out[1]) + imag(out_rail[2] - out_rail[0]) * imag(out[1]);
+    const DSPFLOAT y = real(out[2] - out[0]) * real(out_rail[1]) + imag(out[2] - out[0]) * imag(out_rail[1]);
+    const DSPFLOAT mm_val = y - x;
 
     mu += sps + alpha * mm_val;
     next_used_smpl = (int32_t)(round(mu)); // round down to nearest int since we are using it as an index

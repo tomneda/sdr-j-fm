@@ -53,7 +53,7 @@ IQDisplay::IQDisplay(QwtPlot * plot, int16_t x) : QwtPlotSpectrogram()
 
   sIQData = new IqScopeData(mpPlotData2, mNoPointsColOrRow, 50.0);
   //sIQData->setResampleMode(QwtMatrixRasterData::BicubicInterpolation);
-  sIQData->setAttribute(QwtMatrixRasterData::WithoutGaps);
+  //sIQData->setAttribute(QwtMatrixRasterData::WithoutGaps); // this causes a exception in debug mode
   this->setData(sIQData);
   plot->enableAxis(QwtPlot::xBottom, false);
   plot->enableAxis(QwtPlot::yLeft, false);
@@ -69,9 +69,10 @@ IQDisplay::IQDisplay(QwtPlot * plot, int16_t x) : QwtPlotSpectrogram()
 IQDisplay::~IQDisplay()
 {
   this->detach();
+  delete sIQData;
+  delete[] mpPlotData2;
   delete[] mpPlotData1;
   //delete[] mpPoints;
-  delete sIQData;
 }
 
 template<class T> inline void symmetric_limit(T & ioVal, const T iLimit)

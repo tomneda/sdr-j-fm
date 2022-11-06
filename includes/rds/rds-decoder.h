@@ -46,6 +46,7 @@
 #include "fft.h"
 #include "iir-filters.h"
 #include "sincos.h"
+#include "Xtan2.h"
 
 class AGC
 {
@@ -102,6 +103,7 @@ private:
   void doDecode2(const DSPFLOAT, DSPFLOAT * const);
 
   AGC mAGC;
+  compAtan mAtan;
   int32_t mSampleRate;
   int32_t mNumOfFrames;
   SinCos * mpSinCos;
@@ -136,6 +138,8 @@ private:
   bool mPreviousBit;
   DSPFLOAT * mSyncBuffer;
   int16_t mSyncBuffPtrIdx;
+  DSPCOMPLEX * mSyncBufferCplx;
+  int16_t mSyncBuffPtrIdxCplx = 0;
 
   void synchronizeOnBitClk(DSPFLOAT *, int16_t);
 

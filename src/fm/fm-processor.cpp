@@ -672,6 +672,7 @@ void fmProcessor::run()
               mpIqBuffer->putDataIntoBuffer(&magCplx, 1);
             }
           }
+
           emit iqBufferLoaded();
         }
       }
@@ -773,7 +774,6 @@ void fmProcessor::process_stereo_or_mono_with_rds(const float demod, DSPCOMPLEX 
     const DSPCOMPLEX rdsBaseHilb = mpRdsHilbertFilter->Pass(rdsBaseBp);
     //mpRds_plldecoder->do_pll(rdsBaseHilb);
     //DSPCOMPLEX rdsDelayCplx = mpRds_plldecoder->getDelay();
-
     DSPCOMPLEX rdsDelayCplx = rdsBaseHilb * mpRdsOscillator->nextValue(RDS_FREQUENCY); // the oscillator works other direction (== -57000 Hz shift)
     //rdsDelayCplx = mpRdsLowPassFilter->Pass(rdsDelayCplx);
 
@@ -781,7 +781,7 @@ void fmProcessor::process_stereo_or_mono_with_rds(const float demod, DSPCOMPLEX 
     //*rdsValue = mpRdsLowPassFilter->Pass(rdsDelay);
     *rdsValue = rdsDelay;
     //*rdsValueCmpl = *rdsValue;
-    //*rdsValueCmpl = rdsDelay;
+    //*rdsValueCmpl = rdsBaseBp*10;
     *rdsValueCmpl = rdsDelayCplx;
   }
 }

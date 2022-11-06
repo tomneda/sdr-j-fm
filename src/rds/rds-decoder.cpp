@@ -184,7 +184,7 @@ constexpr DSPFLOAT RDS_BITCLK_HZ = 1187.5;
  *	Notice that mixing to zero IF has been done
  */
 rdsDecoder::rdsDecoder(RadioInterface * iRadioIf, int32_t iRate, SinCos * ipSinCos)
-  : mAGC(2e-3, 0.585, 10, 1000)
+  : mAGC(2e-3,0.485 /*0.585*/, 10, 1000)
 {
   (void)ipSinCos;
 
@@ -198,8 +198,11 @@ rdsDecoder::rdsDecoder(RadioInterface * iRadioIf, int32_t iRate, SinCos * ipSinC
   mSymbolCeiling = ceil(synchronizerSamples);
   mSymbolFloor = floor(synchronizerSamples);
   mSyncBuffer = new DSPFLOAT[mSymbolCeiling];
+  mSyncBufferCplx = new DSPCOMPLEX[mSymbolCeiling];
   memset(mSyncBuffer, 0, mSymbolCeiling * sizeof(DSPFLOAT));
+  memset(mSyncBufferCplx, 0, mSymbolCeiling * sizeof(DSPCOMPLEX));
   mSyncBuffPtrIdx = 0;
+  mSyncBuffPtrIdxCplx = 0;
   mBitIntegrator = 0;
   mBitClkPhase = 0;
   mPrev_clkState = 0;
@@ -360,24 +363,96 @@ void rdsDecoder::doDecode(const DSPCOMPLEX v, DSPCOMPLEX * const m)
   const DSPCOMPLEX vMF = doMatchFiltering(v);
   const DSPCOMPLEX vMF_scaled = mAGC.scale(vMF);
 
-//  const DSPCOMPLEX rdsMag = mpSharpFilter->Pass((vMF * vMF));
-//  const DSPCOMPLEX rdsMag = vMF * conj(vMF);
+  // ---------------------------------------------------------------
+  static DSPCOMPLEX out[3] {}; // current and last 2 samples
+  static DSPCOMPLEX out_rail[3] {}; // current and last 2 samples
+  static DSPFLOAT mu = 0.01; // 0.01;
+  static DSPCOMPLEX r = 0;
+  static int32_t next_used_smpl = 3;
+  static int32_t smpl_cnt = 0;
 
-  *m = vMF_scaled;
+  constexpr float alpha = 0.01;
+  constexpr float sps = 16;
+
+  //mSyncBufferCplx[mSyncBuffPtrIdx] = vMF_scaled;
+  //mSyncBuffPtrIdx = (mSyncBuffPtrIdx + 1) % mSymbolCeiling; // points to beginn of last
+
+  out[0] = out[1];
+  out[1] = out[2];
+  out[2] = vMF_scaled;
+
+  if (++smpl_cnt > next_used_smpl)
+  {
+    // get hard decision values (rail to rail)
+    for (int32_t i = 0; i < 3; ++i)
+    {
+      out_rail[i] = DSPCOMPLEX((real(out[i]) > 0.0f ? 1.0f : -1.0f), (imag(out[i]) > 0.0f ? 1.0f : -1.0f));
+    }
+
+    const DSPCOMPLEX x = (out_rail[2] - out_rail[0]) * conj(out[1]);
+    const DSPCOMPLEX y = (out[2] - out[0]) * conj(out_rail[1]);
+    float mm_val = real(y - x);
+
+    mu += sps + alpha * mm_val;
+    next_used_smpl = (int32_t)(round(mu)); // round down to nearest int since we are using it as an index
+    mu -= next_used_smpl; // remove the integer part of mu
+
+    r = out[2];
+    smpl_cnt = 0;
+  }
+
+  *m = r;
+  // ---------------------------------------------------------------
+
+  //  static DSPFLOAT curArgCorr = 0;
+//  static DSPFLOAT curArgErr = 0;
+
+//  const DSPCOMPLEX vArg_corr = v * std::exp(DSPCOMPLEX(0, -curArgCorr));
+
+////  const DSPCOMPLEX rdsMag = mpSharpFilter->Pass((vMF * vMF));
+////  const DSPCOMPLEX rdsMag = vMF * conj(vMF);
+//  const DSPCOMPLEX vMF_scaled_sq = vMF_scaled * vMF_scaled;
+//  const float arg = 0.5f * mAtan.argX(vMF_scaled_sq);
+
+//  //static DSPCOMPLEX vMF_scaled_sq_av = 0;
+//  constexpr float alpha = 0.0001;
+//  constexpr float beta = 0.0001;
+//  const DSPFLOAT argError = arg - 0; // reference is 0 degree
+//  curArgErr = argError * alpha + curArgErr * (1.0f - alpha);
+//  curArgCorr += beta * curArgErr;
+
+  //constexpr float alpha = 4.0f / RDS_BITCLK_HZ;
+  //vMF_scaled_sq_av = vMF_scaled_sq * alpha + vMF_scaled_sq_av * (1.0f - alpha);
+  //const float arg = 0.5f * mAtan.argX(vMF_scaled_sq_av);
+  //const DSPCOMPLEX vMF_scaled_phase_corr = vMF_scaled * std::exp(DSPCOMPLEX(0, -arg));
+  //const DSPCOMPLEX vMF_scaled_phase_corr = vMF_scaled * std::exp(DSPCOMPLEX(0, -mAtan.argX(vMF_scaled)));
+  //*m = vMF_scaled_phase_corr;
+  //*m = std::exp(DSPCOMPLEX(0, -arg));
+  //*m = std::exp(DSPCOMPLEX(0, curArgCorr));
+  //*m = vMF_scaled;
+
+//  const DSPFLOAT vMF_scaled_phase_corr_real = real(vMF_scaled_phase_corr);
+//  const DSPFLOAT rdsMag = mpSharpFilter->Pass(vMF_scaled_phase_corr_real * vMF_scaled_phase_corr_real);
 //  //*m = (20 * rdsMag + 1.0);
 //  const DSPFLOAT rdsSlope = rdsMag - mRdsLastSync;
 //  mRdsLastSync = rdsMag;
 
+//  static DSPCOMPLEX a = 0;
+
 //  if ((rdsSlope < 0.0) && (mRdsLastSyncSlope >= 0.0))
 //  {
+//    a = vMF_scaled_phase_corr;
 //    //	top of the sine wave: get the data
-//    const bool bit = mRdsLastData >= 0;
+//    const bool bit = vMF_scaled_phase_corr_real >= 0;
+//    //const bool bit = mRdsLastData >= 0;
 //    processBit(bit ^ mPreviousBit);
 //    //*m = (bit ^ mPreviousBit ? 0.5 : -0.5);
 //    mPreviousBit = bit;
 //  }
+  //*m = a;
+  //*m = vMF_scaled_phase_corr;
 
-//  mRdsLastData = v;
+//  mRdsLastData = rdsMag;
 //  mRdsLastSyncSlope = rdsSlope;
 //  mpRdsBlockSync->resetResyncErrorCounter();
 }

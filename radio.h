@@ -64,6 +64,8 @@ class RadioInterface : public QDialog, private Ui_sdr_j_fm
 {
   Q_OBJECT
 public:
+  static constexpr uint32_t IQ_SCOPE_SIZE = 1024;
+
   RadioInterface(QSettings *, QString, int32_t, QWidget *parent = nullptr);
   ~RadioInterface() override;
 
@@ -148,8 +150,6 @@ private:
   int32_t Panel;
   int16_t CurrentRig;
   QTimer *displayTimer;
-
-  static constexpr uint32_t IQ_SCOPE_SIZE = 1024;
 
   /*
    *	dumping

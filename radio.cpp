@@ -1609,6 +1609,7 @@ void RadioInterface::setfmRdsSelector(const QString &s)
   else                   rdsModus = rdsDecoder::ERdsMode::NO_RDS;
 
   myFMprocessor->setfmRdsSelector(rdsModus);
+  myFMprocessor->resetRds();
 }
 
 void RadioInterface::setfmDecoder(const int decoder)
@@ -2045,7 +2046,8 @@ void RadioInterface::setup_IQPlot()
   for (uint32_t i = 0; i < IQ_SCOPE_SIZE; ++i)
   {
     const float phase = 2 * M_PI * i / IQ_SCOPE_SIZE;
-    iqScope->DisplayIQ({cosf(phase), sinf(phase)}, 1.0);
+    //iqScope->DisplayIQ({cosf(phase), sinf(phase)}, 1.0);
+    iqScope->DisplayIQ(std::exp(DSPCOMPLEX(0, phase)), 1.0);
   }
 }
 

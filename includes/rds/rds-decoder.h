@@ -51,19 +51,17 @@
 class AGC
 {
 public:
-  AGC(float rate, float reference, float gain, float max_gain);
+  AGC(float rate, float reference, float gain);
   AGC() = delete;
   ~AGC() = default;
 
   float rate() const { return _rate; }
   float reference() const { return _reference; }
   float gain() const { return _gain; }
-  float max_gain() const { return _max_gain; }
 
   void set_rate(float rate) { _rate = rate; }
   void set_reference(float reference) { _reference = reference; }
   void set_gain(float gain) { _gain = gain; }
-  void set_max_gain(float max_gain) { _max_gain = max_gain; }
 
   DSPCOMPLEX scale(DSPCOMPLEX input);
   void scaleN(DSPCOMPLEX output[], const DSPCOMPLEX input[], uint32_t n);
@@ -72,7 +70,6 @@ protected:
   float _rate;     // adjustment rate
   float _reference;// reference value
   float _gain;     // current gain
-  float _max_gain; // max allowable gain
 };
 
 

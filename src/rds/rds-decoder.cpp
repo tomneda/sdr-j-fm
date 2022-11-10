@@ -88,11 +88,10 @@ static std::vector<float> root_raised_cosine(double gain, double sampling_freq, 
 
 
 
-AGC::AGC(float rate, float reference, float gain, float max_gain)
+AGC::AGC(float rate, float reference, float gain)
   : _rate(rate)
   , _reference(reference)
   , _gain(gain)
-  , _max_gain(max_gain)
 {
 }
 
@@ -100,12 +99,7 @@ DSPCOMPLEX AGC::scale(DSPCOMPLEX input)
 {
   DSPCOMPLEX output = input * _gain;
 
-  _gain += _rate * (_reference - sqrt(output.real() * output.real() +
-                                      output.imag() * output.imag()));
-  if (_max_gain > 0.0 && _gain > _max_gain)
-  {
-    _gain = _max_gain;
-  }
+  _gain += _rate * (_reference - std::abs(output));
 
   return output;
 }
@@ -184,7 +178,7 @@ constexpr DSPFLOAT RDS_BITCLK_HZ = 1187.5;
  *	Notice that mixing to zero IF has been done
  */
 rdsDecoder::rdsDecoder(RadioInterface * iRadioIf, int32_t iRate, SinCos * ipSinCos)
-  : mAGC(2e-3,0.485 /*0.585*/, 10, 1000)
+  : mAGC(2e-3, 0.4, 10)
 {
   (void)ipSinCos;
 
@@ -216,7 +210,7 @@ rdsDecoder::rdsDecoder(RadioInterface * iRadioIf, int32_t iRate, SinCos * ipSinC
 
   for (size_t idx = 0; idx < TAPS_MF_RRC_MANC; ++idx)
   {
-    mRrcImpMancVec[idx] = rrcImpVec[idx] - rrcImpVec[idx + SMP_PER_MANC_SYM/2]; // the negative pulse comes 8 sample before the positive pulse
+    mRrcImpMancVec[idx] = rrcImpVec[idx]; // - rrcImpVec[idx + SMP_PER_MANC_SYM/2]; // the negative pulse comes 8 sample before the positive pulse
   }
 
 //  {
@@ -402,66 +396,39 @@ void rdsDecoder::doDecode(const DSPCOMPLEX v, DSPCOMPLEX * const m)
     const DSPFLOAT mm_val = y - x;
 
     mu += sps + alpha * mm_val;
-    next_used_smpl = (int32_t)(round(mu)); // round down to nearest int since we are using it as an index
+    next_used_smpl = (int32_t)(/*round*/(mu)); // round down to nearest int since we are using it as an index
     mu -= next_used_smpl; // remove the integer part of mu
 
     r = out[2];
     smpl_cnt = 0;
+
+
+    static float freq = 0;
+    static float phase = 0;
+
+    if (1)
+    {
+      constexpr float alpha = 0.005*16;
+      constexpr float beta = 0.00001*16;
+//      constexpr float alpha = 8.0/4;
+//      constexpr float beta = 0.002/4;
+
+      r = r * std::exp(DSPCOMPLEX(0, -phase));
+      const float error = real(r) * imag(r);
+
+      freq += (beta * error);
+      //freq_log.append(freq * sr / (2 * np.pi))  # convert from angular velocity to Hz for logging
+      phase += freq + (alpha * error);
+
+    }
+
+    const bool bit = real(r) >= 0;
+    processBit(bit ^ mPreviousBit);
+    mPreviousBit = bit;
   }
 
   *m = r;
-  // ---------------------------------------------------------------
 
-  //  static DSPFLOAT curArgCorr = 0;
-//  static DSPFLOAT curArgErr = 0;
-
-//  const DSPCOMPLEX vArg_corr = v * std::exp(DSPCOMPLEX(0, -curArgCorr));
-
-////  const DSPCOMPLEX rdsMag = mpSharpFilter->Pass((vMF * vMF));
-////  const DSPCOMPLEX rdsMag = vMF * conj(vMF);
-//  const DSPCOMPLEX vMF_scaled_sq = vMF_scaled * vMF_scaled;
-//  const float arg = 0.5f * mAtan.argX(vMF_scaled_sq);
-
-//  //static DSPCOMPLEX vMF_scaled_sq_av = 0;
-//  constexpr float alpha = 0.0001;
-//  constexpr float beta = 0.0001;
-//  const DSPFLOAT argError = arg - 0; // reference is 0 degree
-//  curArgErr = argError * alpha + curArgErr * (1.0f - alpha);
-//  curArgCorr += beta * curArgErr;
-
-  //constexpr float alpha = 4.0f / RDS_BITCLK_HZ;
-  //vMF_scaled_sq_av = vMF_scaled_sq * alpha + vMF_scaled_sq_av * (1.0f - alpha);
-  //const float arg = 0.5f * mAtan.argX(vMF_scaled_sq_av);
-  //const DSPCOMPLEX vMF_scaled_phase_corr = vMF_scaled * std::exp(DSPCOMPLEX(0, -arg));
-  //const DSPCOMPLEX vMF_scaled_phase_corr = vMF_scaled * std::exp(DSPCOMPLEX(0, -mAtan.argX(vMF_scaled)));
-  //*m = vMF_scaled_phase_corr;
-  //*m = std::exp(DSPCOMPLEX(0, -arg));
-  //*m = std::exp(DSPCOMPLEX(0, curArgCorr));
-  //*m = vMF_scaled;
-
-//  const DSPFLOAT vMF_scaled_phase_corr_real = real(vMF_scaled_phase_corr);
-//  const DSPFLOAT rdsMag = mpSharpFilter->Pass(vMF_scaled_phase_corr_real * vMF_scaled_phase_corr_real);
-//  //*m = (20 * rdsMag + 1.0);
-//  const DSPFLOAT rdsSlope = rdsMag - mRdsLastSync;
-//  mRdsLastSync = rdsMag;
-
-//  static DSPCOMPLEX a = 0;
-
-//  if ((rdsSlope < 0.0) && (mRdsLastSyncSlope >= 0.0))
-//  {
-//    a = vMF_scaled_phase_corr;
-//    //	top of the sine wave: get the data
-//    const bool bit = vMF_scaled_phase_corr_real >= 0;
-//    //const bool bit = mRdsLastData >= 0;
-//    processBit(bit ^ mPreviousBit);
-//    //*m = (bit ^ mPreviousBit ? 0.5 : -0.5);
-//    mPreviousBit = bit;
-//  }
-  //*m = a;
-  //*m = vMF_scaled_phase_corr;
-
-//  mRdsLastData = rdsMag;
-//  mRdsLastSyncSlope = rdsSlope;
 //  mpRdsBlockSync->resetResyncErrorCounter();
 }
 

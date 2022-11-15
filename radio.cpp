@@ -963,11 +963,6 @@ void RadioInterface::setIQBalance(int n)
   {
     myFMprocessor->setAttenuation(attValueL, attValueR);
   }
-
-//  IQBalanceDisplay->display(n);
-//  int32_t x = n;
-//  int32_t y = balanceDisplay->value();
-//  iqScope->DisplayIQ(DSPCOMPLEX(x/100.0f, y/100.0f), 1.01);
 }
 //
 //	Increment frequency: with amount N, depending
@@ -1388,11 +1383,6 @@ void RadioInterface::setfmStereoBalanceSlider(int n)
     myFMprocessor->setSoundBalance(n);
     balanceDisplay->display(n);
   }
-
-//  balanceDisplay->display(n);
-//  int32_t y = n;
-//  int32_t x = IQBalanceDisplay->value();
-//  iqScope->DisplayIQ(DSPCOMPLEX(x/100.0f, y/100.0f), 1.01);
 }
 
 void RadioInterface::setAudioGainSlider(int n)
@@ -1579,7 +1569,8 @@ void RadioInterface::setLfPlotType(const QString &s)
   else if (s == "AF MONO Filtered")  myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::AF_MONO_FILTERED);
   else if (s == "AF LEFT Filtered")  myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::AF_LEFT_FILTERED);
   else if (s == "AF RIGHT Filtered") myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::AF_RIGHT_FILTERED);
-  else if (s == "RDS")               myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::RDS);
+  else if (s == "RDS Input")         myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::RDS_INPUT);
+  else if (s == "RDS Demod")         myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::RDS_DEMOD);
   else
   {
     Q_ASSERT(0);

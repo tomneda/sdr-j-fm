@@ -136,8 +136,8 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   mpFmAudioFilter = new fftFilter(1024, 431);
   mFmAudioFilterActive = false;
 
-  mpRdsLowPassFilter = new fftFilter(FFT_SIZE, RDSLOWPASS_SIZE);
-  mpRdsLowPassFilter->setLowPass(RDS_WIDTH, fmRate);
+//  mpRdsLowPassFilter = new fftFilter(FFT_SIZE, RDSLOWPASS_SIZE);
+//  mpRdsLowPassFilter->setLowPass(RDS_WIDTH, fmRate);
   mpRdsDecimator = new newConverter(fmRate, RDS_RATE, fmRate / 1000);
   mpRdsOut = new DSPCOMPLEX[mpRdsDecimator->getOutputsize()];
 
@@ -156,7 +156,7 @@ fmProcessor::fmProcessor(deviceHandler *vi, RadioInterface *RI,
   mpRdsHilbertFilter = new fftFilterHilbert(FFT_SIZE, RDSBANDFILTER_SIZE);
 
   mpRdsBandFilter = new fftFilter(FFT_SIZE, RDSBANDFILTER_SIZE);
-  mpRdsBandFilter->setSimple(RDS_FREQUENCY - RDS_WIDTH / 2, RDS_FREQUENCY + RDS_WIDTH / 2, fmRate);
+  mpRdsBandFilter->setSimple(RDS_FREQUENCY - RDS_WIDTH, RDS_FREQUENCY + RDS_WIDTH, fmRate);
 
   //mpRds_plldecoder = new pllC(fmRate, RDS_FREQUENCY, RDS_FREQUENCY - 50, RDS_FREQUENCY + 50, 200, mpMySinCos);
   //mRdsSampleCnt = 0;
@@ -301,8 +301,15 @@ void fmProcessor::setfmMode(FM_Mode m)
 void fmProcessor::setLfPlotType(ELfPlot m)
 {
   mLfPlotType = m;
-  mShowFullSpectrum = (m == ELfPlot::IF_FILTERED || m == ELfPlot::RDS);
-  mSpectrumSampleRate = (m == ELfPlot::RDS ? RDS_RATE : mFmRate);
+
+  switch(m)
+  {
+  case ELfPlot::IF_FILTERED: mSpectrumSampleRate = mFmRate;        mShowFullSpectrum = true; break;
+  case ELfPlot::RDS_INPUT:   mSpectrumSampleRate = RDS_RATE;       mShowFullSpectrum = true; break;
+  case ELfPlot::RDS_DEMOD:   mSpectrumSampleRate = RDS_RATE / 16;  mShowFullSpectrum = true; break; // TODO: 16 should not be fixed here
+  default: mSpectrumSampleRate = mFmRate; mShowFullSpectrum = false;
+  }
+
   triggerDrawNewLfSpectrum();
 }
 
@@ -614,9 +621,9 @@ void fmProcessor::run()
 
       DSPCOMPLEX audio;
       DSPFLOAT rdsData;
-      DSPCOMPLEX rdsDataCmpl;
+      DSPCOMPLEX rdsDataCplx;
 
-      process_stereo_or_mono_with_rds(demod, &audio, &rdsData, &rdsDataCmpl);
+      process_stereo_or_mono_with_rds(demod, &audio, &rdsData, &rdsDataCplx);
 
       const DSPFLOAT sumLR  = real(audio);
       const DSPFLOAT diffLR = imag(audio);
@@ -643,7 +650,7 @@ void fmProcessor::run()
         //int abc = mpRdsDecimator->getOutputsize();
         //++mRdsSampleCntSrc;
 
-        if (mpRdsDecimator->convert(rdsDataCmpl, mpRdsOut, &rdsAmount))
+        if (mpRdsDecimator->convert(rdsDataCplx, mpRdsOut, &rdsAmount))
         {
           //mRdsSampleCntDst += rdsAmount;
           //double ratio = (double)mRdsSampleCntDst / (double)mRdsSampleCntSrc;
@@ -659,16 +666,25 @@ void fmProcessor::run()
               DSPFLOAT mag;
               DSPCOMPLEX magCplx;
               mpMyRdsDecoder->doDecode(imag(pcmSample), &mag, mRdsModus); // data rate 19000S/s
-              if (mLfPlotType == ELfPlot::RDS) { mpSpectrumBuffer_lf = mag; }
-              magCplx = DSPCOMPLEX(mag, mag);
+              switch(mLfPlotType)
+              {
+              case ELfPlot::RDS_INPUT: mpSpectrumBuffer_lf = imag(pcmSample); break;
+              case ELfPlot::RDS_DEMOD: mpSpectrumBuffer_lf = mag; break;
+              default:;
+              }
+              magCplx = DSPCOMPLEX(imag(pcmSample), mag);
               mpIqBuffer->putDataIntoBuffer(&magCplx, 1);
             }
             else
             {
               DSPCOMPLEX magCplx;
               mpMyRdsDecoder->doDecode(pcmSample, &magCplx); // data rate 19000S/s
-              if (mLfPlotType == ELfPlot::RDS) { mpSpectrumBuffer_lf = magCplx; }
-              //magCplx += DSPCOMPLEX(1, 1);
+              switch(mLfPlotType)
+              {
+              case ELfPlot::RDS_INPUT: mpSpectrumBuffer_lf = pcmSample; break;
+              case ELfPlot::RDS_DEMOD: mpSpectrumBuffer_lf = magCplx; break;
+              default:;
+              }
               mpIqBuffer->putDataIntoBuffer(&magCplx, 1);
             }
           }
@@ -678,7 +694,12 @@ void fmProcessor::run()
       }
       else
       {
-        if (mLfPlotType == ELfPlot::RDS) { mpSpectrumBuffer_lf = 0; }
+        switch(mLfPlotType)
+        {
+        case ELfPlot::RDS_INPUT:
+        case ELfPlot::RDS_DEMOD: mpSpectrumBuffer_lf = 0; break;
+        default:;
+        }
       }
 
       if (mFmAudioFilterActive)
@@ -699,7 +720,7 @@ void fmProcessor::run()
       case ELfPlot::AF_MONO_FILTERED:  mpSpectrumBuffer_lf = (audio.real() + audio.imag()); break;
       case ELfPlot::AF_LEFT_FILTERED:  mpSpectrumBuffer_lf = audio.real(); break;
       case ELfPlot::AF_RIGHT_FILTERED: mpSpectrumBuffer_lf = audio.imag(); break;
-      //case ELfPlot::RDS:               mpSpectrumBuffer_lf = rdsDataCmpl; break;
+      //case ELfPlot::RDS:               mpSpectrumBuffer_lf = rdsDataCplx; break;
       default:;
       }
 
@@ -769,6 +790,7 @@ void fmProcessor::process_stereo_or_mono_with_rds(const float demod, DSPCOMPLEX 
   }
 
   // process RDS
+  if (mRdsModus != rdsDecoder::ERdsMode::NO_RDS)
   {
     const DSPFLOAT rdsBaseBp = mpRdsBandFilter->Pass(5 * demod);
     const DSPCOMPLEX rdsBaseHilb = mpRdsHilbertFilter->Pass(rdsBaseBp);
@@ -849,7 +871,7 @@ void fmProcessor::setfmRdsSelector(rdsDecoder::ERdsMode m)
 {
   mRdsModus = m;
 
-  if (mLfPlotType == ELfPlot::RDS)
+  if (mLfPlotType == ELfPlot::RDS_INPUT || mLfPlotType == ELfPlot::RDS_DEMOD)
   {
     triggerDrawNewLfSpectrum();
   }

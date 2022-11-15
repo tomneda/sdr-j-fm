@@ -116,7 +116,8 @@ public:
     AF_MONO_FILTERED,
     AF_LEFT_FILTERED,
     AF_RIGHT_FILTERED,
-    RDS
+    RDS_INPUT,
+    RDS_DEMOD
   };
 
   enum class ESqMode
@@ -286,7 +287,7 @@ private:
   rdsDecoder * mpMyRdsDecoder;
   fftFilter * mpPilotBandFilter;
   fftFilter * mpRdsBandFilter;
-  fftFilter * mpRdsLowPassFilter;
+  //fftFilter * mpRdsLowPassFilter;
   fftFilterHilbert * mpRdsHilbertFilter;
   //HilbertFilter * mpRdsHilbertFilter;
   uint32_t mRdsSampleCntSrc = 0;

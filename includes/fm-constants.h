@@ -71,10 +71,12 @@ using DSPCOMPLEX = std::complex<DSPFLOAT>;
 #define PILOTFILTER_SIZE      31
 #define RDSLOWPASS_SIZE       89
 #define HILBERT_SIZE          13
-#define RDSBANDFILTER_SIZE    49
+//#define RDSBANDFILTER_SIZE    49
+#define RDSBANDFILTER_SIZE    89
 #define FFT_SIZE              256
 #define PILOT_WIDTH           1000
-#define RDS_WIDTH             1500
+//#define RDS_WIDTH             1500
+#define RDS_WIDTH             2400
 #define LEVEL_SIZE            512
 #define LEVEL_FREQ            3
 //

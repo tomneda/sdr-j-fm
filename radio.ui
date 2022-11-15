@@ -10,7 +10,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1245</width>
+    <width>1530</width>
     <height>749</height>
    </rect>
   </property>
@@ -1021,7 +1021,7 @@
                     <bool>true</bool>
                    </property>
                    <property name="currentIndex">
-                    <number>2</number>
+                    <number>0</number>
                    </property>
                    <item>
                     <property name="text">
@@ -1065,7 +1065,12 @@
                    </item>
                    <item>
                     <property name="text">
-                     <string>RDS</string>
+                     <string>RDS Input</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>RDS Demod</string>
                     </property>
                    </item>
                   </widget>

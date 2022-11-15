@@ -154,7 +154,7 @@ rtlsdrHandler::rtlsdrHandler (QSettings *s, bool full)
     if (deviceCount == 0)
     {
       fprintf(stderr, "No devices found\n");
-      return;
+      throw (20);
     }
 
     deviceIndex = 0;  // default

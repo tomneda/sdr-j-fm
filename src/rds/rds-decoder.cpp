@@ -113,56 +113,6 @@ void AGC::scaleN(DSPCOMPLEX output[], const DSPCOMPLEX input[], uint32_t n)
 }
 
 
-
-
-//agc_cc::sptr
-// agc_cc::make(float rate, float reference, float gain)
-// {
-//   return gnuradio::get_initial_sptr
-//(new agc_cc_impl(rate, reference, gain));
-// }
-
-// agc_cc_impl::agc_cc_impl(float rate, float reference, float gain)
-//   : sync_block("agc_cc",
-//                io_signature::make(1, 1, sizeof(gr_complex)),
-//                io_signature::make(1, 1, sizeof(gr_complex))),
-//kernel::agc_cc(rate, reference, gain, 65536)
-// {
-//   const int alignment_multiple =
-//volk_get_alignment() / sizeof(gr_complex);
-//   set_alignment(std::max(1, alignment_multiple));
-// }
-
-// agc_cc_impl::~agc_cc_impl()
-// {
-// }
-
-// int
-// agc_cc_impl::work(int noutput_items,
-//       gr_vector_const_void_star &input_items,
-//       gr_vector_void_star &output_items)
-// {
-//   const gr_complex *in = (const gr_complex*)input_items[0];
-//   gr_complex *out = (gr_complex*)output_items[0];
-//   scaleN(out, in, noutput_items);
-//   return noutput_items;
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 constexpr uint32_t SMP_PER_MANC_SYM = 16;  // a manchaster sympol has 2 times the samples of a single RDS symbol
 constexpr uint32_t TAPS_MF_RRC = 151;
 constexpr uint32_t TAPS_MF_RRC_MANC = TAPS_MF_RRC - SMP_PER_MANC_SYM / 2;
@@ -352,7 +302,7 @@ void rdsDecoder::doDecode(const DSPFLOAT v, DSPFLOAT * const m, const ERdsMode m
   }
 }
 
-void rdsDecoder::doDecode(const DSPCOMPLEX v, DSPCOMPLEX * const m)
+void rdsDecoder::doDecode(DSPCOMPLEX v, DSPCOMPLEX * const m)
 {
   const DSPCOMPLEX vMF = doMatchFiltering(v);
   const DSPCOMPLEX vMF_scaled = mAGC.scale(vMF);
@@ -364,6 +314,8 @@ void rdsDecoder::doDecode(const DSPCOMPLEX v, DSPCOMPLEX * const m)
   static DSPCOMPLEX r = 0;
   static int32_t next_used_smpl = 3;  // 2 to fill out buffer
   static int32_t smpl_cnt = 0;
+//  static DSPFLOAT freq2 = 0.00; // 0.01;
+//  static DSPFLOAT phase2 = 0.00; // 0.01;
 
   constexpr float alpha = 0.01;
   constexpr float sps = 16;
@@ -408,18 +360,30 @@ void rdsDecoder::doDecode(const DSPCOMPLEX v, DSPCOMPLEX * const m)
 
     if (1)
     {
-      constexpr float alpha = 0.005*16;
-      constexpr float beta = 0.00001*16;
-//      constexpr float alpha = 8.0/4;
-//      constexpr float beta = 0.002/4;
+      //constexpr float alpha = 0.005*16;
+      //constexpr float beta = 0*0.00001*16;
+      constexpr float alpha = 1.0;
+      constexpr float beta = 0.002;
 
       r = r * std::exp(DSPCOMPLEX(0, -phase));
       const float error = real(r) * imag(r);
 
+//      const float freqLimit = 2 * M_PI * 10 /*Hz*/ / mSampleRate;
+
       freq += (beta * error);
+
+//      if (abs(freq) > freqLimit)
+//      {
+//        freq = 0;
+//      }
+
+      //freq2 = freq * mSampleRate / (2 * M_PI);
+
       //freq_log.append(freq * sr / (2 * np.pi))  # convert from angular velocity to Hz for logging
       phase += freq + (alpha * error);
+      phase = PI_Constrain(phase);
 
+      //phase2 = phase / (2 * M_PI);
     }
 
     const bool bit = real(r) >= 0;
@@ -427,7 +391,9 @@ void rdsDecoder::doDecode(const DSPCOMPLEX v, DSPCOMPLEX * const m)
     mPreviousBit = bit;
   }
 
+  //*m = vMF_scaled;
   *m = r;
+  //*m = DSPCOMPLEX(phase2, freq2/10.0f);
 
 //  mpRdsBlockSync->resetResyncErrorCounter();
 }

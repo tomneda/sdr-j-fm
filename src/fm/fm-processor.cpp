@@ -677,19 +677,28 @@ void fmProcessor::run()
             }
             else
             {
-              DSPCOMPLEX magCplx;
-              mpMyRdsDecoder->doDecode(pcmSample, &magCplx); // data rate 19000S/s
+              static DSPCOMPLEX magCplx;
+              if (mpMyRdsDecoder->doDecode(pcmSample, &magCplx)) // input SR 19000S/s, output SR 19000/16S/s
+              {
+                switch(mLfPlotType)
+                {
+                //case ELfPlot::RDS_INPUT: mpSpectrumBuffer_lf = pcmSample; break;
+                //case ELfPlot::RDS_DEMOD: mpSpectrumBuffer_lf = magCplx; break;
+                default:;
+                }
+                mpIqBuffer->putDataIntoBuffer(&magCplx, 1);
+                emit iqBufferLoaded();
+              }
               switch(mLfPlotType)
               {
               case ELfPlot::RDS_INPUT: mpSpectrumBuffer_lf = pcmSample; break;
               case ELfPlot::RDS_DEMOD: mpSpectrumBuffer_lf = magCplx; break;
               default:;
               }
-              mpIqBuffer->putDataIntoBuffer(&magCplx, 1);
             }
           }
 
-          emit iqBufferLoaded();
+          //emit iqBufferLoaded();
         }
       }
       else

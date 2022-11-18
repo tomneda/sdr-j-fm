@@ -129,6 +129,7 @@ constexpr DSPFLOAT RDS_BITCLK_HZ = 1187.5;
  */
 rdsDecoder::rdsDecoder(RadioInterface * iRadioIf, int32_t iRate, SinCos * ipSinCos)
   : mAGC(2e-3, 0.4, 10)
+  , mTimeSync(16.0f, 0.01f)
   , mCostas(1.0f, 0.02f)
 {
   (void)ipSinCos;
@@ -303,102 +304,23 @@ void rdsDecoder::doDecode(const DSPFLOAT v, DSPFLOAT * const m, const ERdsMode m
   }
 }
 
-void rdsDecoder::doDecode(DSPCOMPLEX v, DSPCOMPLEX * const m)
+bool rdsDecoder::doDecode(DSPCOMPLEX v, DSPCOMPLEX * const m)
 {
-  const DSPCOMPLEX vMF = doMatchFiltering(v);
-  const DSPCOMPLEX vMF_scaled = mAGC.scale(vMF);
+  v = doMatchFiltering(v);
+  v = mAGC.scale(v);
+  DSPCOMPLEX r = 0;
 
-  // ---------------------------------------------------------------
-  static DSPCOMPLEX out[3] {}; // current and last 2 samples
-  static DSPCOMPLEX out_rail[3] {}; // current and last 2 samples
-  static DSPFLOAT mu = 0.00; // 0.01;
-  static DSPCOMPLEX r = 0;
-  static int32_t next_used_smpl = 3;  // 2 to fill out buffer
-  static int32_t smpl_cnt = 0;
-//  static DSPFLOAT freq2 = 0.00; // 0.01;
-//  static DSPFLOAT phase2 = 0.00; // 0.01;
-
-  constexpr float alpha = 0.01;
-  constexpr float sps = 16;
-
-  //mSyncBufferCplx[mSyncBuffPtrIdx] = vMF_scaled;
-  //mSyncBuffPtrIdx = (mSyncBuffPtrIdx + 1) % mSymbolCeiling; // points to beginn of last
-
-  out[0] = out[1];
-  out[1] = out[2];
-  out[2] = vMF_scaled;
-
-  if (++smpl_cnt >= next_used_smpl)
+  if (mTimeSync.process_sample(v, r))
   {
-    // get hard decision values (rail to rail)
-    for (int32_t i = 0; i < 3; ++i)
-    {
-      out_rail[i] = DSPCOMPLEX((real(out[i]) > 0.0f ? 1.0f : -1.0f), (imag(out[i]) > 0.0f ? 1.0f : -1.0f));
-    }
-
-//    const DSPCOMPLEX x = (out_rail[2] - out_rail[0]) * conj(out[1]);
-//    const DSPCOMPLEX y = (out[2] - out[0]) * conj(out_rail[1]);
-//    const DSPFLOAT mm_val = real(y - x);
-
-//    const DSPFLOAT x = real((out_rail[2] - out_rail[0]) * conj(out[1]));
-//    const DSPFLOAT y = real((out[2] - out[0]) * conj(out_rail[1]));
-//    const DSPFLOAT mm_val = y - x;
-
-    const DSPFLOAT x = real(out_rail[2] - out_rail[0]) * real(out[1]) + imag(out_rail[2] - out_rail[0]) * imag(out[1]);
-    const DSPFLOAT y = real(out[2] - out[0]) * real(out_rail[1]) + imag(out[2] - out[0]) * imag(out_rail[1]);
-    const DSPFLOAT mm_val = y - x;
-
-    mu += sps + alpha * mm_val;
-    next_used_smpl = (int32_t)(/*round*/(mu)); // round down to nearest int since we are using it as an index
-    mu -= next_used_smpl; // remove the integer part of mu
-
-    r = out[2];
-    smpl_cnt = 0;
-
-
     r = mCostas.process_sample(r);
 
-//    static float freq = 0;
-//    static float phase = 0;
-
-//    if (1)
-//    {
-//      //constexpr float alpha = 0.005*16;
-//      //constexpr float beta = 0*0.00001*16;
-//      constexpr float alpha = 1.0;
-//      constexpr float beta = 0.002;
-
-//      r = r * std::exp(DSPCOMPLEX(0, -phase));
-//      const float error = real(r) * imag(r);
-
-////      const float freqLimit = 2 * M_PI * 10 /*Hz*/ / mSampleRate;
-
-//      freq += (beta * error);
-
-////      if (abs(freq) > freqLimit)
-////      {
-////        freq = 0;
-////      }
-
-//      //freq2 = freq * mSampleRate / (2 * M_PI);
-
-//      //freq_log.append(freq * sr / (2 * np.pi))  # convert from angular velocity to Hz for logging
-//      phase += freq + (alpha * error);
-//      phase = PI_Constrain(phase);
-
-//      //phase2 = phase / (2 * M_PI);
-//    }
-
-    const bool bit = real(r) >= 0;
+    const bool bit = (real(r) >= 0);
     processBit(bit ^ mPreviousBit);
     mPreviousBit = bit;
+    *m = r;
+    return true; // eval m outside
   }
-
-  //*m = vMF_scaled;
-  *m = r;
-  //*m = DSPCOMPLEX(phase2, freq2/10.0f);
-
-//  mpRdsBlockSync->resetResyncErrorCounter();
+  return false;
 }
 
 void rdsDecoder::doDecode1(const DSPFLOAT v, DSPFLOAT * const m)

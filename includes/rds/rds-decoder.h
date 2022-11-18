@@ -72,6 +72,29 @@ protected:
   float _gain;     // current gain
 };
 
+class Costas
+{
+public:
+  Costas(const float iAlpha, const float iBeta) : mAlpha(iAlpha), mBeta(iBeta) {}
+  Costas() = delete;
+  ~Costas() = default;
+
+  DSPCOMPLEX process_sample(const DSPCOMPLEX z)
+  {
+    const DSPCOMPLEX r = z * std::exp(DSPCOMPLEX(0, -mPhase));
+    const float error = real(r) * imag(r);
+    mFreq += (mBeta * error);
+    mPhase += mFreq + (mAlpha * error);
+    mPhase = PI_Constrain(mPhase);
+    return r;
+  }
+
+  private:
+    const float mAlpha;
+    const float mBeta;
+    float mFreq = 0;
+    float mPhase = 0;
+};
 
 class RadioInterface;
 
@@ -100,6 +123,7 @@ private:
   void doDecode2(const DSPFLOAT, DSPFLOAT * const);
 
   AGC mAGC;
+  Costas mCostas;
   compAtan mAtan;
   int32_t mSampleRate;
   int32_t mNumOfFrames;

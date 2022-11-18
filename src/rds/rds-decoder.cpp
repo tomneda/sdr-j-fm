@@ -129,6 +129,7 @@ constexpr DSPFLOAT RDS_BITCLK_HZ = 1187.5;
  */
 rdsDecoder::rdsDecoder(RadioInterface * iRadioIf, int32_t iRate, SinCos * ipSinCos)
   : mAGC(2e-3, 0.4, 10)
+  , mCostas(1.0f, 0.02f)
 {
   (void)ipSinCos;
 
@@ -355,36 +356,38 @@ void rdsDecoder::doDecode(DSPCOMPLEX v, DSPCOMPLEX * const m)
     smpl_cnt = 0;
 
 
-    static float freq = 0;
-    static float phase = 0;
+    r = mCostas.process_sample(r);
 
-    if (1)
-    {
-      //constexpr float alpha = 0.005*16;
-      //constexpr float beta = 0*0.00001*16;
-      constexpr float alpha = 1.0;
-      constexpr float beta = 0.002;
+//    static float freq = 0;
+//    static float phase = 0;
 
-      r = r * std::exp(DSPCOMPLEX(0, -phase));
-      const float error = real(r) * imag(r);
+//    if (1)
+//    {
+//      //constexpr float alpha = 0.005*16;
+//      //constexpr float beta = 0*0.00001*16;
+//      constexpr float alpha = 1.0;
+//      constexpr float beta = 0.002;
 
-//      const float freqLimit = 2 * M_PI * 10 /*Hz*/ / mSampleRate;
+//      r = r * std::exp(DSPCOMPLEX(0, -phase));
+//      const float error = real(r) * imag(r);
 
-      freq += (beta * error);
+////      const float freqLimit = 2 * M_PI * 10 /*Hz*/ / mSampleRate;
 
-//      if (abs(freq) > freqLimit)
-//      {
-//        freq = 0;
-//      }
+//      freq += (beta * error);
 
-      //freq2 = freq * mSampleRate / (2 * M_PI);
+////      if (abs(freq) > freqLimit)
+////      {
+////        freq = 0;
+////      }
 
-      //freq_log.append(freq * sr / (2 * np.pi))  # convert from angular velocity to Hz for logging
-      phase += freq + (alpha * error);
-      phase = PI_Constrain(phase);
+//      //freq2 = freq * mSampleRate / (2 * M_PI);
 
-      //phase2 = phase / (2 * M_PI);
-    }
+//      //freq_log.append(freq * sr / (2 * np.pi))  # convert from angular velocity to Hz for logging
+//      phase += freq + (alpha * error);
+//      phase = PI_Constrain(phase);
+
+//      //phase2 = phase / (2 * M_PI);
+//    }
 
     const bool bit = real(r) >= 0;
     processBit(bit ^ mPreviousBit);

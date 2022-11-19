@@ -51,25 +51,26 @@
 class AGC
 {
 public:
-  AGC(float rate, float reference, float gain);
+  AGC(float iSR, float iRefLevel, float iStartGain)
+    : mSmplRate(iSR)
+    , mRefLevel(iRefLevel)
+    , mCurGain(iStartGain)
+  {
+  }
   AGC() = delete;
   ~AGC() = default;
 
-  float rate() const { return _rate; }
-  float reference() const { return _reference; }
-  float gain() const { return _gain; }
-
-  void set_rate(float rate) { _rate = rate; }
-  void set_reference(float reference) { _reference = reference; }
-  void set_gain(float gain) { _gain = gain; }
-
-  DSPCOMPLEX scale(DSPCOMPLEX input);
-  void scaleN(DSPCOMPLEX output[], const DSPCOMPLEX input[], uint32_t n);
+  inline DSPCOMPLEX process_sample(DSPCOMPLEX input)
+  {
+    DSPCOMPLEX output = input * mCurGain;
+    mCurGain += mSmplRate * (mRefLevel - std::abs(output));
+    return output;
+  }
 
 protected:
-  float _rate;     // adjustment rate
-  float _reference;// reference value
-  float _gain;     // current gain
+  float mSmplRate;     // adjustment rate
+  float mRefLevel;// reference value
+  float mCurGain;     // current gain
 };
 
 class TimeSync
@@ -131,7 +132,12 @@ private:
 class Costas
 {
 public:
-  Costas(const float iAlpha, const float iBeta) : mAlpha(iAlpha), mBeta(iBeta) {}
+  Costas(float iSR, float iAlpha, float iBeta, float iFreqLimitHz)
+    : mSmplRate(iSR)
+    , mAlpha(iAlpha)
+    , mBeta(iBeta)
+    , mFreqLimit(2 * M_PI * iFreqLimitHz / iSR)
+  {}
   Costas() = delete;
   ~Costas() = default;
 
@@ -140,6 +146,12 @@ public:
     const DSPCOMPLEX r = z * std::exp(DSPCOMPLEX(0, -mPhase));
     const float error = real(r) * imag(r);
     mFreq += (mBeta * error);
+
+    if (abs(mFreq) > mFreqLimit)
+    {
+      mFreq = 0;
+    }
+
     mPhase += mFreq + (mAlpha * error);
     mPhase = PI_Constrain(mPhase);
     return r;
@@ -148,8 +160,10 @@ public:
   //float get_cur_freq() const { return mFreq * mSampleRate / (2 * M_PI); }
 
   private:
+    const float mSmplRate;
     const float mAlpha;
     const float mBeta;
+    const float mFreqLimit;
     float mFreq = 0;
     float mPhase = 0;
 };

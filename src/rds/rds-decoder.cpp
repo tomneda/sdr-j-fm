@@ -88,31 +88,6 @@ static std::vector<float> root_raised_cosine(double gain, double sampling_freq, 
 
 
 
-AGC::AGC(float rate, float reference, float gain)
-  : _rate(rate)
-  , _reference(reference)
-  , _gain(gain)
-{
-}
-
-DSPCOMPLEX AGC::scale(DSPCOMPLEX input)
-{
-  DSPCOMPLEX output = input * _gain;
-
-  _gain += _rate * (_reference - std::abs(output));
-
-  return output;
-}
-
-void AGC::scaleN(DSPCOMPLEX output[], const DSPCOMPLEX input[], uint32_t n)
-{
-  for (uint32_t i = 0; i < n; i++)
-  {
-    output[i] = scale(input[i]);
-  }
-}
-
-
 constexpr uint32_t SMP_PER_MANC_SYM = 16;  // a manchaster sympol has 2 times the samples of a single RDS symbol
 constexpr uint32_t TAPS_MF_RRC = 151;
 constexpr uint32_t TAPS_MF_RRC_MANC = TAPS_MF_RRC - SMP_PER_MANC_SYM / 2;
@@ -130,7 +105,7 @@ constexpr DSPFLOAT RDS_BITCLK_HZ = 1187.5;
 rdsDecoder::rdsDecoder(RadioInterface * iRadioIf, int32_t iRate, SinCos * ipSinCos)
   : mAGC(2e-3, 0.4, 10)
   , mTimeSync(16.0f, 0.01f)
-  , mCostas(1.0f, 0.02f)
+  , mCostas(iRate, 1.0f, 0.02f, 10.0f)
 {
   (void)ipSinCos;
 
@@ -307,7 +282,8 @@ void rdsDecoder::doDecode(const DSPFLOAT v, DSPFLOAT * const m, const ERdsMode m
 bool rdsDecoder::doDecode(DSPCOMPLEX v, DSPCOMPLEX * const m)
 {
   v = doMatchFiltering(v);
-  v = mAGC.scale(v);
+  v = mAGC.process_sample(v);
+
   DSPCOMPLEX r = 0;
 
   if (mTimeSync.process_sample(v, r))

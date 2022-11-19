@@ -93,12 +93,6 @@ void IQDisplay::DisplayIQ(const DSPCOMPLEX z, const float scale)
   symmetric_limit(v, mNoPointsPerRadius);
   symmetric_limit(h, mNoPointsPerRadius);
 
-//  if      (v >  mNoPointsPerRadius) v =  mNoPointsPerRadius;
-//  else if (v < -mNoPointsPerRadius) v = -mNoPointsPerRadius;
-
-//  if      (h >  mNoPointsPerRadius) h =  mNoPointsPerRadius;
-//  else if (h < -mNoPointsPerRadius) h = -mNoPointsPerRadius;
-
   //mpPoints[mInpInx] = DSPCOMPLEX(x, y);
   const int32_t idx = (v + mNoPointsPerRadius) * mNoPointsColOrRow + h + mNoPointsPerRadius;
   assert(idx >= 0);
@@ -111,6 +105,34 @@ void IQDisplay::DisplayIQ(const DSPCOMPLEX z, const float scale)
 
   // we need an extra data buffer as mpQwtPlot->replot() seems to take a while in the background
   memcpy(mpPlotData2, mpPlotData1, mNoMaxPointsOnField * sizeof(double));
+
+  {
+    // draw cross
+    for (int32_t i = -mNoPointsPerRadius; i <= mNoPointsPerRadius; ++i)
+    {
+      const int32_t ih = mNoPointsPerRadius * mNoPointsColOrRow + i + mNoPointsPerRadius;
+      const int32_t iv = (i + mNoPointsPerRadius) * mNoPointsColOrRow + mNoPointsPerRadius;
+      mpPlotData2[ih] = mpPlotData2[iv] = 10;
+    }
+
+    // draw unit circle
+    constexpr int32_t MAX_CIRCLE_POINTS = 45;
+    constexpr float SCALE = 0.5f;
+    for (int32_t i = 0; i < MAX_CIRCLE_POINTS; ++i)
+    {
+      const float phase = 0.5f * M_PI * i / MAX_CIRCLE_POINTS;
+
+      const int32_t h = (int32_t)(mNoPointsPerRadius * SCALE * cosf(phase));
+      const int32_t v = (int32_t)(mNoPointsPerRadius * SCALE * sinf(phase));
+
+      const int32_t ior = (v + mNoPointsPerRadius) * mNoPointsColOrRow + h + mNoPointsPerRadius;
+      const int32_t iol = (v + mNoPointsPerRadius) * mNoPointsColOrRow - h + mNoPointsPerRadius;
+      const int32_t ibr = (-v + mNoPointsPerRadius) * mNoPointsColOrRow + h + mNoPointsPerRadius;
+      const int32_t ibl = (-v + mNoPointsPerRadius) * mNoPointsColOrRow - h + mNoPointsPerRadius;
+      mpPlotData2[ior] = mpPlotData2[iol] = mpPlotData2[ibr] = mpPlotData2[ibl] = 10;
+    }
+  }
+
   mpQwtPlot->replot();
 
   memset(mpPlotData1, 0, mNoMaxPointsOnField * sizeof(double));

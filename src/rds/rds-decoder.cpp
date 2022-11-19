@@ -103,7 +103,7 @@ constexpr DSPFLOAT RDS_BITCLK_HZ = 1187.5;
  *	Notice that mixing to zero IF has been done
  */
 rdsDecoder::rdsDecoder(RadioInterface * iRadioIf, int32_t iRate, SinCos * ipSinCos)
-  : mAGC(2e-3, 0.4, 10)
+  : mAGC(2e-3f, 0.4f, 10.0f)
   , mTimeSync(16.0f, 0.01f)
   , mCostas(iRate, 1.0f, 0.02f, 10.0f)
 {

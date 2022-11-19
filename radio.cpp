@@ -2003,7 +2003,7 @@ void RadioInterface::iqBufferLoaded()
 {
   DSPCOMPLEX * iq_values = (DSPCOMPLEX *)alloca(IQ_SCOPE_SIZE * sizeof(DSPCOMPLEX));
   const int32_t sizeRead = iqBuffer->getDataFromBuffer(iq_values, IQ_SCOPE_SIZE);
-  iqScope->DisplayIQVec(iq_values, sizeRead, 1.0);
+  iqScope->DisplayIQVec(iq_values, sizeRead, 1.0f);
 }
 
 void RadioInterface::setHFplotterView(int offset)
@@ -2041,13 +2041,6 @@ void RadioInterface::setup_IQPlot()
 {
   iqBuffer = new RingBuffer<DSPCOMPLEX>(IQ_SCOPE_SIZE);
   iqScope = new IQDisplay(iqscope, IQ_SCOPE_SIZE);
-
-  for (uint32_t i = 0; i < IQ_SCOPE_SIZE; ++i)
-  {
-    const float phase = 2 * M_PI * i / IQ_SCOPE_SIZE;
-    //iqScope->DisplayIQ({cosf(phase), sinf(phase)}, 1.0);
-    iqScope->DisplayIQ(std::exp(DSPCOMPLEX(0, phase)), 1.0);
-  }
 }
 
 //

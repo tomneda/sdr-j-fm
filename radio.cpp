@@ -25,6 +25,7 @@
 #include "fm-processor.h"
 #include "popup-keypad.h"
 #include "rds-decoder.h"
+#include "iqdisplay.h"
 #include "scope.h"
 #include <QDateTime>
 #include <QDebug>
@@ -233,6 +234,8 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
 
   setup_HFScope();
   setup_LFScope();
+  setup_IQPlot();
+
   sourceDumping    = false;
   audioDumping     = false;
   dumpfilePointer  = nullptr;
@@ -347,6 +350,7 @@ RadioInterface::RadioInterface(QSettings *Si, QString stationList,
 //	The end of all
 RadioInterface::~RadioInterface()
 {
+  delete iqScope;
   delete hfScope;
   delete lfScope;
 
@@ -836,7 +840,7 @@ void RadioInterface::make_newProcessor()
   myFMprocessor = new fmProcessor(myRig, this, our_audioSink, inputRate, fmRate,
                                   workingRate, audioRate, displaySize,
                                   spectrumSize, averageCount, repeatRate,
-                                  hfBuffer, lfBuffer, filterDepth, thresHold);
+                                  hfBuffer, lfBuffer, iqBuffer, filterDepth, thresHold);
 
   lcd_fmRate->display((int)this->fmRate);
   lcd_inputRate->display((int)this->inputRate);
@@ -928,13 +932,15 @@ void RadioInterface::setfmChannelSelector(const QString &s)
 void RadioInterface::setAttenuation(int n)
 {
   int16_t f = IQBalanceDisplay->value();
-  int16_t bl, br;
 
-  bl                 = 100 - 2 * f;
-  br                 = 100 + 2 * f;
+  const int16_t bl = 100 - f;
+  const int16_t br = 100 + f;
+
   currAttSliderValue = 2 * n;
-  attValueL          = currAttSliderValue * (float)bl / 100;
-  attValueR          = currAttSliderValue * (float)br / 100;
+
+  attValueL = currAttSliderValue * (float)bl / 100;
+  attValueR = currAttSliderValue * (float)br / 100;
+
   if (myFMprocessor != nullptr)
   {
     myFMprocessor->setAttenuation(attValueL, attValueR);
@@ -945,13 +951,14 @@ void RadioInterface::setAttenuation(int n)
  */
 void RadioInterface::setIQBalance(int n)
 {
-  int16_t bl, br;
-
   IQBalanceDisplay->display(n);
-  bl        = 100 - 2 * n;
-  br        = 100 + 2 * n;
+
+  const int16_t bl = 100 - n;
+  const int16_t br = 100 + n;
+
   attValueL = currAttSliderValue * (float)bl / 100;
   attValueR = currAttSliderValue * (float)br / 100;
+
   if (myFMprocessor != nullptr)
   {
     myFMprocessor->setAttenuation(attValueL, attValueR);
@@ -1562,13 +1569,12 @@ void RadioInterface::setLfPlotType(const QString &s)
   else if (s == "AF MONO Filtered")  myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::AF_MONO_FILTERED);
   else if (s == "AF LEFT Filtered")  myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::AF_LEFT_FILTERED);
   else if (s == "AF RIGHT Filtered") myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::AF_RIGHT_FILTERED);
-  else if (s == "RDS")               myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::RDS);
+  else if (s == "RDS Input")         myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::RDS_INPUT);
+  else if (s == "RDS Demod")         myFMprocessor->setLfPlotType(fmProcessor::ELfPlot::RDS_DEMOD);
   else
   {
     Q_ASSERT(0);
   }
-
-  myFMprocessor->triggerDrawNewLfSpectrum(); // resets the average filter
 }
 
 void RadioInterface::setLfPlotZoomFactor(const QString &s)
@@ -1579,7 +1585,6 @@ void RadioInterface::setLfPlotZoomFactor(const QString &s)
   }
 
   myFMprocessor->setLfPlotZoomFactor(std::stol(s.toStdString()));
-  myFMprocessor->triggerDrawNewLfSpectrum(); // resets the average filter
 }
 
 void RadioInterface::setfmRdsSelector(const QString &s)
@@ -1589,12 +1594,10 @@ void RadioInterface::setfmRdsSelector(const QString &s)
     return;
   }
 
-  if      (s == "RDS-1") rdsModus = rdsDecoder::ERdsMode::RDS1;
-  else if (s == "RDS-2") rdsModus = rdsDecoder::ERdsMode::RDS2;
-  else if (s == "RDS-3") rdsModus = rdsDecoder::ERdsMode::RDS3;
-  else                   rdsModus = rdsDecoder::ERdsMode::NO_RDS;
+  rdsModus = (s == "RDS ON" ? rdsDecoder::ERdsMode::RDS_ON : rdsDecoder::ERdsMode::RDS_OFF);
 
   myFMprocessor->setfmRdsSelector(rdsModus);
+  myFMprocessor->resetRds();
 }
 
 void RadioInterface::setfmDecoder(const int decoder)
@@ -1677,9 +1680,17 @@ void RadioInterface::setfmBandwidth(int32_t b)
 
 void RadioInterface::showPeakLevel(const float iPeakLeft, const float iPeakRight)
 {
+  auto peak_avr = [](float iPeak, float & ioPeakAvr) -> void
+  {
+    ioPeakAvr = (iPeak > ioPeakAvr ? iPeak : ioPeakAvr - 1.0f /*decay*/);
+  };
+
+  peak_avr(iPeakLeft,  mPeakLeftDamped);
+  peak_avr(iPeakRight, mPeakRightDamped);
+
   //qInfo("PeakLeft %f, PeakRight %f", iPeakLeft, iPeakRight);
-  thermoPeakLevelLeft->setValue(iPeakLeft);
-  thermoPeakLevelRight->setValue(iPeakRight);
+  thermoPeakLevelLeft->setValue(mPeakLeftDamped);
+  thermoPeakLevelRight->setValue(mPeakRightDamped);
 
   // simple overflow avoidance -> reduce volume slider about -0.5dB (one step)
   if ((iPeakLeft > 0.0f || iPeakRight > 0.0f) && mSuppressTransient == false)
@@ -1957,11 +1968,11 @@ void RadioInterface::hfBufferLoaded()
 //	in the GUI environment. The FM processor prepares "views"
 //	and punt these views into a shared buffer. If the buffer is
 //	full, a signal is sent.
-void RadioInterface::lfBufferLoaded(bool iShowFullSpectrum, int iZoomFactor)
+void RadioInterface::lfBufferLoaded(bool iShowFullSpectrum, int iSampleRate)
 {
   double  *X_axis   = (double *)alloca(displaySize * sizeof(double));
   double  *Y_values = (double *)alloca(displaySize * sizeof(double));
-  double  temp      = (double)fmRate / 2 / displaySize;
+  double  temp      = (double)iSampleRate / 2 / displaySize;
   int16_t i;
 
   //	first X axis labels
@@ -1969,20 +1980,27 @@ void RadioInterface::lfBufferLoaded(bool iShowFullSpectrum, int iZoomFactor)
   {
     for (i = 0; i < displaySize; i++)
     {
-      X_axis[i] = (-(fmRate / 2.0) + (2 * i * temp)) / ((double)Khz(1)) / iZoomFactor; // two side spectrum
+      X_axis[i] = (-(iSampleRate / 2.0) + (2 * i * temp)) / ((double)Khz(1)); // two side spectrum
     }
   }
   else
   {
     for (i = 0; i < displaySize; i++)
     {
-      X_axis[i] = (i * temp) / ((double)Khz(1)) / iZoomFactor; // one-side spectrum
+      X_axis[i] = (i * temp) / ((double)Khz(1)); // one-side spectrum
     }
   }
 
   //	get the buffer data
   lfBuffer->getDataFromBuffer(Y_values, displaySize);
   lfScope->Display(X_axis, Y_values, spectrumAmplitudeSlider_lf->value());
+}
+
+void RadioInterface::iqBufferLoaded()
+{
+  DSPCOMPLEX * iq_values = (DSPCOMPLEX *)alloca(IQ_SCOPE_SIZE * sizeof(DSPCOMPLEX));
+  const int32_t sizeRead = iqBuffer->getDataFromBuffer(iq_values, IQ_SCOPE_SIZE);
+  iqScope->DisplayIQVec(iq_values, sizeRead, 1.0f);
 }
 
 void RadioInterface::setHFplotterView(int offset)
@@ -2014,6 +2032,12 @@ void RadioInterface::setup_LFScope()
   lfScope    = new Scope(lfscope, this->displaySize, this->rasterSize);
   LFviewMode = SPECTRUM_MODE;
   lfScope->SelectView(SPECTRUM_MODE);
+}
+
+void RadioInterface::setup_IQPlot()
+{
+  iqBuffer = new RingBuffer<DSPCOMPLEX>(IQ_SCOPE_SIZE);
+  iqScope = new IQDisplay(iqscope, IQ_SCOPE_SIZE);
 }
 
 //

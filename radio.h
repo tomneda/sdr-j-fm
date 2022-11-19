@@ -64,6 +64,8 @@ class RadioInterface : public QDialog, private Ui_sdr_j_fm
 {
   Q_OBJECT
 public:
+  static constexpr uint32_t IQ_SCOPE_SIZE = 64;
+
   RadioInterface(QSettings *, QString, int32_t, QWidget *parent = nullptr);
   ~RadioInterface() override;
 
@@ -85,13 +87,17 @@ private:
 
   RingBuffer<double> *hfBuffer;
   RingBuffer<double> *lfBuffer;
+  RingBuffer<DSPCOMPLEX> *iqBuffer;
   Scope *hfScope;
   Scope *lfScope;
+  IQDisplay *iqScope;
   bool mAfcActive{false};
   float mAfcAlpha{1.0f};
   int32_t mAfcCurrOffFreq{0};
 
   bool mSuppressTransient { false }; // shorttime true after frequency change to suppress volume level change
+  float mPeakLeftDamped = -100;
+  float mPeakRightDamped = -100;
 
   keyPad *mykeyPad;
   QSettings *fmSettings;
@@ -146,6 +152,7 @@ private:
   int32_t Panel;
   int16_t CurrentRig;
   QTimer *displayTimer;
+
   /*
    *	dumping
    */
@@ -172,6 +179,7 @@ private:
 
   void setup_HFScope();
   void setup_LFScope();
+  void setup_IQPlot();
   bool squelchMode;
   void resetSelector();
   int32_t mapRates(int32_t);
@@ -247,6 +255,7 @@ public slots:
   void newFrequency(int);
   void hfBufferLoaded();
   void lfBufferLoaded(bool, int);
+  void iqBufferLoaded();
   void wheelEvent(QWheelEvent *) override;
   void setLogging(const QString &);
   void setLogsaving();
@@ -266,7 +275,7 @@ public slots:
   void setRDSisSynchronized(bool);
   void setMusicSpeechFlag(int);
   void clearMusicSpeechFlag();
-  void showPeakLevel(const float iPeakLeft, const float iPeakRight);
+  void showPeakLevel(const float, const float);
   void showDcComponents(float, float);
   void scanresult();
   void closeEvent(QCloseEvent *event) override;

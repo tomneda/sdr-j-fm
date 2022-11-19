@@ -35,6 +35,8 @@
  *
  */
 
+/* massively adapted by tomneda https://github.com/tomneda */
+
 #ifndef __RDS_DECODER
 #define __RDS_DECODER
 
@@ -43,9 +45,10 @@
 #include "rds-group.h"
 #include "rds-blocksynchronizer.h"
 #include "rds-groupdecoder.h"
-#include "fft.h"
-#include "iir-filters.h"
-#include "sincos.h"
+#include "sdr/agc.h"
+#include "sdr/costas.h"
+#include "sdr/time_sync.h"
+
 
 class RadioInterface;
 
@@ -53,58 +56,41 @@ class rdsDecoder : public QObject
 {
   Q_OBJECT
 public:
-  rdsDecoder(RadioInterface *, int32_t, SinCos *);
+  rdsDecoder(RadioInterface *, int32_t);
   ~rdsDecoder(void);
 
   enum class ERdsMode
   {
-    NO_RDS,
-    RDS1,
-    RDS2,
-    RDS3
+    RDS_OFF,
+    RDS_ON,
   };
 
-  void doDecode(const DSPFLOAT, DSPFLOAT * const, const ERdsMode);
+  bool doDecode(const DSPCOMPLEX, DSPCOMPLEX * const);
   void reset(void);
 
 private:
   void processBit(bool);
-  void doDecode1(const DSPFLOAT, DSPFLOAT * const);
-  void doDecode2(const DSPFLOAT, DSPFLOAT * const);
-  void doDecode3(const DSPFLOAT, DSPFLOAT * const);
+
+  AGC mAGC;
+  TimeSync mTimeSync;
+  Costas mCostas;
 
   int32_t mSampleRate;
-  int32_t mNumOfFrames;
-  SinCos * mpSinCos;
   RadioInterface * mpRadioInterface;
+
   RDSGroup * mpRdsGroup;
   rdsBlockSynchronizer * mpRdsBlockSync;
   rdsGroupDecoder * mpRdsGroupDecoder;
-  DSPFLOAT mOmegaRDS;
-  int32_t mSymbolCeiling;
-  int32_t mSymbolFloor;
-  bool mPrevBit;
-  DSPFLOAT mBitIntegrator;
-  DSPFLOAT mBitClkPhase;
-  DSPFLOAT mPrev_clkState;
-  bool mResync;
 
-  DSPFLOAT * mpRdsBuffer;
-  DSPFLOAT * mpRdsKernel;
-  int16_t mCurRdsBufferIdx;
-  int16_t mRdsfilterSize;
+  std::vector<DSPFLOAT> mMatchedFltKernelVec;
+  DSPCOMPLEX * mpMatchedFltBuf;
+  int16_t mMatchedFltBufIdx;
+  int16_t mMatchedFltBufSize;
+
+  bool mPreviousBit;
 
   DSPFLOAT doMatchFiltering(DSPFLOAT);
-
-  BandPassIIR * mpSharpFilter;
-  DSPFLOAT mRdsLastSyncSlope;
-  DSPFLOAT mRdsLastSync;
-  DSPFLOAT mRdsLastData;
-  bool mPreviousBit;
-  DSPFLOAT * mSyncBuffer;
-  int16_t mSyncBuffPtrIdx;
-
-  void synchronizeOnBitClk(DSPFLOAT *, int16_t);
+  DSPCOMPLEX doMatchFiltering(DSPCOMPLEX);
 
 signals:
   void setCRCErrors(int);

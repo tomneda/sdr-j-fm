@@ -13,7 +13,7 @@ win32 {
   include ($(QWT_ROOT)\features\qwt.prf)
   #CONFIG += qwt
 
-  # works bad without optimization in debug version
+  # works badthout optimization in debug version
   CONFIG(debug, debug|release) {
     QMAKE_CFLAGS += -ffast-math
     QMAKE_CXXFLAGS += -ffast-math
@@ -25,8 +25,15 @@ win32 {
 }
 
 unix {
-  QMAKE_CFLAGS += -O3 -ffast-math
-  QMAKE_CXXFLAGS += -O3 -ffast-math
+  # works bad without optimization in debug version
+  CONFIG(debug, debug|release) {
+    QMAKE_CFLAGS += -ffast-math
+    QMAKE_CXXFLAGS += -ffast-math
+  }
+  else {
+    QMAKE_CFLAGS += -O3 -ffast-math
+    QMAKE_CXXFLAGS += -O3 -ffast-math
+  }
 }
 
 #QMAKE_CXXFLAGS	+= -g
@@ -94,6 +101,7 @@ HEADERS += ./radio.h \
            ./includes/various/iir-filters.h \
            ./includes/various/Xtan2.h \
            ./includes/output/audiosink.h \
+           ./includes/scopes-qwt6/iqdisplay.h \
            ./includes/scopes-qwt6/scope.h \
            ./includes/scopes-qwt6/spectrogramdata.h \
            ./includes/scopes-qwt6/fft-scope.h \
@@ -103,6 +111,10 @@ HEADERS += ./radio.h \
            ./includes/rds/rds-blocksynchronizer.h \
            ./includes/rds/rds-group.h \
            ./includes/rds/rds-groupdecoder.h  \
+           ./includes/sdr/agc.h  \
+           ./includes/sdr/costas.h  \
+           ./includes/sdr/time_sync.h  \
+           ./includes/sdr/shaping_filter.h  \
            ./devices/device-handler.h \
            ./devices/filereader/filereader.h \
            ./devices/filereader/filehulp.h
@@ -125,6 +137,7 @@ SOURCES += ./main.cpp \
            ./src/various/iir-filters.cpp \
            ./src/various/Xtan2.cpp \
            ./src/output/audiosink.cpp \
+           ./src/scopes-qwt6/iqdisplay.cpp \
            ./src/scopes-qwt6/scope.cpp \
            ./src/scopes-qwt6/fft-scope.cpp \
            ./src/fm/fm-demodulator.cpp \
@@ -133,6 +146,7 @@ SOURCES += ./main.cpp \
            ./src/rds/rds-blocksynchronizer.cpp \
            ./src/rds/rds-group.cpp \
            ./src/rds/rds-groupdecoder.cpp \
+           ./src/sdr/shaping_filter.cpp \
            ./devices/device-handler.cpp \
            ./devices/filereader/filereader.cpp \
            ./devices/filereader/filehulp.cpp

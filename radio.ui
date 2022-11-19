@@ -10,7 +10,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1245</width>
+    <width>1530</width>
     <height>749</height>
    </rect>
   </property>
@@ -24,7 +24,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout_8">
+      <layout class="QVBoxLayout" name="verticalLayout_8" stretch="5,1">
        <item>
         <widget class="QScrollArea" name="scrollStationList">
          <property name="toolTip">
@@ -47,6 +47,9 @@
           </property>
          </widget>
         </widget>
+       </item>
+       <item>
+        <widget class="QwtPlot" name="iqscope"/>
        </item>
       </layout>
      </item>
@@ -980,10 +983,10 @@
                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Balance the incoming I and Q parts of the samples.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="minimum">
-                    <number>-35</number>
+                    <number>-100</number>
                    </property>
                    <property name="maximum">
-                    <number>35</number>
+                    <number>100</number>
                    </property>
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
@@ -1062,7 +1065,12 @@
                    </item>
                    <item>
                     <property name="text">
-                     <string>RDS</string>
+                     <string>RDS Input</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>RDS Demod</string>
                     </property>
                    </item>
                   </widget>
@@ -1371,22 +1379,12 @@
                    </property>
                    <item>
                     <property name="text">
-                     <string>No RDS</string>
+                     <string>RDS OFF</string>
                     </property>
                    </item>
                    <item>
                     <property name="text">
-                     <string>RDS-1</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>RDS-2</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>RDS-3</string>
+                     <string>RDS ON</string>
                     </property>
                    </item>
                   </widget>

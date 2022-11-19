@@ -50,6 +50,50 @@ class newConverter;
 
 //#define USE_EXTRACT_LEVELS
 
+template<class T> class DataBufferCtrl
+{
+public:
+  DataBufferCtrl() = default;
+
+  void set_data_ptr(T * const ipData, const int32_t iDataSize)
+  {
+    mpData = ipData;
+    mDataSize = iDataSize;
+    clear_content();
+  }
+
+  ~DataBufferCtrl() = default;
+
+  void operator=(const T & rhs)
+  {
+    if (mCurIdx < mDataSize)
+    {
+      //assert(mpData);
+      mpData[mCurIdx] = rhs;
+      ++mCurIdx;
+    }
+  }
+
+  T * get_ptr() const { return mpData; }
+  bool is_full() const { return (mCurIdx >= mDataSize); }
+  void reset_write_pointer() { mCurIdx = 0; }
+  void clear_content()
+  {
+    for (int32_t idx = 0; idx < mDataSize; ++idx)
+    {
+      mpData[idx] = T();
+    }
+    mCurIdx = 0;
+  }
+
+private:
+  T * mpData = nullptr;
+  int32_t mDataSize;
+  int32_t mCurIdx = 0;
+};
+
+
+
 class fmProcessor : public QThread
 {
   Q_OBJECT
@@ -72,7 +116,8 @@ public:
     AF_MONO_FILTERED,
     AF_LEFT_FILTERED,
     AF_RIGHT_FILTERED,
-    RDS
+    RDS_INPUT,
+    RDS_DEMOD
   };
 
   enum class ESqMode
@@ -86,18 +131,19 @@ public:
   fmProcessor(deviceHandler *,
               RadioInterface *,
               audioSink *,
-              int32_t,                // inputRate
-              int32_t,                // decimation
-              int32_t,                // workingRate
-              int32_t,                // audioRate,
-              int32_t,                // displaySize
-              int32_t,                // spectrumSize
-              int32_t,                // averageCount
-              int32_t,                // repeatRate
-              RingBuffer<double> *,   // HFScope
-              RingBuffer<double> *,   // LFScope
-              int16_t,                // filterDepth
-              int16_t);               // threshold scanning
+              int32_t,                  // inputRate
+              int32_t,                  // decimation
+              int32_t,                  // workingRate
+              int32_t,                  // audioRate,
+              int32_t,                  // displaySize
+              int32_t,                  // spectrumSize
+              int32_t,                  // averageCount
+              int32_t,                  // repeatRate
+              RingBuffer<double> *,     // HFScope
+              RingBuffer<double> *,     // LFScope
+              RingBuffer<DSPCOMPLEX> *, // IQScope
+              int16_t,                  // filterDepth
+              int16_t);                 // threshold scanning
   ~fmProcessor() override;
 
   void stop();   // stop the processor
@@ -113,7 +159,7 @@ public:
   void stopDumping();
   void setBandwidth(int32_t);
   void setBandfilterDegree(int32_t);
-  void setAttenuation(int16_t, int16_t);
+  void setAttenuation(DSPFLOAT, DSPFLOAT);
   void setfmRdsSelector(rdsDecoder::ERdsMode);
   void resetRds();
   void set_localOscillator(int32_t);
@@ -129,7 +175,7 @@ public:
   void setAutoMonoMode(const bool iAutoMonoMode) { mAutoMono = iAutoMonoMode; }
   void setDCRemove(const bool iDCREnabled) { mDCREnabled = iDCREnabled; mRfDC = 0.0f; }
   void triggerDrawNewHfSpectrum() { mFillAverageHfBuffer = true; }
-  void triggerDrawNewLfSpectrum() { mFillAverageLfBuffer = true; }
+  void triggerDrawNewLfSpectrum() { mpSpectrumBuffer_lf.clear_content(); mFillAverageLfBuffer = true; }
 
 #ifdef USE_EXTRACT_LEVELS
   DSPFLOAT get_pilotStrength();
@@ -184,6 +230,7 @@ private:
   bool mFillAverageLfBuffer{ true };
   RingBuffer<double> * mpHfBuffer;
   RingBuffer<double> * mpLfBuffer;
+  RingBuffer<DSPCOMPLEX> * mpIqBuffer;
   int16_t mFilterDepth;
   uint8_t mInputMode;
   //int32_t freezer;
@@ -198,7 +245,8 @@ private:
   common_fft * mpSpectrum_fft_hf;
   common_fft * mpSpectrum_fft_lf;
   DSPCOMPLEX * mpSpectrumBuffer_hf;
-  DSPCOMPLEX * mpSpectrumBuffer_lf;
+  DataBufferCtrl<DSPCOMPLEX> mpSpectrumBuffer_lf;
+
   double * mpDisplayBuffer_lf = nullptr;
   //double *mpDisplayBuffer;
   double * mpLocalBuffer;
@@ -222,8 +270,8 @@ private:
   int32_t mDecimatingScale;
 
   int32_t mMyCount;
-  int16_t mLgain;
-  int16_t mRgain;
+  DSPFLOAT mLgain;
+  DSPFLOAT mRgain;
 
   int32_t mPeakLevelCurSampleCnt{ 0 };
   int32_t mPeakLevelSampleMax{ 0x7FFFFFFF };
@@ -232,16 +280,21 @@ private:
 
   newConverter * mpAudioDecimator;
   DSPCOMPLEX * mpAudioOut;
-  rdsDecoder * mpMyRdsDecoder;
 
   void process_stereo_or_mono_with_rds(const float, DSPCOMPLEX *, DSPFLOAT *, DSPCOMPLEX * rdsValueCmpl);
 
+  // RDS
+  rdsDecoder * mpMyRdsDecoder;
   fftFilter * mpPilotBandFilter;
   fftFilter * mpRdsBandFilter;
-  fftFilter * mpRdsLowPassFilter;
+  //fftFilter * mpRdsLowPassFilter;
   fftFilterHilbert * mpRdsHilbertFilter;
   //HilbertFilter * mpRdsHilbertFilter;
-  int32_t mRdsSampleCnt;
+  uint32_t mRdsSampleCntSrc = 0;
+  uint32_t mRdsSampleCntDst = 0;
+  Oscillator * mpRdsOscillator;
+  newConverter * mpRdsDecimator;
+  DSPCOMPLEX * mpRdsOut;
 
   DSPFLOAT mPilotDelay;
 
@@ -263,7 +316,7 @@ private:
   uint8_t mSelector;
   fm_Demodulator * mpTheDemodulator;
 
-  rdsDecoder::ERdsMode mRdsModus{ rdsDecoder::ERdsMode::NO_RDS };
+  rdsDecoder::ERdsMode mRdsModus{ rdsDecoder::ERdsMode::RDS_OFF};
 
 #ifdef USE_EXTRACT_LEVELS
   float mNoiseLevel;
@@ -271,7 +324,7 @@ private:
   float mRdsLevel;
 #endif
 
-  pllC * mpRds_plldecoder;
+  //pllC * mpRds_plldecoder;
   DSPFLOAT mK_FM;
 
   DSPCOMPLEX mLastAudioSample;
@@ -282,6 +335,7 @@ private:
 
   ELfPlot mLfPlotType = ELfPlot::DEMODULATOR;
   bool mShowFullSpectrum = false; // show only half (real values) or full (complex values) spectrum
+  int32_t mSpectrumSampleRate = 0;
   int32_t mZoomFactor = 1;
 
   class pilotRecovery
@@ -363,6 +417,7 @@ signals:
   void setPLLisLocked(bool);
   void hfBufferLoaded();
   void lfBufferLoaded(bool, int);
+  void iqBufferLoaded();
   void showDcComponents(float, float);
   void scanresult();
   void showPeakLevel(const float, const float);

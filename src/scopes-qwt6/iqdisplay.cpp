@@ -106,13 +106,20 @@ void IQDisplay::DisplayIQ(const DSPCOMPLEX z, const float scale)
   // we need an extra data buffer as mpQwtPlot->replot() seems to take a while in the background
   memcpy(mpPlotData2, mpPlotData1, mNoMaxPointsOnField * sizeof(double));
 
+  mpQwtPlot->replot();
+
+  mInpInx = 0;
+
+  // clear next write buffer and draw cross and circle
+  memset(mpPlotData1, 0, mNoMaxPointsOnField * sizeof(double));
+
   {
     // draw cross
     for (int32_t i = -mNoPointsPerRadius; i <= mNoPointsPerRadius; ++i)
     {
       const int32_t ih = mNoPointsPerRadius * mNoPointsColOrRow + i + mNoPointsPerRadius;
       const int32_t iv = (i + mNoPointsPerRadius) * mNoPointsColOrRow + mNoPointsPerRadius;
-      mpPlotData2[ih] = mpPlotData2[iv] = 10;
+      mpPlotData1[ih] = mpPlotData1[iv] = 10;
     }
 
     // draw unit circle
@@ -129,14 +136,10 @@ void IQDisplay::DisplayIQ(const DSPCOMPLEX z, const float scale)
       const int32_t iol = (v + mNoPointsPerRadius) * mNoPointsColOrRow - h + mNoPointsPerRadius;
       const int32_t ibr = (-v + mNoPointsPerRadius) * mNoPointsColOrRow + h + mNoPointsPerRadius;
       const int32_t ibl = (-v + mNoPointsPerRadius) * mNoPointsColOrRow - h + mNoPointsPerRadius;
-      mpPlotData2[ior] = mpPlotData2[iol] = mpPlotData2[ibr] = mpPlotData2[ibl] = 10;
+      mpPlotData1[ior] = mpPlotData1[iol] = mpPlotData1[ibr] = mpPlotData1[ibl] = 10;
     }
   }
 
-  mpQwtPlot->replot();
-
-  memset(mpPlotData1, 0, mNoMaxPointsOnField * sizeof(double));
-  mInpInx = 0;
 }
 
 void IQDisplay::DisplayIQVec(const DSPCOMPLEX * const z, const int32_t n, const float scale)

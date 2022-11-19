@@ -1379,22 +1379,12 @@
                    </property>
                    <item>
                     <property name="text">
-                     <string>No RDS</string>
+                     <string>RDS OFF</string>
                     </property>
                    </item>
                    <item>
                     <property name="text">
-                     <string>RDS-1</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>RDS-2</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>RDS-3</string>
+                     <string>RDS ON</string>
                     </property>
                    </item>
                   </widget>

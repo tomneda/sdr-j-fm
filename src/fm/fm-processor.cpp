@@ -454,7 +454,7 @@ void fmProcessor::run()
 
   assert(mpMyRdsDecoder == nullptr); // check whether not calling next news twice
   //mpMyRdsDecoder = new rdsDecoder(mMyRadioInterface, mFmRate / RDS_DECIMATOR, mpMySinCos);
-  mpMyRdsDecoder = new rdsDecoder(mMyRadioInterface, RDS_RATE, mpMySinCos);
+  mpMyRdsDecoder = new rdsDecoder(mMyRadioInterface, RDS_RATE);
 
   mRunning = true; // will be set from the outside
 
@@ -643,7 +643,7 @@ void fmProcessor::run()
       case S_LEFTminusRIGHT: audio = DSPCOMPLEX(diffLRWeightend, diffLRWeightend); break;
       }
 
-      if (mRdsModus != rdsDecoder::ERdsMode::NO_RDS)
+      if (mRdsModus != rdsDecoder::ERdsMode::RDS_OFF)
       {
         int32_t rdsAmount;
 
@@ -652,50 +652,23 @@ void fmProcessor::run()
 
         if (mpRdsDecimator->convert(rdsDataCplx, mpRdsOut, &rdsAmount))
         {
-          //mRdsSampleCntDst += rdsAmount;
-          //double ratio = (double)mRdsSampleCntDst / (double)mRdsSampleCntSrc;
-          //double rate = ratio * mFmRate;
-
           // here the sample rate is rdsRate (typ. 19000S/s)
           for (int32_t k = 0; k < rdsAmount; k++)
           {
             const DSPCOMPLEX pcmSample = mpRdsOut[k];
 
-            if ((mRdsModus != rdsDecoder::ERdsMode::RDS3))
+            static DSPCOMPLEX magCplx;
+            if (mpMyRdsDecoder->doDecode(pcmSample, &magCplx)) // input SR 19000S/s, output SR 19000/16S/s
             {
-              DSPFLOAT mag;
-              DSPCOMPLEX magCplx;
-              mpMyRdsDecoder->doDecode(imag(pcmSample), &mag, mRdsModus); // data rate 19000S/s
-              switch(mLfPlotType)
-              {
-              case ELfPlot::RDS_INPUT: mpSpectrumBuffer_lf = imag(pcmSample); break;
-              case ELfPlot::RDS_DEMOD: mpSpectrumBuffer_lf = mag; break;
-              default:;
-              }
-              magCplx = DSPCOMPLEX(imag(pcmSample), mag);
               mpIqBuffer->putDataIntoBuffer(&magCplx, 1);
               emit iqBufferLoaded();
             }
-            else
+
+            switch(mLfPlotType)
             {
-              static DSPCOMPLEX magCplx;
-              if (mpMyRdsDecoder->doDecode(pcmSample, &magCplx)) // input SR 19000S/s, output SR 19000/16S/s
-              {
-                switch(mLfPlotType)
-                {
-                //case ELfPlot::RDS_INPUT: mpSpectrumBuffer_lf = pcmSample; break;
-                //case ELfPlot::RDS_DEMOD: mpSpectrumBuffer_lf = magCplx; break;
-                default:;
-                }
-                mpIqBuffer->putDataIntoBuffer(&magCplx, 1);
-                emit iqBufferLoaded();
-              }
-              switch(mLfPlotType)
-              {
-              case ELfPlot::RDS_INPUT: mpSpectrumBuffer_lf = pcmSample; break;
-              case ELfPlot::RDS_DEMOD: mpSpectrumBuffer_lf = magCplx; break;
-              default:;
-              }
+            case ELfPlot::RDS_INPUT: mpSpectrumBuffer_lf = pcmSample; break;
+            case ELfPlot::RDS_DEMOD: mpSpectrumBuffer_lf = magCplx; break;
+            default:;
             }
           }
         }
@@ -798,7 +771,7 @@ void fmProcessor::process_stereo_or_mono_with_rds(const float demod, DSPCOMPLEX 
   }
 
   // process RDS
-  if (mRdsModus != rdsDecoder::ERdsMode::NO_RDS)
+  if (mRdsModus != rdsDecoder::ERdsMode::RDS_OFF)
   {
     const DSPFLOAT rdsBaseBp = mpRdsBandFilter->Pass(5 * demod);
     const DSPCOMPLEX rdsBaseHilb = mpRdsHilbertFilter->Pass(rdsBaseBp);

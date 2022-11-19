@@ -316,7 +316,7 @@ private:
   uint8_t mSelector;
   fm_Demodulator * mpTheDemodulator;
 
-  rdsDecoder::ERdsMode mRdsModus{ rdsDecoder::ERdsMode::NO_RDS };
+  rdsDecoder::ERdsMode mRdsModus{ rdsDecoder::ERdsMode::RDS_OFF};
 
 #ifdef USE_EXTRACT_LEVELS
   float mNoiseLevel;

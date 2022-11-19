@@ -1683,9 +1683,17 @@ void RadioInterface::setfmBandwidth(int32_t b)
 
 void RadioInterface::showPeakLevel(const float iPeakLeft, const float iPeakRight)
 {
+  auto peak_avr = [](float iPeak, float & ioPeakAvr) -> void
+  {
+    ioPeakAvr = (iPeak > ioPeakAvr ? iPeak : ioPeakAvr - 1.0f /*decay*/);
+  };
+
+  peak_avr(iPeakLeft,  mPeakLeftDamped);
+  peak_avr(iPeakRight, mPeakRightDamped);
+
   //qInfo("PeakLeft %f, PeakRight %f", iPeakLeft, iPeakRight);
-  thermoPeakLevelLeft->setValue(iPeakLeft);
-  thermoPeakLevelRight->setValue(iPeakRight);
+  thermoPeakLevelLeft->setValue(mPeakLeftDamped);
+  thermoPeakLevelRight->setValue(mPeakRightDamped);
 
   // simple overflow avoidance -> reduce volume slider about -0.5dB (one step)
   if ((iPeakLeft > 0.0f || iPeakRight > 0.0f) && mSuppressTransient == false)

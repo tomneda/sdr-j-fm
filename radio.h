@@ -96,6 +96,8 @@ private:
   int32_t mAfcCurrOffFreq{0};
 
   bool mSuppressTransient { false }; // shorttime true after frequency change to suppress volume level change
+  float mPeakLeftDamped = -100;
+  float mPeakRightDamped = -100;
 
   keyPad *mykeyPad;
   QSettings *fmSettings;
@@ -273,7 +275,7 @@ public slots:
   void setRDSisSynchronized(bool);
   void setMusicSpeechFlag(int);
   void clearMusicSpeechFlag();
-  void showPeakLevel(const float iPeakLeft, const float iPeakRight);
+  void showPeakLevel(const float, const float);
   void showDcComponents(float, float);
   void scanresult();
   void closeEvent(QCloseEvent *event) override;

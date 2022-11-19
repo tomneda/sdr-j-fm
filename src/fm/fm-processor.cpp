@@ -674,6 +674,7 @@ void fmProcessor::run()
               }
               magCplx = DSPCOMPLEX(imag(pcmSample), mag);
               mpIqBuffer->putDataIntoBuffer(&magCplx, 1);
+              emit iqBufferLoaded();
             }
             else
             {
@@ -697,8 +698,6 @@ void fmProcessor::run()
               }
             }
           }
-
-          //emit iqBufferLoaded();
         }
       }
       else

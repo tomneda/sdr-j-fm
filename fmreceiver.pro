@@ -111,6 +111,10 @@ HEADERS += ./radio.h \
            ./includes/rds/rds-blocksynchronizer.h \
            ./includes/rds/rds-group.h \
            ./includes/rds/rds-groupdecoder.h  \
+           ./includes/sdr/agc.h  \
+           ./includes/sdr/costas.h  \
+           ./includes/sdr/time_sync.h  \
+           ./includes/sdr/shaping_filter.h  \
            ./devices/device-handler.h \
            ./devices/filereader/filereader.h \
            ./devices/filereader/filehulp.h
@@ -142,6 +146,7 @@ SOURCES += ./main.cpp \
            ./src/rds/rds-blocksynchronizer.cpp \
            ./src/rds/rds-group.cpp \
            ./src/rds/rds-groupdecoder.cpp \
+           ./src/sdr/shaping_filter.cpp \
            ./devices/device-handler.cpp \
            ./devices/filereader/filereader.cpp \
            ./devices/filereader/filehulp.cpp

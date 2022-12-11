@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2008, 2009, 2010
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -6,7 +5,7 @@
  *
  *    This file is part of the SDR-J.
  *    Many of the ideas as implemented in SDR-J are derived from
- *    other work, made available through the GNU general Public License. 
+ *    other work, made available through the GNU general Public License.
  *    All copyrights of the original authors are recognized.
  *
  *    SDR-J is free software; you can redistribute it and/or modify
@@ -25,250 +24,448 @@
  *
  */
 
-#ifndef	__FM_PROCESSOR__
-#define	__FM_PROCESSOR__
+#ifndef __FM_PROCESSOR__
+#define __FM_PROCESSOR__
 
-#include	<QThread>
-#include	<QObject>
-#include	<sndfile.h>
-#include	"fm-constants.h"
-#include	"fir-filters.h"
-#include	"fft-filters.h"
-#include	"sincos.h"
-#include	"pllC.h"
-#include	"ringbuffer.h"
-#include	"oscillator.h"
+#include "fft-filters.h"
+#include "fir-filters.h"
+#include "fm-constants.h"
+#include "fm-demodulator.h"
+#include "rds-decoder.h"
+#include "squelchClass.h"
+#include "oscillator.h"
+#include "pllC.h"
+#include "ringbuffer.h"
+#include "sincos.h"
+#include <QObject>
+#include <QThread>
+#include <sndfile.h>
 
-class		deviceHandler;
-class		RadioInterface;
-class		fm_Demodulator;
-class		rdsDecoder;
-class		audioSink;
-class		newConverter;
+class deviceHandler;
+class RadioInterface;
+//class fm_Demodulator;
+//class rdsDecoder;
+class audioSink;
+class newConverter;
 
-class	fmProcessor:public QThread {
-Q_OBJECT
+//#define USE_EXTRACT_LEVELS
+
+template<typename T> class DelayLine
+{
 public:
-			fmProcessor (deviceHandler *,
-	                             RadioInterface *,
-	                             audioSink *,
-	                             int32_t,	// inputRate
-	                             int32_t,	// decimation
-	                             int32_t,	// workingRate
-	                             int32_t,	// audioRate,
-	                             int32_t,	// displaySize
-	                             int32_t,	// spectrumSize
-	                             int32_t,	// averageCount
-	                             int32_t,	// repeatRate
-	                             RingBuffer<double> *, // HFScope
-	                             RingBuffer<double> *, // LFScope
-	                             int16_t,	// filterDepth
-	                             int16_t);	// threshold scanning
-	        	~fmProcessor (void);
-	void		stop		(void);		// stop the processor
-	void		setfmMode	(uint8_t);
-	void		setFMdecoder	(int8_t);
-	void		setSoundMode	(uint8_t);
-	void		setSoundBalance	(int16_t);
-	void		setDeemphasis	(int16_t);
-	void		setVolume	(int16_t);
-	void		setLFcutoff	(int32_t);
-	void		startDumping	(SNDFILE *);
-	void		stopDumping	(void);
-	void		setBandwidth	(int32_t);
-	void		setBandfilterDegree	(int32_t);
-	void		setAttenuation	(int16_t, int16_t);
-	void		setfmRdsSelector (int8_t);
-	void		resetRds	(void);
-	void		set_localOscillator	(int32_t);
-	void		setFreezer	(bool);
-	void		set_squelchMode	(bool);
-	void		setInputMode	(uint8_t);
+  DelayLine(const T & iDefault) : mDefault(iDefault)
+  {
+    set_delay_steps(0); // reserve memory for at least one sample
+  }
 
-	int32_t		totalAmount;
-	bool		ok			(void);
-	DSPFLOAT	get_pilotStrength	(void);
-	DSPFLOAT	get_rdsStrength		(void);
-	DSPFLOAT	get_noiseStrength	(void);
-	DSPFLOAT	get_dcComponent		(void);
-	void		startScanning		(void);
-	void		stopScanning		(void);
-	const char *	nameofDecoder	(void);
+  void set_delay_steps(const uint32_t iSteps)
+  {
+    mDataPtrIdx = 0;
+    mDelayBuffer.resize(iSteps + 1, mDefault);
+  }
 
-	enum Channels {
-	   S_STEREO		= 0,
-	   S_LEFT		= 1,
-	   S_RIGHT		= 2,
-	   S_LEFTplusRIGHT	= 0103,
-	   S_LEFTminusRIGHT	= 0104
-	};
-	enum Mode {
-	   FM_STEREO	= 0,
-	   FM_MONO	= 1
-	};
+  const T & get_set_value(const T & iVal)
+  {
+    mDelayBuffer[mDataPtrIdx] = iVal;
+    mDataPtrIdx = (mDataPtrIdx + 1) % mDelayBuffer.size();
+    return mDelayBuffer[mDataPtrIdx];
+  }
 
-	void		set_squelchValue	(int16_t);
 private:
-virtual	void		run		(void);
-	void		mapSpectrum	(DSPCOMPLEX *, double *);
-	void		add_to_average	(double *, double *);
-	void		extractLevels	(double *, int32_t);
-	deviceHandler	*myRig;
-	RadioInterface	*myRadioInterface;
-	audioSink	*theSink;
-	int32_t		inputRate;
-	int32_t		fmRate;
-	int32_t		workingRate;
-	int32_t		audioRate;
-	int32_t		displaySize;
-	int32_t		averageCount;
-	int32_t		repeatRate;
-	RingBuffer<double> *hfBuffer;
-	RingBuffer<double> *lfBuffer;
-	int16_t		filterDepth;
-	uint8_t		inputMode;
-	int32_t		freezer;
-	bool		scanning;
-	int16_t		thresHold;
-	DSPFLOAT	getSignal	(DSPCOMPLEX *, int32_t);
-	DSPFLOAT	getNoise	(DSPCOMPLEX *, int32_t);
-	bool		squelchOn;
-	int32_t		spectrumSize;
-	common_fft	*spectrum_fft_hf;
-	common_fft	*spectrum_fft_lf;
-	DSPCOMPLEX	*spectrumBuffer_hf;
-	DSPCOMPLEX	*spectrumBuffer_lf;
-	double		*displayBuffer;
-	double		*localBuffer;
-	void		sendSampletoOutput	(DSPCOMPLEX);
-	DecimatingFIR	*fmBandfilter;
-	Oscillator	*localOscillator;
-	newConverter	*theConverter;
-	int32_t		lo_frequency;
-	bool		running;
-	SinCos		*mySinCos;
-	LowPassFIR	*fmFilter;
-	int32_t		fmBandwidth;
-	int32_t		fmFilterDegree;
-	bool		newFilter;
+  uint32_t mDataPtrIdx = 0;
+  std::vector<T> mDelayBuffer;
+  T mDefault;
+};
 
-	int16_t		old_squelchValue;
-	int16_t		squelchValue;
 
-	bool		dumping;
-	SNDFILE		*dumpFile;
-	int32_t		decimatingScale;
+template<class T> class DataBufferCtrl
+{
+public:
+  DataBufferCtrl() = default;
 
-	int32_t		myCount;
-	int16_t		Lgain;
-	int16_t		Rgain;
+  void set_data_ptr(T * const ipData, const int32_t iDataSize)
+  {
+    mpData = ipData;
+    mDataSize = iDataSize;
+    clear_content();
+  }
 
-	newConverter	*audioDecimator;
-	DSPCOMPLEX	*audioOut;
-	rdsDecoder	*myRdsDecoder;
+  ~DataBufferCtrl() = default;
 
-	void		stereo	(float, DSPCOMPLEX *, DSPFLOAT *);
-	void		mono	(float, DSPCOMPLEX *, DSPFLOAT *);
-	fftFilter	*pilotBandFilter;
-	fftFilter	*rdsBandFilter;
-	fftFilter	*rdsLowPassFilter;
-	HilbertFilter	*rdsHilbertFilter;
+  void operator=(const T & rhs)
+  {
+    if (mCurIdx < mDataSize)
+    {
+      //assert(mpData);
+      mpData[mCurIdx] = rhs;
+      ++mCurIdx;
+    }
+  }
 
-	DSPFLOAT	pilotDelay;
-	DSPCOMPLEX	audioGainCorrection	(DSPCOMPLEX);
-	DSPFLOAT	Volume;
-	DSPFLOAT	audioGain;
-	int32_t		max_freq_deviation;
-	int32_t		norm_freq_deviation;
-	DSPFLOAT	omega_demod;
-	LowPassFIR	*fmAudioFilter;
+  T * get_ptr() const { return mpData; }
+  bool is_full() const { return (mCurIdx >= mDataSize); }
+  void reset_write_pointer() { mCurIdx = 0; }
+  void clear_content()
+  {
+    for (int32_t idx = 0; idx < mDataSize; ++idx)
+    {
+      mpData[idx] = T();
+    }
+    mCurIdx = 0;
+  }
 
-	int16_t		balance;
-	DSPFLOAT	leftChannel;
-	DSPFLOAT	rightChannel;
-	uint8_t		fmModus;
-	uint8_t		selector;
-	DSPFLOAT	peakLevel;
-	int32_t		peakLevelcnt;
-	fm_Demodulator	*TheDemodulator;
+private:
+  T * mpData = nullptr;
+  int32_t mDataSize;
+  int32_t mCurIdx = 0;
+};
 
-	int8_t		rdsModus;
 
-	float		noiseLevel;
-	float		pilotLevel;
-	float		rdsLevel;
-	int8_t		viewSelector;
-	pllC		*rds_plldecoder;
-	DSPFLOAT	K_FM;
 
-	DSPFLOAT	xkm1;
-	DSPFLOAT	ykm1;
-	DSPFLOAT	alpha;
-	class	pilotRecovery {
-	   private:
-	      int32_t	Rate_in;
-	      DSPFLOAT	pilot_OscillatorPhase;
-	      DSPFLOAT	pilot_oldValue;
-	      DSPFLOAT	omega;
-	      DSPFLOAT	gain;
-	      SinCos	*mySinCos;
-	      DSPFLOAT	pilot_Lock;
-	      bool	pll_isLocked;
-	      DSPFLOAT	quadRef;
-	      DSPFLOAT	accumulator;
-	      int32_t	count;
-	   public:
-	      pilotRecovery (int32_t	Rate_in,
-	                     DSPFLOAT	omega,
-	                     DSPFLOAT	gain,
-	                     SinCos	*mySinCos) {
-	         this	-> Rate_in	= Rate_in;
-	         this	-> omega	= omega;
-	         this	-> gain		= gain;
-	         this	-> mySinCos	= mySinCos;
-	         pll_isLocked		= false;
-	         pilot_Lock		= 0;
-	         pilot_oldValue		= 0;
-	         pilot_OscillatorPhase	= 0;
-	      }
+class fmProcessor : public QThread
+{
+  Q_OBJECT
 
-	      ~pilotRecovery (void) {
-	      }
+public:
+  enum class FM_Mode
+  {
+    Stereo,
+    StereoPano,
+    Mono
+  };
 
-	      bool	isLocked (void) {
-	         return pll_isLocked;
-	      }
+  enum class ELfPlot
+  {
+    OFF,
+    IF_FILTERED,
+    DEMODULATOR,
+    AF_SUM,
+    AF_DIFF,
+    AF_MONO_FILTERED,
+    AF_LEFT_FILTERED,
+    AF_RIGHT_FILTERED,
+    RDS_INPUT,
+    RDS_DEMOD
+  };
 
-	      DSPFLOAT	getPilotPhase	(DSPFLOAT pilot) {
-	      DSPFLOAT	OscillatorValue =
-	                  mySinCos -> getCos (pilot_OscillatorPhase);
-	      DSPFLOAT	PhaseError	= pilot * OscillatorValue;
-	      DSPFLOAT	currentPhase;
-	         pilot_OscillatorPhase += PhaseError * gain;
-	         currentPhase		= PI_Constrain (pilot_OscillatorPhase);
+  enum class ESqMode
+  {
+    OFF,
+    NSQ,
+    LSQ
+  };
 
-	         pilot_OscillatorPhase =
-	                   PI_Constrain (pilot_OscillatorPhase + omega);
-	         
-	         quadRef	= (OscillatorValue - pilot_oldValue) / omega;
-//	         quadRef	= PI_Constrain (quadRef);
-	         pilot_oldValue	= OscillatorValue;
-	         pilot_Lock	= 1.0 / 30 * (- quadRef * pilot) +
-	                          pilot_Lock * (1.0 - (1.0 / 30)); 
-	         pll_isLocked	= pilot_Lock > 0.1;
-	         return currentPhase;
-	      }
-	};
-	      
-	pilotRecovery	*pilotRecover;
+public:
+  fmProcessor(deviceHandler *,
+              RadioInterface *,
+              audioSink *,
+              int32_t,                  // inputRate
+              int32_t,                  // decimation
+              int32_t,                  // workingRate
+              int32_t,                  // audioRate,
+              int32_t,                  // displaySize
+              int32_t,                  // spectrumSize
+              int32_t,                  // averageCount
+              int32_t,                  // repeatRate
+              RingBuffer<double> *,     // HFScope
+              RingBuffer<double> *,     // LFScope
+              RingBuffer<DSPCOMPLEX> *, // IQScope
+              int16_t,                  // filterDepth
+              int16_t);                 // threshold scanning
+  ~fmProcessor() override;
+
+  void stop();   // stop the processor
+  void setfmMode(FM_Mode);
+  void setFMdecoder(int16_t);
+  void setSoundMode(uint8_t);
+  void setStereoPanorama(int16_t iStereoPan);
+  void setSoundBalance(int16_t);
+  void setDeemphasis(int16_t);
+  void setVolume(const float iVolGainDb);
+  void setLFcutoff(int32_t);
+  void startDumping(SNDFILE *);
+  void stopDumping();
+  void setBandwidth(int32_t);
+  void setBandfilterDegree(int32_t);
+  void setAttenuation(DSPFLOAT, DSPFLOAT);
+  void setfmRdsSelector(rdsDecoder::ERdsMode);
+  void resetRds();
+  void set_localOscillator(int32_t);
+  void setFreezer(bool);
+  void set_squelchMode(ESqMode iSqMode);
+  void setInputMode(uint8_t);
+  void setLfPlotType(ELfPlot);
+  void setLfPlotZoomFactor(int32_t);
+
+  bool ok();
+  bool isPilotLocked(float & oLockStrength) const;
+  squelch * getSquelchObj() const { return mMySquelch; }
+  void setAutoMonoMode(const bool iAutoMonoMode) { mAutoMono = iAutoMonoMode; }
+  void setDCRemove(const bool iDCREnabled) { mDCREnabled = iDCREnabled; mRfDC = 0.0f; }
+  void triggerDrawNewHfSpectrum() { mFillAverageHfBuffer = true; }
+  void triggerDrawNewLfSpectrum() { mpSpectrumBuffer_lf.clear_content(); mFillAverageLfBuffer = true; }
+  void setTestTone(const bool iTTEnabled) { mTestTone.Enabled = iTTEnabled; }
+  void setDispDelay(const int iDelay) { mDelayLine.set_delay_steps(iDelay); }
+
+#ifdef USE_EXTRACT_LEVELS
+  DSPFLOAT get_pilotStrength();
+  DSPFLOAT get_rdsStrength();
+  DSPFLOAT get_noiseStrength();
+#endif
+
+  DSPFLOAT get_demodDcComponent();
+
+  void startScanning();
+  void stopScanning();
+  fm_Demodulator::TDecoderListNames & listNameofDecoder();
+  const char * nameofDecoder();
+
+  enum Channels
+  {
+    S_STEREO,
+    S_STEREO_SWAPPED,
+    S_LEFT,
+    S_RIGHT,
+    S_LEFTplusRIGHT,
+    S_LEFTminusRIGHT
+  };
+
+  void set_squelchValue(int16_t);
+
+private:
+  void run() override;
+  void mapSpectrum(const DSPCOMPLEX * const, double * const, int32_t &);
+  void mapHalfSpectrum(const DSPCOMPLEX * const, double * const, int32_t &);
+  void processLfSpectrum();
+  void fill_average_buffer(const double * const, double * const);
+  void add_to_average(const double * const, double * const);
+  void extractLevels(const double * const, const int32_t);
+  void extractLevelsHalfSpectrum(const double * const, const int32_t);
+  void sendSampletoOutput(DSPCOMPLEX);
+  void insertTestTone(DSPCOMPLEX & ioS);
+  void evaluatePeakLevel(const DSPCOMPLEX s);
+
+private:
+  deviceHandler * mMyRig;
+  RadioInterface * mMyRadioInterface;
+  audioSink * mAudioSink;
+  squelch *mMySquelch;
+  int32_t mInputRate;    // typ. 1536 kSpS
+  int32_t mFmRate;       // typ.  256 kSpS = mInputRate / 6
+  int32_t mWorkingRate;  // typ.   48 kSpS
+  int32_t mAudioRate;    // typ.   48 kSpS
+  int32_t mDisplaySize;
+  int32_t mAverageCount;
+  int32_t mRepeatRate;
+  bool mFillAverageHfBuffer{ true };
+  bool mFillAverageLfBuffer{ true };
+  RingBuffer<double> * mpHfBuffer;
+  RingBuffer<double> * mpLfBuffer;
+  RingBuffer<DSPCOMPLEX> * mpIqBuffer;
+  int16_t mFilterDepth;
+  uint8_t mInputMode;
+  //int32_t freezer;
+  bool mScanning;
+  int16_t mThresHold;
+
+  DSPFLOAT getSignal(DSPCOMPLEX *, int32_t);
+  DSPFLOAT getNoise(DSPCOMPLEX *, int32_t);
+
+  ESqMode mSquelchMode;
+  int32_t mSpectrumSize;
+  common_fft * mpSpectrum_fft_hf;
+  common_fft * mpSpectrum_fft_lf;
+  DSPCOMPLEX * mpSpectrumBuffer_hf;
+  DataBufferCtrl<DSPCOMPLEX> mpSpectrumBuffer_lf;
+
+  double * mpDisplayBuffer_lf = nullptr;
+  //double *mpDisplayBuffer;
+  double * mpLocalBuffer;
+  DecimatingFIR * mpFmBandfilter;
+  Oscillator * mpLocalOscillator;
+  newConverter * mpTheConverter;
+  int32_t mLoFrequency;
+  bool mRunning;
+  SinCos * mpMySinCos;
+  LowPassFIR * mpFmFilter;
+  int32_t mFmBandwidth;
+  int32_t mFmFilterDegree;
+  bool mNewFilter;
+  bool mAutoMono{ true };
+
+  int16_t mOldSquelchValue;
+  int16_t mSquelchValue;
+
+  bool mDumping;
+  SNDFILE * mpDumpFile;
+  int32_t mDecimatingScale;
+
+  int32_t mMyCount;
+  DSPFLOAT mLgain;
+  DSPFLOAT mRgain;
+
+  int32_t mPeakLevelCurSampleCnt{ 0 };
+  int32_t mPeakLevelSampleMax{ 0x7FFFFFFF };
+  DSPFLOAT mAbsPeakLeft{ 0.0f };
+  DSPFLOAT mAbsPeakRight{ 0.0f };
+
+  newConverter * mpAudioDecimator;
+  DSPCOMPLEX * mpAudioOut;
+
+  struct TestTone
+  {
+    bool Enabled = false;
+    float TimePeriod = 2.0f;
+    float SignalDuration = 0.025f;
+    uint32_t TimePeriodCounter = 0;
+    uint32_t NoSamplRemain = 0;
+    float CurPhase = 0.0f;
+    float PhaseIncr = 0.0f;
+  }
+  mTestTone {};
+
+  DelayLine<DSPCOMPLEX> mDelayLine { DSPCOMPLEX(-40.0f, -40.0f) };
+
+  void process_stereo_or_mono_with_rds(const float, DSPCOMPLEX *, DSPFLOAT *, DSPCOMPLEX * rdsValueCmpl);
+
+  // RDS
+  rdsDecoder * mpMyRdsDecoder;
+  fftFilter * mpPilotBandFilter;
+  fftFilter * mpRdsBandFilter;
+  //fftFilter * mpRdsLowPassFilter;
+  fftFilterHilbert * mpRdsHilbertFilter;
+  //HilbertFilter * mpRdsHilbertFilter;
+  uint32_t mRdsSampleCntSrc = 0;
+  uint32_t mRdsSampleCntDst = 0;
+  Oscillator * mpRdsOscillator;
+  newConverter * mpRdsDecimator;
+  DSPCOMPLEX * mpRdsOut;
+
+  DSPFLOAT mPilotDelay;
+
+  DSPCOMPLEX audioGainCorrection(DSPCOMPLEX);
+
+  DSPFLOAT mVolumeFactor{ 0.5f };
+  //DSPFLOAT audioGain;
+  int32_t mMaxFreqDeviation;
+  int32_t mNormFreqDeviation;
+  DSPFLOAT mOmegaDemod;
+  fftFilter * mpFmAudioFilter;
+  bool mFmAudioFilterActive;
+
+  DSPFLOAT mPanorama{ 1.0f };
+  int16_t mBalance{ 0 };
+  DSPFLOAT mLeftChannel{ 1.0f };    // -(balance - 50.0) / 100.0;;
+  DSPFLOAT mRightChannel{ 1.0f };   // (balance + 50.0) / 100.0;;
+  FM_Mode mFmModus;
+  uint8_t mSelector;
+  fm_Demodulator * mpTheDemodulator;
+
+  rdsDecoder::ERdsMode mRdsModus{ rdsDecoder::ERdsMode::RDS_OFF};
+
+#ifdef USE_EXTRACT_LEVELS
+  float mNoiseLevel;
+  float mPilotLevel;
+  float mRdsLevel;
+#endif
+
+  //pllC * mpRds_plldecoder;
+  DSPFLOAT mK_FM;
+
+  DSPCOMPLEX mLastAudioSample;
+  DSPFLOAT mDeemphAlpha;
+
+  bool mDCREnabled = true;
+  DSPCOMPLEX mRfDC = 0.0f;
+
+  ELfPlot mLfPlotType = ELfPlot::DEMODULATOR;
+  bool mShowFullSpectrum = false; // show only half (real values) or full (complex values) spectrum
+  int32_t mSpectrumSampleRate = 0;
+  int32_t mZoomFactor = 1;
+
+  class pilotRecovery
+  {
+  private:
+    int32_t Rate_in;
+    int32_t mSampleLockStableCnt;
+    DSPFLOAT pilot_OscillatorPhase;
+    DSPFLOAT pilot_oldValue;
+    DSPFLOAT omega;
+    DSPFLOAT gain;
+    SinCos * mySinCos;
+    DSPFLOAT pilot_Lock;
+    DSPFLOAT quadRef;
+    bool pll_isLocked;
+    bool mLockStable;
+
+  public:
+    pilotRecovery(int32_t Rate_in, DSPFLOAT omega, DSPFLOAT gain, SinCos * mySinCos)
+    {
+      this->Rate_in = Rate_in;
+      this->omega = omega;
+      this->gain = gain;
+      this->mySinCos = mySinCos;
+      pll_isLocked = false;
+      mLockStable = false;
+      pilot_Lock = 0;
+      pilot_oldValue = 0;
+      pilot_OscillatorPhase = 0;
+      mSampleLockStableCnt = 0;
+    }
+
+    ~pilotRecovery() = default;
+
+    bool isLocked() const { return pll_isLocked; }
+    float getLockedStrength() const { return pilot_Lock; }
+
+    DSPFLOAT getPilotPhase(const DSPFLOAT pilot)
+    {
+      const DSPFLOAT OscillatorValue = mySinCos->getCos(pilot_OscillatorPhase);
+      const DSPFLOAT PhaseError = pilot * OscillatorValue;
+
+      pilot_OscillatorPhase += PhaseError * gain;
+
+      const DSPFLOAT currentPhase = PI_Constrain(pilot_OscillatorPhase);
+
+      pilot_OscillatorPhase = PI_Constrain(pilot_OscillatorPhase + omega);
+
+      quadRef = (OscillatorValue - pilot_oldValue) / omega;
+      //	         quadRef	= PI_Constrain (quadRef);
+      pilot_oldValue = OscillatorValue;
+      constexpr float alpha = 1.0f / 3000.0f;
+      pilot_Lock = alpha * (-quadRef * pilot) + pilot_Lock * (1.0 - alpha);
+
+      const bool pll_isLocked_temp = (pilot_Lock > 0.07f);
+
+      // Check if the PLL lock is stable for a while.
+      // This is important in very noisy receive condition to maintain a stable mono mode.
+      if (pll_isLocked_temp)
+      {
+        if (pll_isLocked || ++mSampleLockStableCnt > (Rate_in >> 1))   // for 500ms the PLL lock has to be stable
+        {
+          pll_isLocked = true;
+        }
+      }
+      else   // not locked -> reset stable counter
+      {
+        pll_isLocked = false;
+        mSampleLockStableCnt = 0;
+      }
+
+      return currentPhase;
+    }
+  };
+
+  pilotRecovery * mpPilotRecover;
 
 signals:
-	void		setPLLisLocked		(bool);
-	void		hfBufferLoaded		(void);
-	void		lfBufferLoaded		(void);
-	void		showStrength		(float, float);
-	void		scanresult		(void);
+  void setPLLisLocked(bool);
+  void hfBufferLoaded();
+  void lfBufferLoaded(bool, int);
+  void iqBufferLoaded();
+  void showDcComponents(float, float);
+  void scanresult();
+  void showPeakLevel(const float, const float);
 };
 
 #endif
-

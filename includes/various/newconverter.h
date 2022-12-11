@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2011, 2012, 2013
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -6,7 +5,7 @@
  *
  *    This file is part of the SDR-J
  *    Many of the ideas as implemented in SDR-J are derived from
- *    other work, made available through the GNU general Public License. 
+ *    other work, made available through the GNU general Public License.
  *    All copyrights of the original authors are recognized.
  *
  *    SDR-J is free software; you can redistribute it and/or modify
@@ -24,39 +23,37 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#ifndef	__NEW_CONVERTER
-#define	__NEW_CONVERTER
+#ifndef __NEW_CONVERTER
+#define __NEW_CONVERTER
 
-#include	<math.h>
-#include	<complex>
-#include	<stdint.h>
-#include	<unistd.h>
-#include	<limits>
-#include	<samplerate.h>
-#include	"fm-constants.h"
+#include  <math.h>
+#include  <complex>
+#include  <stdint.h>
+#include  <unistd.h>
+#include  <limits>
+#include  <samplerate.h>
+#include  "fm-constants.h"
 
-class	newConverter {
+class newConverter
+{
 private:
-	int32_t		inRate;
-	int32_t		outRate;
-	double		ratio;
-	int32_t		outputLimit;
-	int32_t		inputLimit;
-	SRC_STATE	*converter;
-	SRC_DATA	*src_data;
-	float		*inBuffer;
-	float		*outBuffer;
-	int32_t		inp;
+int32_t mInRate;
+int32_t mOutRate;
+double mRatio;
+int32_t mOutputLimit;
+int32_t mInputLimit;
+SRC_STATE * mpConverter;
+SRC_DATA * mpSrc_data;
+float * mpInBuffer;
+float * mpOutBuffer;
+int32_t mInpIdx;
+
 public:
-		newConverter (int32_t inRate, int32_t outRate, 
-	                      int32_t inSize);
+newConverter(int32_t inRate, int32_t outRate, int32_t inSize);
+~newConverter();
 
-		~newConverter (void);
-
-bool	convert (DSPCOMPLEX v,
-	                       DSPCOMPLEX *out, int32_t *amount);
-
-int32_t	getOutputsize (void);
+bool convert(DSPCOMPLEX v, DSPCOMPLEX *out, int32_t *amount);
+int32_t getOutputsize(void);
 };
 
 #endif

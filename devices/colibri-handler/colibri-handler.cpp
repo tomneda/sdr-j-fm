@@ -330,14 +330,14 @@ void colibriHandler::colibri_version (uint32_t &major,
     }
 }
 
-string colibriHandler::colibri_information () {
-string t_str;
+std::string colibriHandler::colibri_information () {
+std::string t_str;
 
     if (m_information) {
         char *pStr = nullptr;
         m_information (&pStr);
         if (pStr)
-            t_str = string (pStr);
+            t_str = std::string (pStr);
     }
 
     return t_str;

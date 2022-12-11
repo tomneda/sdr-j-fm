@@ -1,0 +1,34 @@
+# Format Style Options - Created with Clang Power Tools
+---
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortLambdasOnASingleLine: All
+AllowShortEnumsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: All
+AlwaysBreakBeforeMultilineStrings: true
+BasedOnStyle: LLVM
+BinPackParameters: false
+BreakBeforeBinaryOperators: All
+BreakBeforeBraces: Allman
+BreakBeforeTernaryOperators: false
+BreakConstructorInitializers: AfterColon
+ColumnLimit: 150
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+ConstructorInitializerIndentWidth : 2
+ContinuationIndentWidth: 2
+Cpp11BracedListStyle: false
+IncludeBlocks: Regroup
+MaxEmptyLinesToKeep: 2
+PointerAlignment: Middle
+ReflowComments: false
+SortIncludes: false
+SpaceBeforeSquareBrackets: false
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 3
+SpacesInAngles: false
+SpacesInCStyleCastParentheses: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+TabWidth: 2
+UseTab: Never
+...

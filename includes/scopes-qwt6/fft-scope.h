@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C)  2010, 2011, 2012
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -6,7 +5,7 @@
  *
  *    This file is part of the SDR-J.
  *    Many of the ideas as implemented in SDR-J are derived from
- *    other work, made available through the GNU general Public License. 
+ *    other work, made available through the GNU general Public License.
  *    All copyrights of the original authors are recognized.
  *
  *    SDR-J is free software; you can redistribute it and/or modify
@@ -25,82 +24,84 @@
  *
  */
 
-#ifndef	__FFT_SCOPE
-#define	__FFT_SCOPE
+#ifndef __FFT_SCOPE
+#define __FFT_SCOPE
 
-#include	<QObject>
-#include	"fm-constants.h"
-#include	<stdexcept>
-#include	<iostream>
-#include	"scope.h"
-#include	"fft.h"
+#include "fft.h"
+#include "fm-constants.h"
+#include "scope.h"
+#include <QObject>
+#include <iostream>
+#include <stdexcept>
 #
 
-class	fft_scope: public Scope {
-Q_OBJECT
+class fft_scope : public Scope {
+  Q_OBJECT
 public:
-			fft_scope	(QwtPlot*,	// the canvas
-	                         int16_t,	// displayWidth
-	                         int32_t,	// scale
-	                         int16_t,	// raster size
-	                         int32_t,	// spectrum size
-	                         int32_t,	// samplerate
-	                         int16_t);	// repeat frequency
-			~fft_scope	();
-	void		addElement	(DSPCOMPLEX);
-	void		addElement	(DSPCOMPLEX, int16_t);
-	void		addElements	(DSPCOMPLEX *, int16_t);
-	void		addElementsandShow	(DSPCOMPLEX *, int16_t);
-	void		setAmplification	(int16_t);
-	void		setZero			(int64_t);
-	void		setZoompoint		(int32_t);
-	void		resetZoompoint		(void);
-	void		setNeedle		(int32_t);
-	void		clearAverage		(void);
-	void		SelectView		(int8_t);
-	void		setAverager		(bool);
-	void		setSamplerate		(int32_t);
+  fft_scope(QwtPlot *, // the canvas
+            int16_t,   // displayWidth
+            int32_t,   // scale
+            int16_t,   // raster size
+            int32_t,   // spectrum size
+            int32_t,   // samplerate
+            int16_t);  // repeat frequency
+  ~fft_scope() override;
+
+  void addElement(DSPCOMPLEX);
+  void addElement(DSPCOMPLEX, int16_t);
+  void addElements(DSPCOMPLEX *, int16_t);
+  void addElementsandShow(DSPCOMPLEX *, int16_t);
+  void setAmplification(int16_t);
+  void setZero(int64_t);
+  void setZoompoint(int32_t);
+  void resetZoompoint(void);
+  void setNeedle(int32_t);
+  void clearAverage(void);
+  void SelectView(int8_t);
+  void setAverager(bool);
+  void setSamplerate(int32_t);
+
 private:
-	void		mapSpectrumtoDisplay	(int16_t, int32_t);
-	int64_t		frequencyFor		(int64_t);
-	int32_t		indexOf			(int64_t);
-	void		doAverage		(void);
-	double		*dummyBuffer;
-	int32_t		dummyCount;
+  void mapSpectrumtoDisplay(int16_t, int32_t);
+  int64_t frequencyFor(int64_t);
+  int32_t indexOf(int64_t);
+  void doAverage(void);
+  double *dummyBuffer;
+  int32_t dummyCount;
 
-	int32_t		sampleRate;
-	int16_t		displaySize;
-	int32_t		scale;
-	int16_t		rasterSize;
-	int32_t		spectrumFillpoint;
-	int32_t		fillPointer;
-	DSPFLOAT	*Window;
-	DSPFLOAT	binWidth;
-	DSPCOMPLEX	*inputBuffer;
-	DSPCOMPLEX	*spectrumBuffer;
-	common_fft	*spectrum_fft;
-	int32_t		sampleCounter;
-	int32_t		SampleRate;
-	int32_t		MaxFrequency;
-	int32_t		segmentSize;
+  int32_t sampleRate;
+  int16_t displaySize;
+  int32_t scale;
+  int16_t rasterSize;
+  int32_t spectrumFillpoint;
+  int32_t fillPointer;
+  DSPFLOAT *Window;
+  DSPFLOAT binWidth;
+  DSPCOMPLEX *inputBuffer;
+  DSPCOMPLEX *spectrumBuffer;
+  common_fft *spectrum_fft;
+  int32_t sampleCounter;
+  int32_t SampleRate;
+  int32_t MaxFrequency;
+  int32_t segmentSize;
 
-	int16_t		freq;
-	int32_t		needle;
-	int16_t		amplification;
-	int64_t		vfo;
-	int32_t		zoomingPoint;
-	int16_t		zoomingLevel;
+  int16_t freq;
+  int32_t needle;
+  int16_t amplification;
+  int64_t vfo;
+  int32_t zoomingPoint;
+  int16_t zoomingLevel;
 
-	int32_t		spectrumSize;
-	double		*X_axis;
-	double		*displayBuffer;
-	double		*averageBuffer;
-	uint32_t	averageCount;
-//	inherits adjustFrequency  and RightClick from Scope
+  int32_t spectrumSize;
+  double *X_axis;
+  double *displayBuffer;
+  double *averageBuffer;
+  uint32_t averageCount;
+
+  //	inherits adjustFrequency  and RightClick from Scope
 public slots:
-	void	addValue (double, int);
-	void	showSpectrum	(void);
+  void addValue(double, int);
+  void showSpectrum(void);
 };
-	
-#endif
 
+#endif

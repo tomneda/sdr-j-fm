@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2014
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -6,18 +5,18 @@
  *
  *	This part of the jsdr is a mixture of code  based on code from
  *	various sources. Two in particular:
- *	
+ *
  *    FMSTACK Copyright (C) 2010 Michael Feilen
- * 
+ *
  *    Author(s)       : Michael Feilen (michael.feilen@tum.de)
  *    Initial release : 01.09.2009
  *    Last changed    : 09.03.2010
- *	
+ *
  *	cuteSDR (c) M Wheatly 2011
  *
  *    This file is part of the SDR-J.
  *    Many of the ideas as implemented in SDR-J are derived from
- *    other work, made available through the GNU general Public License. 
+ *    other work, made available through the GNU general Public License.
  *    All copyrights of the original authors are recognized.
  *
  *    SDR-J is free software; you can redistribute it and/or modify
@@ -36,70 +35,67 @@
  *
  */
 
-#ifndef	__RDS_DECODER
-#define	__RDS_DECODER
+/* massively adapted by tomneda https://github.com/tomneda */
 
-#include	<QObject>
-#include	"fm-constants.h"
-#include	"rds-group.h"
-#include	"rds-blocksynchronizer.h"
-#include	"rds-groupdecoder.h"
-#include	"fft.h"
-#include	"iir-filters.h"
-#include	"sincos.h"
+#ifndef __RDS_DECODER
+#define __RDS_DECODER
 
-class	RadioInterface;
+#include <QObject>
+#include "fm-constants.h"
+#include "rds-group.h"
+#include "rds-blocksynchronizer.h"
+#include "rds-groupdecoder.h"
+#include "sdr/agc.h"
+#include "sdr/costas.h"
+#include "sdr/time_sync.h"
 
-class	rdsDecoder : public QObject {
-Q_OBJECT
+
+class RadioInterface;
+
+class rdsDecoder : public QObject
+{
+  Q_OBJECT
 public:
-		rdsDecoder (RadioInterface *, int32_t, SinCos *);
-		~rdsDecoder (void);
-	enum RdsMode {
-	   NO_RDS	= 0,
-	   RDS1		= 1,
-	   RDS2		= 2
-	};
-	void	doDecode	(DSPFLOAT, DSPFLOAT *, RdsMode);
-	void	reset		(void);
-private:
-	void	processBit	(bool);
-	void			doDecode1 (DSPFLOAT, DSPFLOAT *);
-	void			doDecode2 (DSPFLOAT, DSPFLOAT *);
-	int32_t			sampleRate;
-	int32_t			numofFrames;
-	SinCos			*mySinCos;
-	RadioInterface		*MyRadioInterface;
-	RDSGroup		*my_rdsGroup;
-	rdsBlockSynchronizer	*my_rdsBlockSync;
-	rdsGroupDecoder		*my_rdsGroupDecoder;
-	DSPFLOAT		omegaRDS;
-	int32_t			symbolCeiling;
-	int32_t			symbolFloor;
-	bool			prevBit;
-	DSPFLOAT		bitIntegrator;
-	DSPFLOAT		bitClkPhase;
-	DSPFLOAT		prev_clkState;
-	bool			Resync;
+  rdsDecoder(RadioInterface *, int32_t);
+  ~rdsDecoder(void);
 
-	DSPFLOAT		*rdsBuffer;
-	DSPFLOAT		*rdsKernel;
-	int16_t			ip;
-	int16_t			rdsfilterSize;
-	DSPFLOAT		Match		(DSPFLOAT);
-	BandPassIIR		*sharpFilter;
-	DSPFLOAT		rdsLastSyncSlope;
-	DSPFLOAT		rdsLastSync;
-	DSPFLOAT		rdsLastData;
-	bool			previousBit;
-	DSPFLOAT		*syncBuffer;
-	int16_t			p;
-	void			synchronizeOnBitClk	(DSPFLOAT *, int16_t);
+  enum class ERdsMode
+  {
+    RDS_OFF,
+    RDS_ON,
+  };
+
+  bool doDecode(const DSPCOMPLEX, DSPCOMPLEX * const);
+  void reset(void);
+
+private:
+  void processBit(bool);
+
+  AGC mAGC;
+  TimeSync mTimeSync;
+  Costas mCostas;
+
+  int32_t mSampleRate;
+  RadioInterface * mpRadioInterface;
+
+  RDSGroup * mpRdsGroup;
+  rdsBlockSynchronizer * mpRdsBlockSync;
+  rdsGroupDecoder * mpRdsGroupDecoder;
+
+  std::vector<DSPFLOAT> mMatchedFltKernelVec;
+  DSPCOMPLEX * mpMatchedFltBuf;
+  int16_t mMatchedFltBufIdx;
+  int16_t mMatchedFltBufSize;
+
+  bool mPreviousBit;
+
+  DSPFLOAT doMatchFiltering(DSPFLOAT);
+  DSPCOMPLEX doMatchFiltering(DSPCOMPLEX);
+
 signals:
-	void			setCRCErrors		(int);
-	void			setSyncErrors		(int);
-	void			setbitErrorRate		(int);
+  void setCRCErrors(int);
+  void setSyncErrors(int);
+  void setbitErrorRate(int);
 };
 
 #endif
-

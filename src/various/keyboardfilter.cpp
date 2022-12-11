@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2013
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -20,22 +19,20 @@
  *    along with sdr-j-fm; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#
-//
-#include	<QKeyEvent>
-#include	"keyboardfilter.h"
 
-	KeyboardFilter::KeyboardFilter (QObject *parent):
-	                       QObject (parent) {}
+#include "keyboardfilter.h"
+#include <QKeyEvent>
 
-	KeyboardFilter::~KeyboardFilter (void) {}
+KeyboardFilter::KeyboardFilter(QObject *parent) : QObject(parent) {}
 
-bool	KeyboardFilter::eventFilter (QObject *dist, QEvent *event) {
-	if (event -> type () == QEvent::KeyPress) {
-	   QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-	   emit KeyPressed (keyEvent -> key ());
-	   return true;
-	}
-	return false;
+bool KeyboardFilter::eventFilter(QObject * /*dist*/, QEvent *event)
+{
+  if (event->type() == QEvent::KeyPress)
+  {
+    QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+    emit KeyPressed(keyEvent->key());
+    return true;
+  }
+
+  return false;
 }
-

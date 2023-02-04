@@ -223,6 +223,7 @@ unix {
       DEFINES += GITHASH=\\\"------\\\"
   }
 
+  include ( $$(QWT_ROOT)/features/qwt.prf )
   DESTDIR = ./linux-bin
   #CONFIG += console
   #CONFIG += pmsdr
@@ -239,7 +240,7 @@ unix {
   #for ubuntu the first line
   #LIBS +=  -lqwt -lusb-1.0 -lrt -lportaudio -lsndfile -lfftw3f -lrtlsdr -ldl
   #for fedora 21
-  LIBS += -lqwt-qt5 -lusb-1.0 -lrt -lportaudio -lsndfile -lfftw3f -ldl
+  LIBS += -lqwt -lusb-1.0 -lrt -lportaudio -lsndfile -lfftw3f -ldl
   LIBS += -lsamplerate
 }
 

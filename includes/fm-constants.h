@@ -82,7 +82,7 @@ using namespace std;
 #define I_Only		0102
 #define	Q_Only		0104
 
-#define	CURRENT_VERSION	"3.15"
+#define	CURRENT_VERSION	"3.15.3"
 
 #define	MSECFORTIMER	10
 //

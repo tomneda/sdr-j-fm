@@ -103,6 +103,7 @@ here it is assumed that qmake is used
 - sudo apt-get install libgl1-mesa-dev libqt5opengl5-dev
 - sudo apt-get install libsamplerate0-dev libqwt-qt5-dev
 - sudo apt-get install qtbase5-dev
+- sudo apt-get install libqt5svg5-dev
 
 Summarizing:
 

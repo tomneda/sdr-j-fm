@@ -190,6 +190,7 @@ RadioInterface::RadioInterface(QSettings *Si, QString saveName,
   int k;
 
   setupUi(this);
+
   
   {
     CBELEM(cbe, CbElem::CBID_FMMODE, "FmMode", fmModeSelector, this, &RadioInterface::handle_fmModeSelector);
@@ -200,6 +201,8 @@ RadioInterface::RadioInterface(QSettings *Si, QString saveName,
     mCbElemColl.store_cb_elem(cbe);
   }
   
+  mCbElemColl.set_setting_handler(Si);
+  mCbElemColl.read_cb_from_setting();
   
   
   

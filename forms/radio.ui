@@ -1424,21 +1424,6 @@
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select mono or stereo reception. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
-             <item>
-              <property name="text">
-               <string>Stereo (Pano)</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Stereo</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Mono</string>
-              </property>
-             </item>
             </widget>
            </item>
            <item>

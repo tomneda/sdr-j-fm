@@ -46,6 +46,7 @@
 #include	"popup-keypad.h"
 #include	"fm-demodulator.h"
 #include	"ui_configwidget.h"
+#include  "cb_mgr.h"
 
 class	QSettings;
 class	fmProcessor;
@@ -161,6 +162,7 @@ private:
 	int32_t		frequencyforPICode;
 	int16_t		logTime;
 	FILE		*logFile;
+  CbElemColl mCbElemColl;
 
 	bool		setupSoundOut		(QComboBox *, audioSink *,
 	                                         int32_t,

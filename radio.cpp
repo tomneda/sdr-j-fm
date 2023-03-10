@@ -1,4 +1,3 @@
-#
 /*
  *    Copyright (C) 2014
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -31,6 +30,7 @@
 #include	<fstream>
 #include	<iostream>
 #include	<array>
+#include "includes/gui/cb_mgr.h"
 #include	"radio.h"
 #include	"hs-scope.h"
 #include	"ls-scope.h"
@@ -40,6 +40,7 @@
 #include	"rds-decoder.h"
 #include	"themechoser.h"
 #include	"program-list.h"
+#include  "cb_mgr.h"
 #include	"device-handler.h"
 #include	"filereader.h"
 #ifdef HAVE_SDRPLAY
@@ -173,26 +174,36 @@ constexpr int16_t delayTableSize = ((int)(sizeof(delayTable) / sizeof(int16_t)))
  * @version 0.98
  * @date 2015-01-07
  */
-		RadioInterface::RadioInterface (QSettings	*Si,
-						QString		saveName,
-						ThemeChoser	*themeChooser,
-						int32_t		outputRate,
-						QWidget		*parent):
-							QDialog (parent),
-							iqBuffer (
-	                                                         IQ_SCOPE_SIZE),
-	                                                hfBuffer (8 * 32768),
-	                                                lfBuffer (32768),
-	                                                theDemodulator (
-	                                                         FM_RATE),
-							configDisplay (nullptr),
-							mykeyPad () {
+RadioInterface::RadioInterface(QSettings *Si, QString saveName,
+                               ThemeChoser *themeChooser, int32_t outputRate,
+                               QWidget *parent) : 
+      QDialog(parent), 
+      theDemodulator(FM_RATE), 
+      iqBuffer(IQ_SCOPE_SIZE), 
+      hfBuffer(8 * 32768),
+      lfBuffer(32768), 
+      configDisplay(nullptr),
+      mykeyPad() 
+{
+  int16_t i;
+  QString h;
+  int k;
 
-	int16_t i;
-	QString h;
-	int     k;
-
-	setupUi (this);
+  setupUi(this);
+  
+  {
+    CBELEM(cbe, CbElem::CBID_FMMODE, "FmMode", fmModeSelector, this, &RadioInterface::handle_fmModeSelector);
+    cbe->addItem(EItemFmMode::MONO,        CbElem::NONE, "Mono");  
+    cbe->addItem(EItemFmMode::STEREO,      CbElem::BOTH, "Stereo");  
+    cbe->addItem(EItemFmMode::STEREO_PANO, CbElem::NONE, "Stereo (Pano)");  
+    cbe->addItem(EItemFmMode::STEREO_AUTO, CbElem::NONE, "Stereo (Auto)");  
+    mCbElemColl.store_cb_elem(cbe);
+  }
+  
+  
+  
+  
+  
 	fmSettings		= Si;
 	this	-> themeChooser	= themeChooser;
 
@@ -427,7 +438,6 @@ constexpr int16_t delayTableSize = ((int)(sizeof(delayTable) / sizeof(int16_t)))
 	configWidget. cbThemes -> setCurrentIndex (themeChooser -> get_curr_style_sheet_idx());
 }
 
-
 QString RadioInterface::footText () {
 QString versionText = "sdr-j-FM version: " + QString(CURRENT_VERSION) + "\n";
 	versionText += "Built on " + QString(__TIMESTAMP__) + QString (", Commit ") + QString (GITHASH) + "\n";
@@ -450,7 +460,7 @@ void	RadioInterface::quickStart () {
 
 //
 //	The end of all
-	RadioInterface::~RadioInterface () {
+RadioInterface::~RadioInterface () {
 }
 
 //
@@ -1319,7 +1329,10 @@ static QString audioTempFile;
 	   if (!file. endsWith (".wav", Qt::CaseInsensitive))
 	      file.append (".wav");
 	   QString cmdline = QString ("mv ") + audioTempFile + " "  + file;
+     #pragma GCC diagnostic push
+     #pragma GCC diagnostic ignored "-Wunused-result"
 	   system (cmdline. toUtf8 (). data ());
+	   #pragma GCC diagnostic pop
 	   return;
 	}
 
@@ -1400,9 +1413,15 @@ void    RadioInterface::localConnects () {
 	         this, SLOT (handle_squelchSlider (int)));
 	connect (IQbalanceSlider, SIGNAL (valueChanged (int) ),
 	              this, SLOT (setIQBalance (int) ));
-	connect (fmModeSelector, SIGNAL (activated (const QString &)),
-	         this, SLOT (handle_fmModeSelector (const QString &)));
-	connect (fmChannelSelect, SIGNAL (activated (const QString &)),
+	
+  
+  //connect (fmModeSelector, SIGNAL (textActivated (const QString &)),
+	//         this, SLOT (handle_fmModeSelector (const QString &)));
+
+  //connect (fmModeSelector, &QComboBox::textActivated, this, &RadioInterface::handle_fmModeSelector);
+  
+  
+  connect (fmChannelSelect, SIGNAL (activated (const QString &)),
 	         this, SLOT (handle_fmChannelSelector (const QString &)));
 	connect (fmRdsSelector, SIGNAL (activated (const QString &)),
 	         this, SLOT (handle_fmRdsSelector (const QString &)));
@@ -1555,25 +1574,36 @@ void	RadioInterface::setRDSisSynchronized (bool syn) {
 	   rdsSyncLabel -> setStyleSheet ("QLabel {background-color:green}");
 }
 
-void	RadioInterface::handle_fmModeSelector (const QString &s) {
-	if (myFMprocessor == nullptr)
-	   return;
-	if (s == "Stereo") {
-	   myFMprocessor -> setfmMode (fmProcessor::FM_Mode::Stereo);
-	   fmStereoPanoramaSlider -> setEnabled (false);
-	}
-	else
-	if (s == "Stereo (Pano)") {
-	   myFMprocessor -> setfmMode (fmProcessor::FM_Mode::StereoPano);
-	   fmStereoPanoramaSlider -> setEnabled (true);
-	}
-	else
-	if (s == "Mono") {
-	    myFMprocessor -> setfmMode (fmProcessor::FM_Mode::Mono);
-	   fmStereoPanoramaSlider -> setEnabled (false);
-	}
-	else
-	   Q_ASSERT(0);
+void RadioInterface::handle_fmModeSelector(const QString &s)
+{
+  (void)s;
+  if (myFMprocessor == nullptr)
+  {
+    return;
+  }
+
+  const auto pCb = mCbElemColl[CbElem::CBID_FMMODE];
+  const auto iid = pCb->get_item_id();
+  
+  switch(iid)
+  {
+  case MONO:
+    myFMprocessor->setfmMode(fmProcessor::FM_Mode::Mono);
+    fmStereoPanoramaSlider->setEnabled(false);
+    break;
+  case STEREO:
+    myFMprocessor->setfmMode(fmProcessor::FM_Mode::Stereo);
+    fmStereoPanoramaSlider->setEnabled(false);
+    break;
+  case STEREO_PANO:
+    myFMprocessor->setfmMode(fmProcessor::FM_Mode::StereoPano);
+    fmStereoPanoramaSlider->setEnabled(true);
+     break;
+  case STEREO_AUTO:
+    // TBD
+    break;
+  default: Q_ASSERT(0);
+  }
 }
 
 void	RadioInterface::handle_plotTypeSelector (const QString &s) {
@@ -1906,7 +1936,7 @@ void	RadioInterface::handle_squelchSlider (int n) {
 }
 //
 void	RadioInterface::hfBufferLoaded () {
-double  temp		= (double)inputRate / 2 / displaySize;
+//double  temp		= (double)inputRate / 2 / displaySize;
 int32_t vfoFrequency;
 std::complex<float> tempBuffer [displaySize];
 	if (runMode. load () != ERunStates::RUNNING) 
@@ -1917,7 +1947,7 @@ std::complex<float> tempBuffer [displaySize];
 	hfScope		-> setNeedle (loFrequency);
 	hfScope		-> setAmplification (
 	                   spectrumAmplitudeSlider_hf -> value ());
-	while (hfBuffer. GetRingBufferReadAvailable () > displaySize) {
+	while ((signed)hfBuffer. GetRingBufferReadAvailable () > displaySize) {
 	   hfBuffer. getDataFromBuffer (tempBuffer, displaySize);
 	   hfScope -> addElements (tempBuffer, displaySize);
 	}
@@ -1929,7 +1959,7 @@ void	RadioInterface::lfBufferLoaded (bool showFull,
 std::vector<std::complex<float>> v (spectrumSize);
 	if (runMode. load () != ERunStates::RUNNING) 
 	   return;
-	while (lfBuffer. GetRingBufferReadAvailable () > spectrumSize) {
+	while ((signed)lfBuffer. GetRingBufferReadAvailable () > spectrumSize) {
 	   lfBuffer.  getDataFromBuffer (v. data (), spectrumSize);
 	   lfScope -> processLFSpectrum (v, 
 	                                 zoomFactor,

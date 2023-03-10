@@ -60,6 +60,7 @@ INCLUDEPATH += . \
 	      ../.. \
 	      ./includes \
 	      ./includes/output \
+         ./includes/gui \
 	      ./includes/various \
 	      ./includes/fm \
 	      ./includes/rds \
@@ -95,6 +96,7 @@ HEADERS += ./radio.h \
            ./includes/various/shaping_filter.h  \
 	   ./includes/various/fft-complex.h \
 	   ./includes/output/audiosink.h \
+      ./includes/gui/cb_mgr.h \
 	   ./includes/scopes-qwt6/iqdisplay.h \
 	   ./includes/scopes-qwt6/scope.h \
            ./includes/scopes-qwt6/spectrogramdata.h \
@@ -138,6 +140,7 @@ SOURCES += ./main.cpp \
 	   ./src/various/shaping_filter.cpp \
 	   ./src/various/fft-complex.cpp \
 	   ./src/output/audiosink.cpp \
+      ./src/gui/cb_mgr.cpp \
 	   ./src/scopes-qwt6/iqdisplay.cpp \
 	   ./src/scopes-qwt6/scope.cpp \
 	   ./src/scopes-qwt6/hs-scope.cpp \

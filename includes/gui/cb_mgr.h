@@ -13,17 +13,34 @@
                                     connect(c_, &QComboBox::textActivated, d_, e_);
   
 
-using TItem = uint32_t;
-
-enum EItemFmMode : TItem // insert to type EItem
+namespace NCbDef
 {
-  MONO,
-  STEREO,
-  STEREO_PANO,
-  STEREO_AUTO
+  using TCbId   = uint32_t; // distinct ID for each combo box 
+  using TItem   = uint32_t; // content of each combo box 
+  using TDefSel = uint32_t; // bitpattern to find a certain element for default setting
+  
+  enum ECbId : TCbId
+  {
+    CBID_RDS,
+    CBID_FMMODE
+  };
+  
+  enum EItemFmMode : TItem 
+  {
+    FMMODE_MONO,
+    FMMODE_STEREO,
+    FMMODE_STEREO_PANO,
+    FMMODE_STEREO_AUTO
+  };
+  
+  enum EDefSel : TDefSel
+  {
+    DEFSEL_NONE = 0x0000,
+    DEFSEL_EU   = 0x0001,
+    DEFSEL_USA  = 0x0002,
+    DEFSEL_ALL  = DEFSEL_USA | DEFSEL_EU
+  };
 };
-
-using EPrio = uint32_t;
 
 
 class CbElem //: public QObject
@@ -31,45 +48,29 @@ class CbElem //: public QObject
   //Q_OBJECT
 
 public:
-  enum ECbId
-  {
-    CBID_RDS,
-    CBID_FMMODE
-  };
-
-  enum EStartSetting
-  {
-    NONE = 0x0000,
-    EU   = 0x0001,
-    USA  = 0x0002,
-    BOTH = USA | EU
-  };
-  
-  //using TFunc = void (*)(const QString&);
-  //template <typename TFunc>
-  CbElem(ECbId iCbId, const QString & iSettingName, QComboBox * const ipComboBox
-         /*, QObject * const iReceiver*/ /*, const TFunc & iMethod*/);
+  CbElem(NCbDef::TCbId iCbId, const QString & iSettingName, QComboBox * const ipComboBox /*, QObject * const iReceiver*/ /*, const TFunc & iMethod*/);
   CbElem & operator=(const CbElem &) = default; 	
   CbElem(const CbElem & other) = default;
   ~CbElem() = default;
   
   struct SItem
   {
-    TItem         Item;
-    EStartSetting StartSetting;
-    QString       EntryName;
+    NCbDef::TItem   Item;
+    NCbDef::TDefSel DefSel;
+    QString         EntryName;
   };
   
-  inline ECbId get_cb_id() const { return mCbId; }
-
-  void addItem(const TItem iItem, const EStartSetting iStartSetting, const QString & iEntryName);
-  TItem get_item_id();
+  void addItem(const NCbDef::TItem iItem, const NCbDef::TDefSel iDefSel, const QString & iEntryName);
+  NCbDef::TItem get_current_selected_item_id();
+  
+  NCbDef::TCbId get_cb_id() const { return mCbId; }
+  const QString & get_setting_item_name() const { return mSettingName; }
+  QComboBox * get_cb_box_ptr() const { return mpComboBox; }
   
 private:
-  ECbId mCbId;
-  QString mSettingName;
-  QComboBox * mpComboBox;
-
+  NCbDef::TCbId      mCbId;
+  QString            mSettingName;
+  QComboBox        * mpComboBox;
   std::vector<SItem> mItems;
 };
 
@@ -86,10 +87,10 @@ public:
   void read_cb_from_setting();
   
   void store_cb_elem(const TSPCbElem & ipCbElem);
-  TSPCbElem operator[](const CbElem::ECbId iCbId);
+  TSPCbElem get_cb_elem_from_id(const NCbDef::TCbId iCbId);
   
 private:
-  using TMap = std::map<CbElem::ECbId, std::shared_ptr<CbElem> >;
+  using TMap = std::map<NCbDef::TCbId, std::shared_ptr<CbElem> >;
   TMap mCbElems;   
   QSettings *mpQSetting = nullptr;
 };

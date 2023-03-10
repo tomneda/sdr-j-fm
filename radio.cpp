@@ -193,11 +193,12 @@ RadioInterface::RadioInterface(QSettings *Si, QString saveName,
 
   
   {
-    CBELEM(cbe, CbElem::CBID_FMMODE, "FmMode", fmModeSelector, this, &RadioInterface::handle_fmModeSelector);
-    cbe->addItem(EItemFmMode::MONO,        CbElem::NONE, "Mono");  
-    cbe->addItem(EItemFmMode::STEREO,      CbElem::BOTH, "Stereo");  
-    cbe->addItem(EItemFmMode::STEREO_PANO, CbElem::NONE, "Stereo (Pano)");  
-    cbe->addItem(EItemFmMode::STEREO_AUTO, CbElem::NONE, "Stereo (Auto)");  
+    using namespace NCbDef;
+    CBELEM(cbe, CBID_FMMODE, "fmMode", fmModeSelector, this, &RadioInterface::handle_fmModeSelector);
+    cbe->addItem(FMMODE_MONO,        DEFSEL_NONE, "Mono");  
+    cbe->addItem(FMMODE_STEREO,      DEFSEL_ALL,  "Stereo");  
+    cbe->addItem(FMMODE_STEREO_PANO, DEFSEL_NONE, "Stereo (Pano)");  
+    cbe->addItem(FMMODE_STEREO_AUTO, DEFSEL_NONE, "Stereo (Auto)");  
     mCbElemColl.store_cb_elem(cbe);
   }
   
@@ -1584,25 +1585,27 @@ void RadioInterface::handle_fmModeSelector(const QString &s)
   {
     return;
   }
-
-  const auto pCb = mCbElemColl[CbElem::CBID_FMMODE];
-  const auto iid = pCb->get_item_id();
+ 
+  using namespace NCbDef;  
+  
+  const auto pCb = mCbElemColl.get_cb_elem_from_id(CBID_FMMODE);
+  const auto iid = pCb->get_current_selected_item_id();
   
   switch(iid)
   {
-  case MONO:
+  case FMMODE_MONO:
     myFMprocessor->setfmMode(fmProcessor::FM_Mode::Mono);
     fmStereoPanoramaSlider->setEnabled(false);
     break;
-  case STEREO:
+  case FMMODE_STEREO:
     myFMprocessor->setfmMode(fmProcessor::FM_Mode::Stereo);
     fmStereoPanoramaSlider->setEnabled(false);
     break;
-  case STEREO_PANO:
+  case FMMODE_STEREO_PANO:
     myFMprocessor->setfmMode(fmProcessor::FM_Mode::StereoPano);
     fmStereoPanoramaSlider->setEnabled(true);
      break;
-  case STEREO_AUTO:
+  case FMMODE_STEREO_AUTO:
     // TBD
     break;
   default: Q_ASSERT(0);

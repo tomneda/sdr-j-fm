@@ -31,7 +31,6 @@
 
 	hackrfHandler::hackrfHandler  (QSettings *s):
 	                               _I_Buffer (1024 * 1024) {
-int	err;
 int	res;
 	hackrfSettings			= s;
 	this	-> myFrame		= new QFrame (NULL);
@@ -236,6 +235,7 @@ int	res;
 }
 //
 bool    hackrfHandler::legalFrequency (int32_t f) {
+  (void)f;
 	return true;
 }
 
@@ -386,7 +386,7 @@ int	res;
 
 	res	= this -> hackrf_stop_rx (theDevice);
 	if (res != HACKRF_SUCCESS) {
-	   fprintf (stderr, "Problem with hackrf_stop_rx :\n", res);
+	   fprintf (stderr, "Problem with hackrf_stop_rx : %d\n", res);
 	   fprintf (stderr, "%s \n",
 	                 this -> hackrf_error_name (hackrf_error (res)));
 	   return;
@@ -398,7 +398,8 @@ int	res;
 //	The brave old getSamples. For the hackrf, we get
 //	size still in I/Q pairs
 int32_t	hackrfHandler::getSamples (std::complex<float> *V,
-	                                 int32_t size, uint8_t Mode) { 
+	                                 int32_t size, uint8_t Mode) {
+  (void)Mode;
 	return _I_Buffer. getDataFromBuffer (V, size);
 }
 

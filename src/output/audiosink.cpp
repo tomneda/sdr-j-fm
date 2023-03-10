@@ -237,7 +237,6 @@ int16_t	audioSink::numberofDevices	(void) {
 
 QString	audioSink::outputChannelwithRate (int16_t ch, int32_t rate) {
 const PaDeviceInfo *deviceInfo;
-const	char	*name	= nullptr;
 
 	if ((ch < 0) || (ch >= numofDevices))
 	   return "";
@@ -250,6 +249,8 @@ const	char	*name	= nullptr;
 
 	if (OutputrateIsSupported (ch, rate))
 	   return QString (deviceInfo -> name);
+  
+  return "";  // tomneda: this was missing, is it correct?
 }
 
 int16_t	audioSink::invalidDevice	(void) {

@@ -41,13 +41,13 @@
  *	24000 / 1187.5 samples per bit, i.e. just over 20
  *	samples per bit.
  */
-	rdsDecoder_3::rdsDecoder_3 (RadioInterface	*myRadio,
-	                            int32_t             rate,
-                                    rdsBlockSynchronizer  *my_rdsBlockSync,
-                                    RDSGroup            *my_rdsGroup,
-                                    rdsGroupDecoder     *my_rdsGroupDecoder):
-	                               mySinCos  (rate), 
-	                               rdsFilter (21, RDS_WIDTH, rate) {
+	rdsDecoder_3::rdsDecoder_3 (RadioInterface	     *myRadio, 
+                              int32_t              rate,
+                              rdsBlockSynchronizer *my_rdsBlockSync,
+                              RDSGroup             *my_rdsGroup,
+                              rdsGroupDecoder      *my_rdsGroupDecoder):
+    rdsFilter (21, RDS_WIDTH, rate), 
+    mySinCos  (rate) {
 
 float	synchronizerSamples;
 
@@ -85,7 +85,6 @@ float	synchronizerSamples;
 //
 bool	rdsDecoder_3::doDecode	(float v, uint8_t *d) {
 float clkState;
-std::complex<float> tt;
 bool	res	= false;
 
 	syncBuffer [p]	= rdsFilter. Pass (v);

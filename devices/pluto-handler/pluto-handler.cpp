@@ -576,6 +576,7 @@ int	index	= 0;
 	running. store (true);
 	while (running. load ()) {
 	   nbytes_rx	= iio_buffer_refill	(rxbuf);
+     (void)nbytes_rx;
 	   p_inc	= iio_buffer_step	(rxbuf);
 	   p_end	= (char *) iio_buffer_end  (rxbuf);
 
@@ -682,7 +683,7 @@ bool	plutoHandler::loadFunctions	() {
 	                           GETPROCADDRESS (this -> Handle,
 	                                           "iio_context_get_name");
 	if (iio_context_get_name == nullptr) {
-	   fprintf (stderr, "could not load %s\n", iio_context_get_name);
+	   fprintf (stderr, "could not load %s\n", "iio_context_get_name");
 	   return false;
 	}
 	iio_context_get_devices_count = (pfn_iio_context_get_devices_count)

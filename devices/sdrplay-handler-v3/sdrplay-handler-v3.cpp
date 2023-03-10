@@ -184,6 +184,7 @@ stopRequest r;
 //
 int32_t	sdrplayHandler_v3::getSamples (std::complex<float> *V,
 	                               int32_t size, uint8_t Mode) { 
+  (void)Mode;
 std::complex<int16_t> temp [size];
 int	i;
 
@@ -284,6 +285,7 @@ ppmRequest r (ppm);
 }
 
 void	sdrplayHandler_v3::set_biasT (int v) {
+  (void)v;
 biasT_Request r (biasT_selector -> isChecked () ? 1 : 0);
 
 	messageHandler (&r);

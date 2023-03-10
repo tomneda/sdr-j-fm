@@ -139,8 +139,8 @@
 	this	-> spectrumSampleRate	= fmRate;
 	this	-> zoomFactor		= 1;
 
-	int	Df			= 1000;
-	int	f			= 192000;
+	//int	Df			= 1000;
+	//int	f			= 192000;
 //	fprintf (stderr, "order = %f\n", (float)f / Df * 40 / 22);
 //	workingRate is typ. 48000S/s
 	peakLevelSampleMax		= workingRate / 50;
@@ -554,7 +554,7 @@ int		iqCounter	= 0;
 	      }
 
 	      if (rdsModus != rdsDecoder::ERdsMode::RDS_OFF) {
-	         int32_t rdsAmount;
+	         //int32_t rdsAmount;
 	         std::complex<float> rdsSample;
 	         if (rdsDecimator. Pass (rdsDataCplx, &rdsSample)) {
 	            static std::complex<float> magCplx;

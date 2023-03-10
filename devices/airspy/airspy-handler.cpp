@@ -33,7 +33,6 @@ const	int	EXTIO_BASE_TYPE_SIZE = sizeof (float);
 	                                _I_Buffer (256 * 1024) {
 int	result, i;
 QString	h;
-int	k;
 int	distance	= 10000000;
 uint32_t myBuffer [20];
 uint32_t samplerate_count;
@@ -132,7 +131,7 @@ uint32_t samplerate_count;
 	                              myBuffer, samplerate_count);
 
         inputRate    = 0;
-        for (i = 0; i < samplerate_count; i ++) {
+        for (i = 0; i < (signed)samplerate_count; i ++) {
            fprintf (stderr, "%d \n", myBuffer [i]);
            if (abs ((int)(myBuffer [i]) - 2000000) < distance) {
               distance  = abs ((int)(myBuffer [i]) - 2000000);
@@ -382,7 +381,8 @@ int result = my_airspy_open (&device);
 
 
 int	airspyHandler::setExternalRate (int nsr) {
-airspy_samplerate_t as_nsr;
+  (void)nsr;
+airspy_samplerate_t as_nsr = AIRSPY_SAMPLERATE_2_5MSPS; // tomneda: this was uninitialized before. Correct value?
 
 	int result = my_airspy_set_samplerate (device, as_nsr);
 	if (result != AIRSPY_SUCCESS) {

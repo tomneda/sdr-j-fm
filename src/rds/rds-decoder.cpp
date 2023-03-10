@@ -33,13 +33,11 @@
 //	Since there are different decoders for rds,
 //	this interface one is merely a dispatcher
 //
-	rdsDecoder::rdsDecoder (RadioInterface	*myRadioInterface,
-	                        int32_t		rate):
-	                            my_rdsBlockSync (myRadioInterface),
-	                            my_rdsGroupDecoder (myRadioInterface),
-	                            my_AGC (2e-3f, 0.38f, 9.0f),
-	                            my_costas (rate, 1.0f / 16.0f,
-	                                            0.02f/16.0f, 10.0f) {
+	rdsDecoder::rdsDecoder (RadioInterface	*myRadioInterface, int32_t rate) :
+    my_rdsGroupDecoder (myRadioInterface),
+    my_rdsBlockSync (myRadioInterface),
+    my_costas (rate, 1.0f / 16.0f, 0.02f/16.0f, 10.0f),
+    my_AGC (2e-3f, 0.38f, 9.0f) {
 	decoder_1	= new rdsDecoder_1 (myRadioInterface, rate);
 	decoder_2 	= new rdsDecoder_2 (myRadioInterface, rate);
 	decoder_3 	= new rdsDecoder_3 (myRadioInterface, rate,

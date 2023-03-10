@@ -185,6 +185,7 @@ void	limeHandler::setVFOFrequency	(int32_t f) {
 int32_t	limeHandler::getVFOFrequency	() {
 float_type freq;
 	int res = LMS_GetLOFrequency (theDevice, LMS_CH_RX, 0, &freq);
+  (void)res;
 	return (int)freq;
 }
 
@@ -193,6 +194,7 @@ uint8_t	limeHandler::myIdentity		() {
 }
 
 bool	limeHandler::legalFrequency	(int32_t f) {
+  (void)f;
 	return true;
 }
 
@@ -289,7 +291,7 @@ int	res;
 lms_stream_status_t streamStatus;
 int	underruns	= 0;
 int	overruns	= 0;
-int	dropped		= 0;
+//int	dropped		= 0;
 int	amountRead	= 0;
 
 	running. store (true);

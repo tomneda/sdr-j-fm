@@ -61,7 +61,7 @@ BasicBandPass BandPass (filterDegree, low, high, rate);
 	for (int i = 0; i < filterDegree; i++)
 	   filterVector [i] = (BandPass. getKernel ()) [i];
 
-        memset (&filterVector [filterDegree], 0,
+        memset ((void*)&filterVector [filterDegree], 0,
                         (fftSize - filterDegree) * sizeof (DSPCOMPLEX));
 	Fft_transform (filterVector, fftSize, false);
         inp             = 0;
@@ -72,7 +72,7 @@ BandPassFIR BandPass ((int)filterDegree, low, high, rate);
 
 	for (int i = 0; i < filterDegree; i ++)
            filterVector [i] = (BandPass. getKernel ()) [i];
-        memset (&filterVector [filterDegree], 0,
+        memset ((void*)&filterVector [filterDegree], 0,
                         (fftSize - filterDegree) * sizeof (DSPCOMPLEX));
 	Fft_transform (filterVector, fftSize, false);
         inp             = 0;
@@ -83,7 +83,7 @@ LowPassFIR LowPass (filterDegree, low, rate);
 
 	for (int i = 0; i < filterDegree; i ++)
 	   filterVector [i] = (LowPass. getKernel ()) [i];
-	memset (&filterVector [filterDegree], 0,
+	memset ((void*)&filterVector [filterDegree], 0,
 	                (fftSize - filterDegree) * sizeof (DSPCOMPLEX));
 	Fft_transform (filterVector, fftSize, false);
 	inp	= 0;
@@ -97,7 +97,7 @@ DSPFLOAT	sample;
 
 	if (++inp >= NumofSamples) {
 	   inp = 0;
-	   memset (&FFT_A [NumofSamples], 0,
+	   memset ((void*)&FFT_A [NumofSamples], 0,
 	               (fftSize - NumofSamples) * sizeof (DSPCOMPLEX));
 	   Fft_transform (FFT_A, fftSize, false);
 
@@ -132,7 +132,7 @@ int		j;
 
 	if (++inp >= NumofSamples) {
 	   inp = 0;
-	   memset (&FFT_A [NumofSamples], 0,
+	   memset ((void*)&FFT_A [NumofSamples], 0,
 	               (fftSize - NumofSamples) * sizeof (DSPCOMPLEX));
 	   Fft_transform (FFT_A, fftSize, false);
 

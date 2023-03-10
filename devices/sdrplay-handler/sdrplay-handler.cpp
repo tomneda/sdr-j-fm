@@ -29,17 +29,13 @@
 #include	"sdrplay-handler.h"
 #include	"sdrplayselect.h"
 
-static
-int     RSP1_Table [] = {0, 24, 19, 43};
+static int RSP1_Table [] = {0, 24, 19, 43};
 
-static
-int     RSP1A_Table [] = {0, 6, 12, 18, 20, 26, 32, 38, 57, 62};
+static int RSP1A_Table [] = {0, 6, 12, 18, 20, 26, 32, 38, 57, 62};
 
-static
-int     RSP2_Table [] = {0, 10, 15, 21, 24, 34, 39, 45, 64};
+static int RSP2_Table [] = {0, 10, 15, 21, 24, 34, 39, 45, 64};
 
-static
-int     RSPduo_Table [] = {0, 6, 12, 18, 20, 26, 32, 38, 57, 62};
+//static int RSPduo_Table [] = {0, 6, 12, 18, 20, 26, 32, 38, 57, 62};
 
 static
 int	get_lnaGRdB (int hwVersion, int lnaState) {
@@ -63,7 +59,7 @@ int	get_lnaGRdB (int hwVersion, int lnaState) {
 mir_sdr_ErrT	err;
 float	ver;
 mir_sdr_DeviceT devDesc [4];
-mir_sdr_GainValuesT gainDesc;
+//mir_sdr_GainValuesT gainDesc;
 sdrplaySelect	*sdrplaySelector;
 
 	sdrplaySettings		= s;
@@ -129,7 +125,7 @@ ULONG APIkeyValue_length = 255;
 	   throw (23);
 	}
 
-	my_mir_sdr_ApiVersion (&ver);
+	err = my_mir_sdr_ApiVersion (&ver);
         if (err != mir_sdr_Success) {
            fprintf (stderr, "error at ApiVersion %s\n",
                          errorCodes (err). toLatin1 (). data ());
@@ -206,7 +202,7 @@ ULONG APIkeyValue_length = 255;
 
 	if (numofDevs > 1) {
            sdrplaySelector       = new sdrplaySelect ();
-           for (deviceIndex = 0; deviceIndex < numofDevs; deviceIndex ++) {
+           for (deviceIndex = 0; deviceIndex < (signed)numofDevs; deviceIndex ++) {
 #ifndef __MINGW32__
               sdrplaySelector ->
                    addtoList (devDesc [deviceIndex]. DevNm);
@@ -486,8 +482,10 @@ float	denominator	= (float)(p -> denominator);
 void	myGainChangeCallback (uint32_t	GRdB,
 	                      uint32_t	lnaGRdB,
 	                      void	*cbContext) {
-sdrplayHandler  *p      = static_cast<sdrplayHandler *> (cbContext);
-	(void)lnaGRdB;
+//sdrplayHandler  *p      = static_cast<sdrplayHandler *> (cbContext);
+	(void)GRdB;
+  (void)lnaGRdB;
+  (void)cbContext;
 //	p -> lnaGRdBDisplay     -> display ((int)lnaGRdB);
 }
 
@@ -806,6 +804,7 @@ void	sdrplayHandler::agcControl_toggled (int agcMode) {
 
 
 void	sdrplayHandler::debugControl_toggled (int agcMode) {
+  (void)agcMode;
 	my_mir_sdr_DebugEnable (debugControl -> isChecked () ? 1 : 0);
 }
 
@@ -830,6 +829,7 @@ mir_sdr_ErrT err;
 	   err = my_mir_sdr_RSPII_AntennaControl (mir_sdr_RSPII_ANTENNA_A);
 	else
 	   err = my_mir_sdr_RSPII_AntennaControl (mir_sdr_RSPII_ANTENNA_B);
+  (void)err;
 }
 
 void	sdrplayHandler::set_tunerSelect (const QString &s) {
@@ -847,6 +847,7 @@ mir_sdr_ErrT err;
 }
 
 void	sdrplayHandler::biasT_selectorHandler (int k) {
+  (void)k;
 bool setting = biasT_selector -> isChecked ();
 	sdrplaySettings -> setValue ("biasT_selector", setting ? 1 : 0);
 	switch (hwVersion) {

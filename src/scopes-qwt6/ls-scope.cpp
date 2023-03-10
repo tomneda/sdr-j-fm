@@ -175,6 +175,7 @@ int16_t factor = spectrumSize / displaySize;  // typ factor = 4 (whole divider)
 
 void	ls_scope::add_to_average (double *in,
 	                          bool refresh, double *buffer) {
+(void)buffer;
 double alpha	= 1.0 / averageCount;
 double beta	= (averageCount - 1.0) / averageCount;
 

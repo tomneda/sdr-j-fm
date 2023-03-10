@@ -92,7 +92,6 @@ int32_t	r;
 int16_t	deviceIndex;
 int16_t	i;
 QString	h;
-int	k;
 
 	dabSettings		= s;
 	setupUi (& myFrame);
@@ -475,6 +474,7 @@ int32_t	rtlsdrHandler::getRate	() {
 }
 
 void	rtlsdrHandler::set_Agc	(int state) {
+  (void)state;
 	if (agcChecker -> isChecked ())
 	   (void)rtlsdr_set_agc_mode (device, 1);
 	else

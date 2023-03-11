@@ -190,7 +190,12 @@ RadioInterface::RadioInterface(QSettings *Si, QString saveName,
   int k;
 
   setupUi(this);
+  fmSettings		= Si;
+	this	-> themeChooser	= themeChooser;
 
+	configWidget. setupUi (&configDisplay);
+
+  
   /*************************************************************************/
   {
     using namespace NCbDef;
@@ -213,19 +218,23 @@ RadioInterface::RadioInterface(QSettings *Si, QString saveName,
       cbe->addItem(fmProcessor::S_LEFTminusRIGHT_Test, DEFSEL_NONE, "T | T");  
       mCbElemColl.store_cb_elem(cbe, "", "fmChannelSelect");
     }
+    {
+      CBELEM(cbe, CBID_DEEMP, configWidget.fmDeemphasisSelector, this, &RadioInterface::handle_fmDeemphasis);
+      cbe->addItem(DEEMP_OFF, DEFSEL_NONE, "Off (AM)");  
+      cbe->addItem(DEEMP_25,  DEFSEL_NONE, "25us (Dolby FM)");  
+      cbe->addItem(DEEMP_50,  DEFSEL_EUR,  "50us (Europe, non-USA)");  
+      cbe->addItem(DEEMP_75,  DEFSEL_USA,  "75us (USA)");  
+      mCbElemColl.store_cb_elem(cbe, "", "fmDemphasisSelector");
+    }
   }
     /*************************************************************************/
   
   mCbElemColl.set_setting_handler(Si);
-  mCbElemColl.read_cb_from_setting(NCbDef::DEFSEL_EU);
+  mCbElemColl.read_cb_from_setting(NCbDef::DEFSEL_EUR);
   
   
   
   
-	fmSettings		= Si;
-	this	-> themeChooser	= themeChooser;
-
-	configWidget. setupUi (&configDisplay);
 	runMode. store (ERunStates::IDLE);
 	squelchMode		= false;
 //
@@ -508,7 +517,7 @@ void	RadioInterface::dumpControlState	(QSettings *s) {
   s->setValue("volumeHalfDb", volumeSlider->value());
   s->setValue("fmRdsSelector", fmRdsSelector->currentText());
   //s->setValue("fmChannelSelect", fmChannelSelect->currentText());
-  s->setValue("fmDeemphasisSelector", configWidget.fmDeemphasisSelector->currentText());
+  //s->setValue("fmDeemphasisSelector", configWidget.fmDeemphasisSelector->currentText());
   s->setValue("fmStereoPanoramaSlider", fmStereoPanoramaSlider->value());
   s->setValue("fmStereoBalanceSlider", fmStereoBalanceSlider->value());
   s->setValue("fmLFcutoff", fmLFcutoff->currentText());
@@ -1440,9 +1449,9 @@ void    RadioInterface::localConnects () {
 	connect (configWidget. fmDecoderSelector,
 	                         SIGNAL (activated (const QString &)),
 	         this, SLOT (handle_fmDecoderSelector (const QString &)));
-	connect (configWidget. fmDeemphasisSelector,
-	                         SIGNAL (activated (const QString&)),
-	         this, SLOT (handle_fmDeemphasis (const QString &)));
+//	connect (configWidget. fmDeemphasisSelector,
+//	                         SIGNAL (activated (const QString&)),
+//	         this, SLOT (handle_fmDeemphasis (const QString &)));
 	connect (configWidget. cbThemes, SIGNAL (activated (int)),
 	         this, SLOT (handle_cbThemes (int)));
 }
@@ -1470,17 +1479,14 @@ void	RadioInterface::handle_AudioGainSlider (int n) {
 
 //	Deemphasis	= 50 usec (3183 Hz, Europe)
 //	Deemphasis	= 75 usec (2122 Hz US)
-void	RadioInterface::handle_fmDeemphasis (const QString &s) {
+void	RadioInterface::handle_fmDeemphasis (const QString &/*s*/) 
+{
 	if (myFMprocessor == nullptr)
 	   return;
-	if (s == "Off (AM)") {
-	   myFMprocessor -> setDeemphasis (1);
-	}
-	else {
-	   myFMprocessor -> setDeemphasis (std::stol(s.toStdString()));
-// toInt will not work with text after the number
-	}
-	fmSettings	-> setValue ("deemphasis", s);
+
+  const auto pCb = mCbElemColl.get_cb_elem_from_id(NCbDef::CBID_DEEMP);
+  const auto dee = pCb->get_current_selected_item_id();
+  myFMprocessor->setDeemphasis(dee);
 }
 
 void	RadioInterface::setCRCErrors (int n) {
@@ -2039,10 +2045,10 @@ void	RadioInterface::restoreGUIsettings (QSettings *s) {
 QString h;
 int     k;
 
-	h	= s -> value ("deemphasis", "Off"). toString ();
-	k	= configWidget. fmDeemphasisSelector -> findText (h);
-	if (k != -1)
-	   configWidget. fmDeemphasisSelector -> setCurrentIndex (k);
+//	h	= s -> value ("deemphasis", "Off"). toString ();
+//	k	= configWidget. fmDeemphasisSelector -> findText (h);
+//	if (k != -1)
+//	   configWidget. fmDeemphasisSelector -> setCurrentIndex (k);
 
 
 	k	= s -> value ("afc", Qt::CheckState::Unchecked).toInt ();
@@ -2099,11 +2105,11 @@ int     k;
 //	if (k != -1)
 //	   fmChannelSelect -> setCurrentIndex (k);
 
-	h	= s -> value ("fmDeemphasisSelector",
-	                             "50us  (Europe, non-USA)"). toString ();
-	k	= configWidget. fmDeemphasisSelector -> findText(h);
-	if (k != -1)
-	   configWidget. fmDeemphasisSelector -> setCurrentIndex (k);
+//	h	= s -> value ("fmDeemphasisSelector",
+//	                             "50us  (Europe, non-USA)"). toString ();
+//	k	= configWidget. fmDeemphasisSelector -> findText(h);
+//	if (k != -1)
+//	   configWidget. fmDeemphasisSelector -> setCurrentIndex (k);
 
 	h	= s -> value ("fmLFcutoff", "15000Hz"). toString ();
 	k	= fmLFcutoff -> findText (h);

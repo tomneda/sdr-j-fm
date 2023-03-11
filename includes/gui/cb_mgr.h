@@ -23,7 +23,8 @@ namespace NCbDef
   {
     CBID_RDS,
     CBID_FMMODE,
-    CBID_AUDCH
+    CBID_AUDCH,
+    CBID_DEEMP
   };
   
   enum EItemFmMode : TItem 
@@ -34,12 +35,20 @@ namespace NCbDef
     FMMODE_STEREO_AUTO
   };
   
+  enum EItemDeEmp : TItem 
+  {
+    DEEMP_OFF =  1,
+    DEEMP_25  = 25,
+    DEEMP_50  = 50,
+    DEEMP_75  = 75
+  };
+  
   enum EDefSel : TDefSel
   {
     DEFSEL_NONE = 0x0000,
-    DEFSEL_EU   = 0x0001,
+    DEFSEL_EUR  = 0x0001, 
     DEFSEL_USA  = 0x0002,
-    DEFSEL_ALL  = DEFSEL_USA | DEFSEL_EU
+    DEFSEL_ALL  = DEFSEL_USA | DEFSEL_EUR
   };
 };
 

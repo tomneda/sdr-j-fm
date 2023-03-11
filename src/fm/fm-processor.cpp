@@ -292,12 +292,17 @@ void	fmProcessor::setSoundBalance (int16_t balance) {
 //	Deemphasis	= 50 usec (3183 Hz, Europe)
 //	Deemphasis	= 75 usec (2122 Hz US)
 //	tau		= 2 * M_PI * Freq = 1000000 / time
-void	fmProcessor::setDeemphasis (int16_t v) {
-float Tau;
-	Q_ASSERT(v >= 1);
-
-	Tau   = 1000000.0 / v;
-	deemphAlpha = 1.0 / (float(fmRate) / Tau + 1.0);
+void	fmProcessor::setDeemphasis (int16_t v) 
+{
+  if (v > 0)
+  {
+    float Tau = 1000000.0 / v;
+    deemphAlpha = 1.0 / (float(fmRate) / Tau + 1.0);
+  }
+  else
+  {
+    deemphAlpha = 1.0;   // no deemphasis
+  }
 }
 
 void	fmProcessor::setVolume (const float iVolGainDb) {

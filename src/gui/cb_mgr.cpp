@@ -28,8 +28,9 @@ void CbElem::addItem(const TItem iItem, const TDefSel iDefSel, const QString & i
 /******************************************************************************/
 void CbElem::set_current_selected_item_by_name(const QString & iItemName)
 {
-  const int idx = mpComboBox->findText(iItemName);
-  Q_ASSERT(idx >= 0);
+  int idx = mpComboBox->findText(iItemName);
+  //Q_ASSERT(idx >= 0);
+  if (idx < 0) idx = 0; // TODO: can happen if ini file was manipulated or older version (should better be loaded via default table)
   mpComboBox->setCurrentIndex(idx);
 }
 

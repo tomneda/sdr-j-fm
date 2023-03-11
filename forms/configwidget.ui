@@ -266,26 +266,6 @@
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;the deemphasis filter&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
-       <item>
-        <property name="text">
-         <string>Off (AM)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>25us (Dolby FM)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>50us  (Europe, non-USA)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>75us  (USA)</string>
-        </property>
-       </item>
       </widget>
      </item>
      <item>

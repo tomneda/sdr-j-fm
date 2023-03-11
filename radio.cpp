@@ -191,16 +191,19 @@ RadioInterface::RadioInterface(QSettings *Si, QString saveName,
 
   setupUi(this);
 
-  
+  /*************************************************************************/
   {
     using namespace NCbDef;
-    CBELEM(cbe, CBID_FMMODE, fmModeSelector, this, &RadioInterface::handle_fmModeSelector);
-    cbe->addItem(FMMODE_MONO,        DEFSEL_NONE, "Mono");  
-    cbe->addItem(FMMODE_STEREO,      DEFSEL_ALL,  "Stereo");  
-    cbe->addItem(FMMODE_STEREO_PANO, DEFSEL_NONE, "Stereo (Pano)");  
-    cbe->addItem(FMMODE_STEREO_AUTO, DEFSEL_NONE, "Stereo (Auto)");  
-    mCbElemColl.store_cb_elem(cbe, "", "fmMode");
+    {
+      CBELEM(cbe, CBID_FMMODE, fmModeSelector, this, &RadioInterface::handle_fmModeSelector);
+      cbe->addItem(FMMODE_MONO,        DEFSEL_NONE, "Mono");  
+      cbe->addItem(FMMODE_STEREO,      DEFSEL_ALL,  "Stereo");  
+      cbe->addItem(FMMODE_STEREO_PANO, DEFSEL_NONE, "Stereo (Pano)");  
+      cbe->addItem(FMMODE_STEREO_AUTO, DEFSEL_NONE, "Stereo (Auto)");  
+      mCbElemColl.store_cb_elem(cbe, "", "fmMode");
+    }
   }
+    /*************************************************************************/
   
   mCbElemColl.set_setting_handler(Si);
   mCbElemColl.read_cb_from_setting(NCbDef::DEFSEL_EU);
@@ -476,63 +479,42 @@ void	RadioInterface::dumpControlState	(QSettings *s) {
 	if (s == nullptr)
 	   return;
 
-	//	s	-> setValue ("device", deviceSelector -> currentText ());
-	s	-> setValue ("fm_increment",
-				     configWidget. fm_increment -> value ());
-	s	-> setValue ("spectrumAmplitudeSlider_hf",
-				     spectrumAmplitudeSlider_hf -> value ());
-	s	-> setValue ("spectrumAmplitudeSlider_lf",
-				     spectrumAmplitudeSlider_lf -> value ());
-	s	-> setValue ("IQbalanceSlider",
-				     IQbalanceSlider	-> value());
-	s	-> setValue ("afc",
-				     cbAfc -> checkState ());
-	s	-> setValue ("dcRemove",
-				     cbDCRemove -> checkState ());
-	s	-> setValue ("autoMono",
-				     cbAutoMono -> checkState ());
-	s	-> setValue ("pss",
-				     cbPSS -> checkState ());
-
-	//	now setting the parameters for the fm decoder
-	s	-> setValue ("fmFilterSelect",
-				     configWidget. fmFilterSelect -> currentText ());
-	s	-> setValue ("fmMode",
-				     fmModeSelector	-> currentText ());
-	s	-> setValue ("fmDecoder",
-				     configWidget. fmDecoderSelector	-> currentText ());
-	s	-> setValue ("volumeHalfDb",
-				     volumeSlider	-> value ());
-	s	-> setValue ("fmRdsSelector",
-				     fmRdsSelector	-> currentText ());
-	s	-> setValue ("fmChannelSelect",
-				     fmChannelSelect	-> currentText ());
-	s	-> setValue ("fmDeemphasisSelector",
-				     configWidget. fmDeemphasisSelector -> currentText ());
-	s	-> setValue ("fmStereoPanoramaSlider",
-				     fmStereoPanoramaSlider -> value ());
-	s	-> setValue ("fmStereoBalanceSlider",
-				     fmStereoBalanceSlider	-> value ());
-	s	-> setValue ("fmLFcutoff",
-				     fmLFcutoff		-> currentText ());
-	s	-> setValue ("logging",
-				     configWidget. loggingButton	-> currentText ());
-	s	-> setValue ("streamOutSelector",
-				     configWidget. streamOutSelector	-> currentText ());
-
-	s	-> setValue ("currentFreq",
-				     currentFreq);
-	s	-> setValue ("min_loop_frequency",
-				     minLoopFrequency);
-	s	-> setValue ("max_loop_frequency",
-				     maxLoopFrequency);
-
-	s	-> setValue ("peakLevelDelaySteps",
-				     configWidget. sbDispDelay	-> value ());
-
-	s -> setValue ("styleSheet", configWidget. cbThemes -> currentText ());
-
-	s	-> sync ();
+  //	s	-> setValue ("device", deviceSelector -> currentText
+  //());
+  s->setValue("fm_increment", configWidget.fm_increment->value());
+  s->setValue("spectrumAmplitudeSlider_hf", spectrumAmplitudeSlider_hf->value());
+  s->setValue("spectrumAmplitudeSlider_lf", spectrumAmplitudeSlider_lf->value());
+  s->setValue("IQbalanceSlider", IQbalanceSlider->value());
+  s->setValue("afc", cbAfc->checkState());
+  s->setValue("dcRemove", cbDCRemove->checkState());
+  s->setValue("autoMono", cbAutoMono->checkState());
+  s->setValue("pss", cbPSS->checkState());
+  
+  //	now setting the parameters for the fm decoder
+  s->setValue("fmFilterSelect", configWidget.fmFilterSelect->currentText());
+  //	s	-> setValue ("fmMode", fmModeSelector	-> currentText());
+  s->setValue("fmDecoder", configWidget.fmDecoderSelector->currentText());
+  s->setValue("volumeHalfDb", volumeSlider->value());
+  s->setValue("fmRdsSelector", fmRdsSelector->currentText());
+  //s->setValue("fmChannelSelect", fmChannelSelect->currentText());
+  s->setValue("fmDeemphasisSelector", configWidget.fmDeemphasisSelector->currentText());
+  s->setValue("fmStereoPanoramaSlider", fmStereoPanoramaSlider->value());
+  s->setValue("fmStereoBalanceSlider", fmStereoBalanceSlider->value());
+  s->setValue("fmLFcutoff", fmLFcutoff->currentText());
+  s->setValue("logging", configWidget.loggingButton->currentText());
+  s->setValue("streamOutSelector", configWidget.streamOutSelector->currentText());
+  
+  s->setValue("currentFreq", currentFreq);
+  s->setValue("min_loop_frequency", minLoopFrequency);
+  s->setValue("max_loop_frequency", maxLoopFrequency);
+  
+  s->setValue("peakLevelDelaySteps", configWidget.sbDispDelay->value());
+  
+  s->setValue("styleSheet", configWidget.cbThemes->currentText());
+  
+  s	-> sync ();
+  
+  mCbElemColl.write_setting_from_cb();
 }
 
 	//	On start, we ensure that the streams are stopped so
@@ -2100,8 +2082,8 @@ int     k;
 	if (k != -1)
 	   configWidget. fmFilterSelect -> setCurrentIndex (k);
 
-	h	= s -> value ("fmMode",
-	                      fmModeSelector -> currentText ()). toString ();
+//	h	= s -> value ("fmMode",
+//	                      fmModeSelector -> currentText ()). toString ();
 	k	= fmModeSelector -> findText (h);
 	if (k != -1)
 	   fmModeSelector -> setCurrentIndex(k);

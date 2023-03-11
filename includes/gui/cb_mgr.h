@@ -87,7 +87,7 @@ public:
   //~CbElemColl() = default;
   
   void set_setting_handler(QSettings *const ipS) { mpQSetting = ipS; }
-  void read_cb_from_setting(const NCbDef::TDefSel iUseDefSel);
+  void read_cb_from_setting(const NCbDef::TDefSel iUseDefSel, const bool iForceDefaults = false);
   void write_setting_from_cb();
   
   void store_cb_elem(const TSPCbElem & ipCbElem, const QString & iGrpName, const QString & iCbName);

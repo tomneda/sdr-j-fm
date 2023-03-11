@@ -101,7 +101,7 @@ TSPCbElem CbElemColl::get_cb_elem_from_id(const TCbId iCbId)
 }
 
 /******************************************************************************/
-void CbElemColl::read_cb_from_setting(const TDefSel iUseDefSel)
+void CbElemColl::read_cb_from_setting(const TDefSel iUseDefSel, const bool iForceDefaults /*= false*/)
 {
   Q_ASSERT(mpQSetting);
   Q_ASSERT(is_only_one_bit_set(iUseDefSel));
@@ -112,7 +112,7 @@ void CbElemColl::read_cb_from_setting(const TDefSel iUseDefSel)
     Q_ASSERT(cbId == cbElem.pCbElem->get_cb_id());
     
     const QString & defEntryName = cbElem.pCbElem->get_item_name_of_def_sel(iUseDefSel);
-    const QString entryName = mpQSetting->value(cbElem.CbName, defEntryName).toString();
+    const QString entryName = (iForceDefaults ? defEntryName : mpQSetting->value(cbElem.CbName, defEntryName).toString());
     
     mpQSetting->beginGroup (cbElem.GrpName);
     cbElem.pCbElem->set_current_selected_item_by_name(entryName);
@@ -121,7 +121,7 @@ void CbElemColl::read_cb_from_setting(const TDefSel iUseDefSel)
     anyDefaultSet |= (entryName != defEntryName);
   }
   
-  if (anyDefaultSet)
+  if (iForceDefaults || anyDefaultSet)
   {
     write_setting_from_cb();
   }
@@ -141,6 +141,8 @@ void CbElemColl::write_setting_from_cb()
     mpQSetting->setValue(cbElem.CbName, pCb->currentText());
     mpQSetting->endGroup();
   }
+  
+  mpQSetting->sync();
 }
 
 /******************************************************************************/

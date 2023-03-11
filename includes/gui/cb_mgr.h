@@ -9,8 +9,8 @@
 #include <map>
 
 // tomneda: compromise with a macro as I got problem porting the handler function pointer via the constructor of CbElem
-#define CBELEM(i_,a_,b_,c_,d_,e_)   auto cbe = std::make_shared<CbElem>(a_,b_,c_); \
-                                    connect(c_, &QComboBox::textActivated, d_, e_);
+#define CBELEM(sp_,cbid_,pqcb_,pdst_,phdl_)      auto sp_ = std::make_shared<CbElem>(cbid_,pqcb_); \
+                                                 connect(pqcb_, &QComboBox::textActivated, pdst_, phdl_);
   
 
 namespace NCbDef
@@ -48,7 +48,7 @@ class CbElem //: public QObject
   //Q_OBJECT
 
 public:
-  CbElem(NCbDef::TCbId iCbId, const QString & iSettingName, QComboBox * const ipComboBox /*, QObject * const iReceiver*/ /*, const TFunc & iMethod*/);
+  CbElem(NCbDef::TCbId iCbId, QComboBox * const ipComboBox /*, QObject * const iReceiver*/ /*, const TFunc & iMethod*/);
   CbElem & operator=(const CbElem &) = default; 	
   CbElem(const CbElem & other) = default;
   ~CbElem() = default;
@@ -67,15 +67,12 @@ public:
   const QString & get_item_name_of_def_sel(const NCbDef::TDefSel iDefSel) const;
   
   NCbDef::TCbId get_cb_id() const { return mCbId; }
-  const QString & get_setting_item_name() const { return mSettingName; }
   QComboBox * get_cb_box_ptr() const { return mpComboBox; }
   
 private:
   const SItem & get_item_of_def_sel(const NCbDef::TDefSel iDefSel) const;
   
-  
   NCbDef::TCbId      mCbId;
-  QString            mSettingName;
   QComboBox        * mpComboBox;
   std::vector<SItem> mItems;
 };
@@ -93,11 +90,18 @@ public:
   void read_cb_from_setting(const NCbDef::TDefSel iUseDefSel);
   void write_setting_from_cb();
   
-  void store_cb_elem(const TSPCbElem & ipCbElem);
+  void store_cb_elem(const TSPCbElem & ipCbElem, const QString & iGrpName, const QString & iCbName);
   TSPCbElem get_cb_elem_from_id(const NCbDef::TCbId iCbId);
   
 private:
-  using TMap = std::map<NCbDef::TCbId, std::shared_ptr<CbElem> >;
+  struct SMapElem
+  {
+    TSPCbElem pCbElem;
+    QString GrpName;
+    QString CbName;
+  };
+  
+  using TMap = std::map<NCbDef::TCbId, SMapElem>;
   TMap mCbElems;   
   QSettings *mpQSetting = nullptr;
   

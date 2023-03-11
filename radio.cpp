@@ -194,12 +194,12 @@ RadioInterface::RadioInterface(QSettings *Si, QString saveName,
   
   {
     using namespace NCbDef;
-    CBELEM(cbe, CBID_FMMODE, "fmMode", fmModeSelector, this, &RadioInterface::handle_fmModeSelector);
+    CBELEM(cbe, CBID_FMMODE, fmModeSelector, this, &RadioInterface::handle_fmModeSelector);
     cbe->addItem(FMMODE_MONO,        DEFSEL_NONE, "Mono");  
     cbe->addItem(FMMODE_STEREO,      DEFSEL_ALL,  "Stereo");  
     cbe->addItem(FMMODE_STEREO_PANO, DEFSEL_NONE, "Stereo (Pano)");  
     cbe->addItem(FMMODE_STEREO_AUTO, DEFSEL_NONE, "Stereo (Auto)");  
-    mCbElemColl.store_cb_elem(cbe);
+    mCbElemColl.store_cb_elem(cbe, "", "fmMode");
   }
   
   mCbElemColl.set_setting_handler(Si);

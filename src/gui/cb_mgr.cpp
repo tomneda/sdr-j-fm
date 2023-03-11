@@ -3,9 +3,8 @@
 using namespace NCbDef;
 
 /******************************************************************************/
-CbElem::CbElem(TCbId iCbId, const QString & iSettingName, QComboBox * const ipComboBox /*, QObject * const iReceiver*/ /*, const TFunc & iMethod*/) : 
+CbElem::CbElem(TCbId iCbId, QComboBox * const ipComboBox /*, QObject * const iReceiver*/ /*, const TFunc & iMethod*/) : 
   mCbId(iCbId), 
-  mSettingName(iSettingName),
   mpComboBox(ipComboBox)
 {
   //(void)iReceiver;
@@ -82,19 +81,23 @@ const CbElem::SItem & CbElem::get_item_of_def_sel(const TDefSel iDefSel) const
 /******************************************************************************/
 
 /******************************************************************************/
-void CbElemColl::store_cb_elem(const TSPCbElem & ipCbElem)
+void CbElemColl::store_cb_elem(const TSPCbElem & ipCbElem, const QString & iGrpName, const QString & iCbName)
 {
   TCbId cbId = ipCbElem->get_cb_id();
   Q_ASSERT(mCbElems.count(cbId) == 0);
-  //mCbElems.insert(std::make_pair(cbId, ipCbElem));
-  mCbElems[cbId] = ipCbElem;
+  SMapElem me;
+  me.pCbElem = ipCbElem;
+  me.GrpName = iGrpName;
+  me.CbName = iCbName;
+  //mCbElems.insert(std::make_pair(cbId, me));
+  mCbElems[cbId] = me;
 }
 
 /******************************************************************************/
 TSPCbElem CbElemColl::get_cb_elem_from_id(const TCbId iCbId)
 {
   Q_ASSERT(mCbElems.count(iCbId) > 0);
-  return mCbElems[iCbId];
+  return mCbElems[iCbId].pCbElem;
 }
 
 /******************************************************************************/
@@ -104,18 +107,18 @@ void CbElemColl::read_cb_from_setting(const TDefSel iUseDefSel)
   Q_ASSERT(is_only_one_bit_set(iUseDefSel));
   bool anyDefaultSet = false;
   
-  for (const auto & [cbId, pCbElem] : mCbElems)
+  for (const auto & [cbId, cbElem] : mCbElems)
   {
-    Q_ASSERT(cbId == pCbElem->get_cb_id());
-    const QString & cbBoxName = pCbElem->get_setting_item_name();
+    Q_ASSERT(cbId == cbElem.pCbElem->get_cb_id());
     
-    const QString & defEntryName = pCbElem->get_item_name_of_def_sel(iUseDefSel);
-    const QString h = mpQSetting->value(cbBoxName, defEntryName).toString();
-    //mpQSetting->beginGroup ("Main");
-    pCbElem->set_current_selected_item_by_name(h);
-    //mpQSetting->endGroup();
+    const QString & defEntryName = cbElem.pCbElem->get_item_name_of_def_sel(iUseDefSel);
+    const QString entryName = mpQSetting->value(cbElem.CbName, defEntryName).toString();
     
-    anyDefaultSet |= (h != defEntryName);
+    mpQSetting->beginGroup (cbElem.GrpName);
+    cbElem.pCbElem->set_current_selected_item_by_name(entryName);
+    mpQSetting->endGroup();
+    
+    anyDefaultSet |= (entryName != defEntryName);
   }
   
   if (anyDefaultSet)
@@ -128,16 +131,15 @@ void CbElemColl::read_cb_from_setting(const TDefSel iUseDefSel)
 void CbElemColl::write_setting_from_cb()
 {
   Q_ASSERT(mpQSetting);
-  
-  
-  for (const auto & [cbId, pCbElem] : mCbElems)
+    
+  for (const auto & [cbId, cbElem] : mCbElems)
   {
-    Q_ASSERT(cbId == pCbElem->get_cb_id());
-    const QString & cbBoxName = pCbElem->get_setting_item_name();
-    QComboBox * pCb = pCbElem->get_cb_box_ptr();
-    //mpQSetting->beginGroup ("Main");
-    mpQSetting->setValue(cbBoxName, pCb->currentText());
-    //mpQSetting->endGroup();
+    Q_ASSERT(cbId == cbElem.pCbElem->get_cb_id());
+    QComboBox * pCb = cbElem.pCbElem->get_cb_box_ptr();
+
+    mpQSetting->beginGroup (cbElem.GrpName);
+    mpQSetting->setValue(cbElem.CbName, pCb->currentText());
+    mpQSetting->endGroup();
   }
 }
 

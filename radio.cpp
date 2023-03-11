@@ -202,6 +202,17 @@ RadioInterface::RadioInterface(QSettings *Si, QString saveName,
       cbe->addItem(FMMODE_STEREO_AUTO, DEFSEL_NONE, "Stereo (Auto)");  
       mCbElemColl.store_cb_elem(cbe, "", "fmMode");
     }
+    {
+      CBELEM(cbe, CBID_AUDCH, fmChannelSelect, this, &RadioInterface::handle_fmChannelSelector);
+      cbe->addItem(fmProcessor::S_STEREO,              DEFSEL_ALL,  "L | R");  
+      cbe->addItem(fmProcessor::S_STEREO_SWAPPED,      DEFSEL_NONE, "R | L");  
+      cbe->addItem(fmProcessor::S_LEFT,                DEFSEL_NONE, "L | L");  
+      cbe->addItem(fmProcessor::S_RIGHT,               DEFSEL_NONE, "R | R");  
+      cbe->addItem(fmProcessor::S_LEFTplusRIGHT,       DEFSEL_NONE, "M | M");  
+      cbe->addItem(fmProcessor::S_LEFTminusRIGHT,      DEFSEL_NONE, "S | S");  
+      cbe->addItem(fmProcessor::S_LEFTminusRIGHT_Test, DEFSEL_NONE, "T | T");  
+      mCbElemColl.store_cb_elem(cbe, "", "fmChannelSelect");
+    }
   }
     /*************************************************************************/
   
@@ -966,32 +977,13 @@ void	RadioInterface::make_newProcessor () {
 	handle_fmStereoPanoramaSlider	(fmStereoPanoramaSlider -> value ());
 }
 
-void	RadioInterface::handle_fmChannelSelector (const QString &s) {
-
-	if (s == "L | R")
-	   channelSelector = fmProcessor::S_STEREO;
-	else
-	if (s == "R | L")
-	   channelSelector = fmProcessor::S_STEREO_SWAPPED;
-	else
-	if (s == "L | L")
-	   channelSelector = fmProcessor::S_LEFT;
-	else
-	if (s == "R | R")
-	   channelSelector = fmProcessor::S_RIGHT;
-	else
-	if (s == "M | M")
-	   channelSelector = fmProcessor::S_LEFTplusRIGHT;
-	else
-	if (s == "S | S")
-	   channelSelector = fmProcessor::S_LEFTminusRIGHT;
-	else
-	if (s == "T | T")
-		channelSelector = fmProcessor::S_LEFTminusRIGHT_Test;
-	else		// the default
-	   channelSelector = fmProcessor::S_STEREO;
-	if (myFMprocessor != nullptr)
-	   myFMprocessor	-> setSoundMode (channelSelector);
+void	RadioInterface::handle_fmChannelSelector (const QString &/*s*/) 
+{
+  const auto pCb = mCbElemColl.get_cb_elem_from_id(NCbDef::CBID_AUDCH);
+  const auto chs = pCb->get_current_selected_item_id();
+  
+  if (myFMprocessor != nullptr)
+	   myFMprocessor	-> setSoundMode (chs);
 }
 
 /*
@@ -1407,8 +1399,8 @@ void    RadioInterface::localConnects () {
   //connect (fmModeSelector, &QComboBox::textActivated, this, &RadioInterface::handle_fmModeSelector);
   
   
-  connect (fmChannelSelect, SIGNAL (activated (const QString &)),
-	         this, SLOT (handle_fmChannelSelector (const QString &)));
+//  connect (fmChannelSelect, SIGNAL (activated (const QString &)),
+//	         this, SLOT (handle_fmChannelSelector (const QString &)));
 	connect (fmRdsSelector, SIGNAL (activated (const QString &)),
 	         this, SLOT (handle_fmRdsSelector (const QString &)));
 	connect (fmStereoPanoramaSlider, SIGNAL (valueChanged (int)),
@@ -2101,11 +2093,11 @@ int     k;
 //	if (k != -1)
 //	   fmDecoder -> setCurrentIndex (k);
 
-	h	= s -> value ("fmChannelSelect",
-	                      fmChannelSelect -> currentText ()). toString ();
-	k	= fmChannelSelect -> findText (h);
-	if (k != -1)
-	   fmChannelSelect -> setCurrentIndex (k);
+//	h	= s -> value ("fmChannelSelect",
+//	                      fmChannelSelect -> currentText ()). toString ();
+//	k	= fmChannelSelect -> findText (h);
+//	if (k != -1)
+//	   fmChannelSelect -> setCurrentIndex (k);
 
 	h	= s -> value ("fmDeemphasisSelector",
 	                             "50us  (Europe, non-USA)"). toString ();

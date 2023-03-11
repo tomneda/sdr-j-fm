@@ -22,7 +22,8 @@ namespace NCbDef
   enum ECbId : TCbId
   {
     CBID_RDS,
-    CBID_FMMODE
+    CBID_FMMODE,
+    CBID_AUDCH
   };
   
   enum EItemFmMode : TItem 

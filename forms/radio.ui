@@ -1431,41 +1431,6 @@
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select the source combinations of the two audio channels:&lt;/p&gt;&lt;p&gt;L = Left&lt;br/&gt;R = Right&lt;br/&gt;M = Mono (L+R)&lt;br/&gt;S = Side (L-R)&lt;br/&gt;T = Test Side (L-R), 90° mix correlation, sound level must be minimized at best stereo decoding&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
-             <item>
-              <property name="text">
-               <string>L | R</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>R | L</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>M | M</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>S | S</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>T | T</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>L | L</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>R | R</string>
-              </property>
-             </item>
             </widget>
            </item>
           </layout>

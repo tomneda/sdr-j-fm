@@ -37,7 +37,7 @@ namespace NCbDef
   
   enum EItemDeEmp : TItem 
   {
-    DEEMP_OFF =  1,
+    DEEMP_OFF =  0,
     DEEMP_25  = 25,
     DEEMP_50  = 50,
     DEEMP_75  = 75

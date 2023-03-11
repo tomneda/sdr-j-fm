@@ -61,13 +61,19 @@ public:
   };
   
   void addItem(const NCbDef::TItem iItem, const NCbDef::TDefSel iDefSel, const QString & iEntryName);
+  void set_current_selected_item_by_name(const QString & iItemName);
   NCbDef::TItem get_current_selected_item_id();
+  NCbDef::TItem get_item_id_of_def_sel(const NCbDef::TDefSel iDefSel) const;
+  const QString & get_item_name_of_def_sel(const NCbDef::TDefSel iDefSel) const;
   
   NCbDef::TCbId get_cb_id() const { return mCbId; }
   const QString & get_setting_item_name() const { return mSettingName; }
   QComboBox * get_cb_box_ptr() const { return mpComboBox; }
   
 private:
+  const SItem & get_item_of_def_sel(const NCbDef::TDefSel iDefSel) const;
+  
+  
   NCbDef::TCbId      mCbId;
   QString            mSettingName;
   QComboBox        * mpComboBox;
@@ -84,7 +90,8 @@ public:
   //~CbElemColl() = default;
   
   void set_setting_handler(QSettings *const ipS) { mpQSetting = ipS; }
-  void read_cb_from_setting();
+  void read_cb_from_setting(const NCbDef::TDefSel iUseDefSel);
+  void write_setting_from_cb();
   
   void store_cb_elem(const TSPCbElem & ipCbElem);
   TSPCbElem get_cb_elem_from_id(const NCbDef::TCbId iCbId);
@@ -93,6 +100,8 @@ private:
   using TMap = std::map<NCbDef::TCbId, std::shared_ptr<CbElem> >;
   TMap mCbElems;   
   QSettings *mpQSetting = nullptr;
+  
+  bool is_only_one_bit_set(const uint32_t iBitSet) const;
 };
 
 

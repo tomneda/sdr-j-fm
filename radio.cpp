@@ -203,7 +203,7 @@ RadioInterface::RadioInterface(QSettings *Si, QString saveName,
   }
   
   mCbElemColl.set_setting_handler(Si);
-  mCbElemColl.read_cb_from_setting();
+  mCbElemColl.read_cb_from_setting(NCbDef::DEFSEL_EU);
   
   
   
@@ -221,7 +221,7 @@ RadioInterface::RadioInterface(QSettings *Si, QString saveName,
 //	with QT 5.15.2 and Ubuntu 22.04.1 LTS it works
 //	so, feel free to uncomment, but leave it commented out for me
 //	setWindowFlag (Qt::WindowContextHelpButtonHint, false);
-//	setWindowFlag (Qt::WindowMinMaxButtonsHint, true);
+	setWindowFlag (Qt::WindowMinMaxButtonsHint, true);
 
 	thermoPeakLevelLeft	-> setFillBrush (Qt::darkBlue);
 	thermoPeakLevelRight	-> setFillBrush (Qt::darkBlue);

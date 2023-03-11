@@ -235,8 +235,11 @@ RadioInterface::RadioInterface(QSettings *Si, QString saveName,
       CBELEM(cbe, CBID_DEEMP, configWidget.fmDeemphasisSelector, this, &RadioInterface::handle_fmDeemphasis);
       cbe->addItem(DEEMP_OFF, DEFSEL_NONE, "Off (AM)");  
       cbe->addItem(DEEMP_25,  DEFSEL_NONE, "25us (Dolby FM)");  
+      cbe->addItem(DEEMP_M25,  DEFSEL_NONE, "25us (Dolby FM) (exp)");  
       cbe->addItem(DEEMP_50,  DEFSEL_EUR,  "50us (Europe, non-USA)");  
+      cbe->addItem(DEEMP_M50,  DEFSEL_EUR,  "50us (Europe, non-USA) (exp)");  
       cbe->addItem(DEEMP_75,  DEFSEL_USA,  "75us (USA)");  
+      cbe->addItem(DEEMP_M75,  DEFSEL_USA,  "75us (USA) (exp)");  
       mCbElemColl.store_cb_elem(cbe, "", "fmDemphasisSelector");
     }
   }

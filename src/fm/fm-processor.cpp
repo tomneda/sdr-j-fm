@@ -294,15 +294,27 @@ void	fmProcessor::setSoundBalance (int16_t balance) {
 //	tau		= 2 * M_PI * Freq = 1000000 / time
 void	fmProcessor::setDeemphasis (int16_t v) 
 {
-  if (v > 0)
+  // CUTESDR: https://sourceforge.net/p/cutesdr/code/HEAD/tree/trunk/dsp/wfmdemod.cpp#l265
+  // m_DeemphasisAlpha = (1.0-MEXP(-1.0/(SampleRate*Time)) ); // Time is 50E-6 or 75E-6
+
+  float lambda = float(fmRate) * float(v) / 1000000.0f;
+  
+  if (v != 0)
   {
-    float Tau = 1000000.0 / v;
-    deemphAlpha = 1.0 / (float(fmRate) / Tau + 1.0);
+    if (v < 0)
+    {
+      deemphAlpha = (1.0f - std::exp(-1.0f / -lambda) );
+    }
+    else // v > 0
+    {
+      deemphAlpha = 1.0f / (lambda + 1.0f);
+    }
   }
   else
   {
     deemphAlpha = 1.0;   // no deemphasis
   }
+  qInfo("v = %d, deemphAlpha = %f, lambda = %f\n", v, deemphAlpha, lambda);
 }
 
 void	fmProcessor::setVolume (const float iVolGainDb) {

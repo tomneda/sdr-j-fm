@@ -15,9 +15,9 @@
 
 namespace NCbDef
 {
-  using TCbId   = uint32_t; // distinct ID for each combo box 
-  using TItem   = uint32_t; // content of each combo box 
-  using TDefSel = uint32_t; // bitpattern to find a certain element for default setting
+  using TCbId   = int32_t; // distinct ID for each combo box 
+  using TItem   = int32_t; // content of each combo box 
+  using TDefSel = int32_t; // bitpattern to find a certain element for default setting
   
   enum ECbId : TCbId
   {
@@ -39,8 +39,11 @@ namespace NCbDef
   {
     DEEMP_OFF =  0,
     DEEMP_25  = 25,
+    DEEMP_M25  = -25,
     DEEMP_50  = 50,
-    DEEMP_75  = 75
+    DEEMP_M50  = -50,
+    DEEMP_75  = 75,
+    DEEMP_M75  = -75
   };
   
   enum EDefSel : TDefSel

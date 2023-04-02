@@ -130,10 +130,10 @@ double Y_values [displaySize];
 void	ls_scope::mapSpectrum (std::complex<float> *in,
 	                       bool	showFull,
 	                       double	*out,
-	                       int	& ioZoomFactor) {
+	                       int & ioZoomFactor) {
 int16_t factor = spectrumSize / displaySize;  // typ factor = 4 (whole divider)
 
-	if (!showFull)	
+	if (!showFull)
 	   factor /= 2;
 
 	if (factor / ioZoomFactor >= 1) {

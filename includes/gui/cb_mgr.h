@@ -51,7 +51,8 @@ namespace NCbDef
     DEFSEL_NONE = 0x0000,
     DEFSEL_EUR  = 0x0001, 
     DEFSEL_USA  = 0x0002,
-    DEFSEL_ALL  = DEFSEL_USA | DEFSEL_EUR
+    DEFSEL_AM   = 0x0004,
+    DEFSEL_ALL  = DEFSEL_USA | DEFSEL_EUR | DEFSEL_AM
   };
 };
 

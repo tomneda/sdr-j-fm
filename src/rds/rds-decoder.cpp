@@ -74,8 +74,8 @@ uint8_t	theBit;
 	switch (mode) {
 	   case rdsDecoder::ERdsMode::RDS_1:
 	      v	= my_costas. process_sample (v);
-	      *m = v * 4.0f;
-//	      *m	= my_AGC. process_sample (v);
+//	      *m = v * 4.0f;
+	      *m	= my_AGC. process_sample (v);
 	      b = decoder_1 -> doDecode (real (v), &theBit);
 	      if (b)
 	         processBit (theBit, ptyLocale);
@@ -89,8 +89,8 @@ uint8_t	theBit;
 
 	   case rdsDecoder::ERdsMode::RDS_3:
 	      v	= my_costas. process_sample (v);
-	      *m = v * 4.0f;
-//	      *m	= my_AGC. process_sample (v);
+//	      *m = v * 4.0f;
+	      *m	= my_AGC. process_sample (v);
 	      b = decoder_3 -> doDecode (real (v), &theBit);
 	      if (b)
 	         processBit (theBit, ptyLocale);

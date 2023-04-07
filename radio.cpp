@@ -190,13 +190,13 @@ constexpr int16_t delayTableSize = ((int)(sizeof(delayTable) / sizeof(int16_t)))
 RadioInterface::RadioInterface(QSettings *Si, QString saveName,
                                ThemeChoser *themeChooser, int32_t outputRate,
                                QWidget *parent) : 
-      QDialog(parent), 
-      theDemodulator(FM_RATE), 
-      iqBuffer(IQ_SCOPE_SIZE), 
-      hfBuffer(8 * 32768),
-      lfBuffer(32768), 
-      configDisplay(nullptr),
-      mykeyPad() 
+    QDialog(parent),
+    iqBuffer(IQ_SCOPE_SIZE),
+    hfBuffer(8 * 32768),
+    lfBuffer(32768),
+    theDemodulator(FM_RATE), 
+    configDisplay(nullptr),
+    mykeyPad() 
 {
   int16_t i;
   QString h;
